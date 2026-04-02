@@ -1,0 +1,27 @@
+======================================================================
+  K4-free graph enumeration (all graphs, including disconnected)
+  n = 4 to 10
+  Goal: min alpha(G) for each (n, d) pair, d = max degree
+  Backend: /home/adity/micromamba/envs/brute_force_k4/src/nauty2_9_3/geng
+  Storing graphs  -> ./k4free_db/k4free_n<N>.pkl
+======================================================================
+
+n = 4: 10 graphs in 0.04s
+   -> saved 9 graphs to ./k4free_db/k4free_n4.pkl
+
+n = 5: 29 graphs in 0.01s
+   -> saved 28 graphs to ./k4free_db/k4free_n5.pkl
+
+n = 6: 120 graphs in 0.01s
+   -> saved 119 graphs to ./k4free_db/k4free_n6.pkl
+
+n = 7: 685 graphs in 0.11s
+   -> saved 684 graphs to ./k4free_db/k4free_n7.pkl
+
+n = 8: 6431 graphs in 0.95s
+   -> saved 6430 graphs to ./k4free_db/k4free_n8.pkl
+
+n = 9: 103164 graphs in 19.13s
+   -> saved 103163 graphs to ./k4free_db/k4free_n9.pkl
+
+n = 10: 
