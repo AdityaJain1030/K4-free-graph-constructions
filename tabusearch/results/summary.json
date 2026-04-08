@@ -1,0 +1,44 @@
+{
+  "10": {
+    "min_c": 0.865617,
+    "alpha": 3,
+    "d_max": 4,
+    "num_edges": 20
+  },
+  "15": {
+    "min_c": 0.828447,
+    "alpha": 4,
+    "d_max": 5,
+    "num_edges": 37
+  },
+  "20": {
+    "min_c": 0.837166,
+    "alpha": 5,
+    "d_max": 6,
+    "num_edges": 60
+  },
+  "25": {
+    "min_c": 0.863349,
+    "alpha": 6,
+    "d_max": 7,
+    "num_edges": 87
+  },
+  "30": {
+    "min_c": 0.892977,
+    "alpha": 8,
+    "d_max": 6,
+    "num_edges": 90
+  },
+  "35": {
+    "min_c": 0.925017,
+    "alpha": 9,
+    "d_max": 7,
+    "num_edges": 122
+  },
+  "40": {
+    "min_c": 0.961797,
+    "alpha": 10,
+    "d_max": 8,
+    "num_edges": 160
+  }
+}
