@@ -5,6 +5,9 @@ Usage:
     python -m k4free_ilp.run_production 20 25 30       # run specific n values
     python -m k4free_ilp.run_production --dry-run      # show search plan without solving
     python -m k4free_ilp.run_production --workers 4    # use 4 solver workers (default: 8)
+    python -m k4free_ilp.run_production --timeout 900  # override per-query time limit (seconds)
+    python -m k4free_ilp.run_production -v             # verbose logging (show timeouts vs infeasible)
+    python -m k4free_ilp.run_production -vv            # extra verbose (log every binary search step)
 """
 
 import argparse
@@ -25,6 +28,7 @@ RESULTS_DIR = "k4free_ilp/results"
 
 # Configurable globally so child processes inherit it
 _SOLVER_WORKERS = 8
+_VERBOSITY = 0  # 0=default, 1=verbose, 2=extra verbose
 
 
 # --- Search space pruning ---
@@ -44,8 +48,13 @@ def max_dmax_for_n(n: int) -> int:
     return 2 * n // 3 + 2
 
 
+_TIMEOUT_OVERRIDE = None  # Set via --timeout flag to override per-query time limit
+
+
 def time_limit_for_n(n: int) -> int:
-    """Group A (n ≤ 20): 300s. Group B (n > 20): 600s."""
+    """Group A (n ≤ 20): 300s. Group B (n > 20): 600s. Overridden by --timeout."""
+    if _TIMEOUT_OVERRIDE is not None:
+        return _TIMEOUT_OVERRIDE
     return 300 if n <= 20 else 600
 
 
@@ -63,9 +72,20 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
     best_adj = None
     best_stats = None
 
+    def _log_query(label, k, d, status, solve_time, stats):
+        """Log a query result based on verbosity level."""
+        if _VERBOSITY >= 2:
+            method = stats.get("method", "?")
+            iters = stats.get("iterations", 0)
+            print(f"    [{label}] α≤{k}, D≤{d}: {status} "
+                  f"({solve_time:.1f}s, method={method}, iters={iters})", flush=True)
+        elif _VERBOSITY >= 1 and status != "FEASIBLE":
+            print(f"    [{label}] α≤{k}, D≤{d}: {status} ({solve_time:.1f}s)", flush=True)
+
     # First check feasibility at hi
     status, adj, stats = solve_k4free(n, k, hi, time_limit)
     total_time += stats["solve_time"]
+    _log_query("ceiling", k, hi, status, stats["solve_time"], stats)
 
     if status == "INFEASIBLE":
         return None, None, None, timeouts, total_time
@@ -81,6 +101,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
         mid = (lo + hi) // 2
         status, adj, stats = solve_k4free(n, k, mid, time_limit)
         total_time += stats["solve_time"]
+        _log_query("bsearch", k, mid, status, stats["solve_time"], stats)
 
         if status == "FEASIBLE":
             hi = mid
@@ -96,6 +117,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
     if lo == hi and lo < best_D:
         status, adj, stats = solve_k4free(n, k, lo, time_limit)
         total_time += stats["solve_time"]
+        _log_query("bsearch", k, lo, status, stats["solve_time"], stats)
         if status == "FEASIBLE":
             best_D = lo
             best_adj = adj
@@ -159,10 +181,18 @@ def scan_pareto_frontier_production(n: int, time_limit: int) -> dict:
             iterations = best_stats.get("iterations", 0)
             achievable.append((k, best_D, best_adj, qt, method, iterations))
             prev_min_D = best_D  # tighten lower bound for next (smaller) α
-            print(f"  n={n}, α≤{k}: min_D={best_D}, time={qt:.1f}s", flush=True)
+            n_to = len(tos)
+            to_str = f", timeouts={n_to}" if _VERBOSITY >= 1 and n_to > 0 else ""
+            print(f"  n={n}, α≤{k}: min_D={best_D}, time={qt:.1f}s, method={method}{to_str}",
+                  flush=True)
         else:
-            # Infeasible or timeout — all smaller α values are also infeasible
-            print(f"  n={n}, α≤{k}: infeasible/timeout, stopping α search", flush=True)
+            # Distinguish timeout from infeasible
+            has_timeouts = len(tos) > 0
+            if has_timeouts:
+                reason = "TIMEOUT"
+            else:
+                reason = "INFEASIBLE"
+            print(f"  n={n}, α≤{k}: {reason}, stopping α search (time={qt:.1f}s)", flush=True)
             break
 
     # Add trivial points
@@ -273,7 +303,8 @@ def print_search_plan(n_values):
     print(f"\nTotal useful α queries: {total_useful}")
 
 
-def run_production(n_values, dry_run=False, parallel=1, workers=8):
+def run_production(n_values, dry_run=False, parallel=1, workers=8,
+                   timeout=None, verbosity=0):
     """Main production sweep.
 
     Args:
@@ -281,7 +312,12 @@ def run_production(n_values, dry_run=False, parallel=1, workers=8):
         dry_run: if True, only show search plan
         parallel: number of n values to run in parallel (1 = sequential)
         workers: number of CP-SAT solver workers per query
+        timeout: override per-query time limit (seconds), None = use defaults
+        verbosity: 0=default, 1=verbose, 2=extra verbose
     """
+    global _VERBOSITY, _TIMEOUT_OVERRIDE
+    _VERBOSITY = verbosity
+    _TIMEOUT_OVERRIDE = timeout
     if dry_run:
         print_search_plan(n_values)
         return
@@ -515,11 +551,16 @@ def main():
                         help="Number of n values to run in parallel (default: 1)")
     parser.add_argument("--workers", type=int, default=8,
                         help="CP-SAT solver workers per query (default: 8)")
+    parser.add_argument("--timeout", type=int, default=None,
+                        help="Override per-query time limit in seconds (default: 300 for n≤20, 600 for n>20)")
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+                        help="Increase verbosity (-v: show timeouts/infeasible, -vv: log every query)")
     args = parser.parse_args()
 
     n_values = args.n_values if args.n_values else list(range(11, 36))
     run_production(n_values, dry_run=args.dry_run,
-                   parallel=args.parallel, workers=args.workers)
+                   parallel=args.parallel, workers=args.workers,
+                   timeout=args.timeout, verbosity=args.verbose)
 
 
 if __name__ == "__main__":

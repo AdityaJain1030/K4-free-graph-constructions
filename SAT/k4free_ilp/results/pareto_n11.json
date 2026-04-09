@@ -1,6 +1,6 @@
 {
   "n": 11,
-  "time_limit": 300,
+  "time_limit": 60,
   "pareto_frontier": [
     {
       "alpha": 3,
@@ -97,7 +97,7 @@
         ]
       ],
       "g6": "JApu`OhhKe?",
-      "solve_time": 0.307,
+      "solve_time": 0.181,
       "method": "direct_enumeration",
       "iterations": 0
     },
@@ -152,38 +152,7 @@
         ]
       ],
       "g6": "JJ?C?MCA?O_",
-      "solve_time": 0.088,
-      "method": "direct_enumeration",
-      "iterations": 0
-    },
-    {
-      "alpha": 6,
-      "d_max": 1,
-      "c_log": null,
-      "edges": [
-        [
-          0,
-          8
-        ],
-        [
-          1,
-          7
-        ],
-        [
-          2,
-          6
-        ],
-        [
-          3,
-          9
-        ],
-        [
-          4,
-          5
-        ]
-      ],
-      "g6": "J??HAA?C???",
-      "solve_time": 0.07,
+      "solve_time": 0.046,
       "method": "direct_enumeration",
       "iterations": 0
     },
@@ -231,5 +200,6 @@
   ],
   "min_c_log": 0.7869,
   "timeouts": [],
-  "total_time": 0.74
+  "total_time": 0.34,
+  "wall_time": 0.407
 }
