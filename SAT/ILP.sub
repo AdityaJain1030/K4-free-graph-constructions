@@ -18,8 +18,8 @@ log    = logs/job_$(Cluster)_$(Process).log
 # ----------------------------------------------------------------------
 # Resource Requests
 # ----------------------------------------------------------------------
-request_cpus   = 8
-request_memory = 20GB
+request_cpus   = 16
+request_memory = 120GB
 request_disk   = 5GB
 
 # Target the specific machine
