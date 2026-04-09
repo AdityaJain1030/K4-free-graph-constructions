@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # HTCondor Submit File — Interactive Session
 # ----------------------------------------------------------------------
-# executable = /bin/bash
+executable = /bin/bash
 
 initialdir = /home/adityaj8/k4free/SAT
 
