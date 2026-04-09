@@ -1,11 +1,8 @@
 """Production Pareto frontier sweep for n=11..35.
 
-Each solve_k4free call runs in an isolated subprocess so that OR-Tools
-C++ memory is fully released between calls (no accumulation).
-
 Usage:
     python -m k4free_ilp.run_production                # run all n=11..35
-    python -m k4free_ilp.run_production 23 24 25       # run specific n values
+    python -m k4free_ilp.run_production 20 25 30       # run specific n values
     python -m k4free_ilp.run_production --dry-run      # show search plan without solving
     python -m k4free_ilp.run_production --workers 4    # use 4 solver workers (default: 8)
     python -m k4free_ilp.run_production --timeout 900  # override per-query time limit (seconds)
@@ -19,10 +16,12 @@ import os
 import sys
 import time
 from math import log, ceil
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import numpy as np
 
-from k4free_ilp.pareto_scanner import _solve_subprocess
+from k4free_ilp.ilp_solver import solve_k4free, KNOWN_RAMSEY
+from k4free_ilp.alpha_exact import alpha_exact
 from k4free_ilp.graph_io import adj_to_g6, adj_to_edge_list
 
 RESULTS_DIR = "k4free_ilp/results"
@@ -75,23 +74,16 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
 
     def _log_query(label, k, d, status, solve_time, stats):
         """Log a query result based on verbosity level."""
-        rss = stats.get("peak_rss_mb", 0)
-        rss_str = f", rss={rss:.0f}MB" if rss else ""
         if _VERBOSITY >= 2:
             method = stats.get("method", "?")
             iters = stats.get("iterations", 0)
             print(f"    [{label}] α≤{k}, D≤{d}: {status} "
-                  f"({solve_time:.1f}s, method={method}, iters={iters}{rss_str})",
-                  flush=True)
+                  f"({solve_time:.1f}s, method={method}, iters={iters})", flush=True)
         elif _VERBOSITY >= 1 and status != "FEASIBLE":
-            print(f"    [{label}] α≤{k}, D≤{d}: {status} ({solve_time:.1f}s{rss_str})",
-                  flush=True)
-
-    def _solve(n, k, d, tl):
-        return _solve_subprocess(n, k, d, tl, workers=_SOLVER_WORKERS)
+            print(f"    [{label}] α≤{k}, D≤{d}: {status} ({solve_time:.1f}s)", flush=True)
 
     # First check feasibility at hi
-    status, adj, stats = _solve(n, k, hi, time_limit)
+    status, adj, stats = solve_k4free(n, k, hi, time_limit)
     total_time += stats["solve_time"]
     _log_query("ceiling", k, hi, status, stats["solve_time"], stats)
 
@@ -107,7 +99,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
 
     while lo < hi:
         mid = (lo + hi) // 2
-        status, adj, stats = _solve(n, k, mid, time_limit)
+        status, adj, stats = solve_k4free(n, k, mid, time_limit)
         total_time += stats["solve_time"]
         _log_query("bsearch", k, mid, status, stats["solve_time"], stats)
 
@@ -123,7 +115,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
             lo = mid + 1
 
     if lo == hi and lo < best_D:
-        status, adj, stats = _solve(n, k, lo, time_limit)
+        status, adj, stats = solve_k4free(n, k, lo, time_limit)
         total_time += stats["solve_time"]
         _log_query("bsearch", k, lo, status, stats["solve_time"], stats)
         if status == "FEASIBLE":
@@ -271,6 +263,18 @@ def scan_pareto_frontier_production(n: int, time_limit: int) -> dict:
     }
 
 
+# --- Parallel execution across n values ---
+
+def _run_single_n(n):
+    """Worker function for parallel execution. Runs one n value."""
+    tl = time_limit_for_n(n)
+    t0 = time.time()
+    result = scan_pareto_frontier_production(n, tl)
+    wall_time = time.time() - t0
+    result["wall_time"] = round(wall_time, 3)
+    return n, result
+
+
 # --- Summary and output ---
 
 def load_brute_force(n: int) -> dict | None:
@@ -299,27 +303,48 @@ def print_search_plan(n_values):
     print(f"\nTotal useful α queries: {total_useful}")
 
 
-def run_production(n_values, dry_run=False, workers=8,
+def run_production(n_values, dry_run=False, parallel=1, workers=8,
                    timeout=None, verbosity=0):
     """Main production sweep.
-
-    Each solve_k4free call runs in an isolated subprocess (via _solve_subprocess)
-    so OR-Tools C++ memory is fully released between calls.
 
     Args:
         n_values: list of n values to compute
         dry_run: if True, only show search plan
+        parallel: number of n values to run in parallel (1 = sequential)
         workers: number of CP-SAT solver workers per query
         timeout: override per-query time limit (seconds), None = use defaults
         verbosity: 0=default, 1=verbose, 2=extra verbose
     """
-    global _VERBOSITY, _TIMEOUT_OVERRIDE, _SOLVER_WORKERS
+    global _VERBOSITY, _TIMEOUT_OVERRIDE
     _VERBOSITY = verbosity
     _TIMEOUT_OVERRIDE = timeout
-    _SOLVER_WORKERS = workers
     if dry_run:
         print_search_plan(n_values)
         return
+
+    # Set solver workers globally
+    import k4free_ilp.ilp_solver as solver_mod
+    # Patch _solve_and_extract to use configured workers
+    _orig_solve = solver_mod._solve_and_extract
+    def _patched_solve(model, x, n, time_limit):
+        from ortools.sat.python import cp_model as cpm
+        solver = cpm.CpSolver()
+        solver.parameters.max_time_in_seconds = time_limit
+        solver.parameters.num_workers = workers
+        t0 = time.time()
+        result_status = solver.solve(model)
+        solve_time = time.time() - t0
+        if result_status in (cpm.OPTIMAL, cpm.FEASIBLE):
+            adj = np.zeros((n, n), dtype=np.uint8)
+            for (i, j), var in x.items():
+                if solver.value(var):
+                    adj[i, j] = adj[j, i] = 1
+            return "FEASIBLE", adj, solve_time
+        elif result_status == cpm.INFEASIBLE:
+            return "INFEASIBLE", None, solve_time
+        else:
+            return "TIMEOUT", None, solve_time
+    solver_mod._solve_and_extract = _patched_solve
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
     all_results = {}
@@ -333,27 +358,48 @@ def run_production(n_values, dry_run=False, workers=8,
             all_results[n]["timeouts"] = []
             all_results[n]["time_limit"] = 0
 
-    # Run ILP for requested n values (sequentially; each query is already
-    # subprocess-isolated, so no memory accumulation).
-    for n in n_values:
-        tl = time_limit_for_n(n)
-        print(f"\n{'='*60}", flush=True)
-        print(f"=== n={n}, time_limit={tl}s, workers={workers} ===", flush=True)
-        print(f"    min_α={min_alpha_for_n(n)}, max_useful_α={min((n+1)//2 - 1, n-1)}, "
-              f"max_D={max_dmax_for_n(n)}", flush=True)
-        print(f"{'='*60}", flush=True)
+    # Run ILP for requested n values
+    if parallel > 1:
+        # Parallel execution: group n values and run concurrently.
+        # Each process gets workers/parallel solver threads.
+        print(f"Running {len(n_values)} n-values with parallelism={parallel}, "
+              f"{workers} solver workers each", flush=True)
+        # Process groups: run `parallel` n values simultaneously
+        for batch_start in range(0, len(n_values), parallel):
+            batch = n_values[batch_start:batch_start + parallel]
+            print(f"\n--- Batch: n={batch} ---", flush=True)
+            with ProcessPoolExecutor(max_workers=parallel) as executor:
+                futures = {executor.submit(_run_single_n, n): n for n in batch}
+                for future in as_completed(futures):
+                    n, result = future.result()
+                    path = f"{RESULTS_DIR}/pareto_n{n}.json"
+                    with open(path, "w") as f:
+                        json.dump(result, f, indent=2)
+                    all_results[n] = result
+                    _print_progress(n, result)
+    else:
+        for n in n_values:
+            tl = time_limit_for_n(n)
+            print(f"\n{'='*60}", flush=True)
+            print(f"=== n={n}, time_limit={tl}s, workers={workers} ===", flush=True)
+            print(f"    min_α={min_alpha_for_n(n)}, max_useful_α={min((n+1)//2 - 1, n-1)}, "
+                  f"max_D={max_dmax_for_n(n)}", flush=True)
+            print(f"{'='*60}", flush=True)
 
-        t0 = time.time()
-        result = scan_pareto_frontier_production(n, tl)
-        wall_time = time.time() - t0
-        result["wall_time"] = round(wall_time, 3)
+            t0 = time.time()
+            result = scan_pareto_frontier_production(n, tl)
+            wall_time = time.time() - t0
+            result["wall_time"] = round(wall_time, 3)
 
-        path = f"{RESULTS_DIR}/pareto_n{n}.json"
-        with open(path, "w") as f:
-            json.dump(result, f, indent=2)
+            path = f"{RESULTS_DIR}/pareto_n{n}.json"
+            with open(path, "w") as f:
+                json.dump(result, f, indent=2)
 
-        all_results[n] = result
-        _print_progress(n, result)
+            all_results[n] = result
+            _print_progress(n, result)
+
+    # Restore original solver
+    solver_mod._solve_and_extract = _orig_solve
 
     # --- Final output ---
     _print_tables(all_results)
@@ -501,6 +547,8 @@ def main():
                         help="Specific n values to run (default: 11..35)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Show search plan without solving")
+    parser.add_argument("--parallel", type=int, default=1,
+                        help="Number of n values to run in parallel (default: 1)")
     parser.add_argument("--workers", type=int, default=8,
                         help="CP-SAT solver workers per query (default: 8)")
     parser.add_argument("--timeout", type=int, default=None,
@@ -511,7 +559,7 @@ def main():
 
     n_values = args.n_values if args.n_values else list(range(11, 36))
     run_production(n_values, dry_run=args.dry_run,
-                   workers=args.workers,
+                   parallel=args.parallel, workers=args.workers,
                    timeout=args.timeout, verbosity=args.verbose)
 
 

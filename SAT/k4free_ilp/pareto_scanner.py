@@ -1,70 +1,14 @@
-"""Pareto frontier scanner using CP-SAT ILP solver.
-
-Each solve_k4free call runs in an isolated subprocess so that OR-Tools
-C++ memory is fully released between calls.
-"""
+"""Pareto frontier scanner using CP-SAT ILP solver."""
 
 import json
-import subprocess
 import sys
 from math import log
 
 import numpy as np
 
+from k4free_ilp.ilp_solver import solve_k4free
+from k4free_ilp.alpha_exact import alpha_exact
 from k4free_ilp.graph_io import adj_to_g6, adj_to_edge_list
-
-
-def _solve_subprocess(n: int, max_alpha: int, max_degree: int,
-                      time_limit: int,
-                      workers: int = 8) -> tuple[str, np.ndarray | None, dict]:
-    """Run solve_k4free in an isolated subprocess, return (status, adj, stats).
-
-    The child process builds the model, solves, and exits — freeing all
-    OR-Tools C++ memory.  Results come back as JSON on stdout.
-    """
-    cmd = [
-        sys.executable, "-m", "k4free_ilp._solver_worker",
-        str(n), str(max_alpha), str(max_degree), str(time_limit),
-        "--workers", str(workers),
-    ]
-    # Allow generous wall-clock time: solver time_limit + overhead for model
-    # construction, subprocess startup, and serialization.
-    wall_timeout = time_limit + 120
-
-    try:
-        proc = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=wall_timeout,
-        )
-    except subprocess.TimeoutExpired:
-        return "TIMEOUT", None, {"solve_time": float(time_limit), "method": "subprocess_timeout"}
-
-    # Forward solver diagnostic output (lazy-solver iterations, etc.)
-    if proc.stderr.strip():
-        for line in proc.stderr.strip().split("\n"):
-            print(f"    {line}", flush=True)
-
-    if proc.returncode != 0:
-        print(f"    [subprocess error, exit {proc.returncode}]", flush=True)
-        return "TIMEOUT", None, {"solve_time": 0.0, "method": "subprocess_crash"}
-
-    # Worker redirects solver prints to stderr; stdout contains only JSON.
-    stdout = proc.stdout.strip()
-    if not stdout:
-        return "TIMEOUT", None, {"solve_time": 0.0, "method": "subprocess_no_output"}
-    result = json.loads(stdout)
-
-    status = result["status"]
-    stats = result["stats"]
-    peak_rss = result.get("peak_rss_mb", 0)
-    stats["peak_rss_mb"] = peak_rss
-
-    adj = None
-    if result["edges"] is not None:
-        adj = np.zeros((n, n), dtype=np.uint8)
-        for i, j in result["edges"]:
-            adj[i, j] = adj[j, i] = 1
-
-    return status, adj, stats
 
 
 def scan_pareto_frontier(n: int, time_limit_per_query: int = 300) -> list[dict]:
@@ -87,13 +31,16 @@ def scan_pareto_frontier(n: int, time_limit_per_query: int = 300) -> list[dict]:
         total_time = 0.0
 
         # First check if ANY D works (test D = n-1)
-        status, adj, stats = _solve_subprocess(n, k, n - 1, time_limit_per_query)
+        status, adj, stats = solve_k4free(n, k, n - 1, time_limit_per_query)
         total_time += stats["solve_time"]
-        rss_info = f", rss={stats.get('peak_rss_mb', 0):.0f}MB" if stats.get("peak_rss_mb") else ""
-        print(f"  n={n}, testing α≤{k}, D≤{n-1}... {status} ({stats['solve_time']:.1f}s{rss_info})",
+        print(f"  n={n}, testing α≤{k}, D≤{n-1}... {status} ({stats['solve_time']:.1f}s)",
               flush=True)
 
         if status == "INFEASIBLE":
+            # α ≤ k is impossible for any degree — stop, larger k trivially achievable
+            # Actually, if α ≤ k is infeasible even with max degree, it means we need MORE edges
+            # but that's contradictory. This means k is too small.
+            # Continue to next k.
             continue
         elif status == "TIMEOUT":
             continue
@@ -104,10 +51,9 @@ def scan_pareto_frontier(n: int, time_limit_per_query: int = 300) -> list[dict]:
 
         while lo < hi:
             mid = (lo + hi) // 2
-            status, adj, stats = _solve_subprocess(n, k, mid, time_limit_per_query)
+            status, adj, stats = solve_k4free(n, k, mid, time_limit_per_query)
             total_time += stats["solve_time"]
-            rss_info = f", rss={stats.get('peak_rss_mb', 0):.0f}MB" if stats.get("peak_rss_mb") else ""
-            print(f"  n={n}, testing α≤{k}, D≤{mid}... {status} ({stats['solve_time']:.1f}s{rss_info})",
+            print(f"  n={n}, testing α≤{k}, D≤{mid}... {status} ({stats['solve_time']:.1f}s)",
                   flush=True)
 
             if status == "FEASIBLE":
@@ -119,10 +65,9 @@ def scan_pareto_frontier(n: int, time_limit_per_query: int = 300) -> list[dict]:
 
         # Verify lo if we haven't tested it directly
         if lo == hi and lo < best_D:
-            status, adj, stats = _solve_subprocess(n, k, lo, time_limit_per_query)
+            status, adj, stats = solve_k4free(n, k, lo, time_limit_per_query)
             total_time += stats["solve_time"]
-            rss_info = f", rss={stats.get('peak_rss_mb', 0):.0f}MB" if stats.get("peak_rss_mb") else ""
-            print(f"  n={n}, testing α≤{k}, D≤{lo}... {status} ({stats['solve_time']:.1f}s{rss_info})",
+            print(f"  n={n}, testing α≤{k}, D≤{lo}... {status} ({stats['solve_time']:.1f}s)",
                   flush=True)
             if status == "FEASIBLE":
                 best_D = lo
