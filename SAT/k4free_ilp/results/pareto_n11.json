@@ -1,0 +1,235 @@
+{
+  "n": 11,
+  "time_limit": 300,
+  "pareto_frontier": [
+    {
+      "alpha": 3,
+      "d_max": 4,
+      "c_log": 0.7869,
+      "edges": [
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "g6": "JApu`OhhKe?",
+      "solve_time": 0.307,
+      "method": "direct_enumeration",
+      "iterations": 0
+    },
+    {
+      "alpha": 4,
+      "d_max": 2,
+      "c_log": 1.0492,
+      "edges": [
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "g6": "JJ?C?MCA?O_",
+      "solve_time": 0.088,
+      "method": "direct_enumeration",
+      "iterations": 0
+    },
+    {
+      "alpha": 6,
+      "d_max": 1,
+      "c_log": null,
+      "edges": [
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "g6": "J??HAA?C???",
+      "solve_time": 0.07,
+      "method": "direct_enumeration",
+      "iterations": 0
+    },
+    {
+      "alpha": 6,
+      "d_max": 1,
+      "c_log": null,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "g6": "J`?G?C??G??",
+      "solve_time": 0.0,
+      "method": "trivial",
+      "iterations": 0
+    },
+    {
+      "alpha": 11,
+      "d_max": 0,
+      "c_log": null,
+      "edges": [],
+      "g6": "J??????????",
+      "solve_time": 0.0,
+      "method": "trivial",
+      "iterations": 0
+    }
+  ],
+  "min_c_log": 0.7869,
+  "timeouts": [],
+  "total_time": 0.74
+}

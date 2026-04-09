@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"pytest.*test_ramsey\")",
+      "Bash(pkill -f \"solve_k4free\")",
+      "Bash(pkill -f \"_build_model\")"
+    ]
+  }
+}

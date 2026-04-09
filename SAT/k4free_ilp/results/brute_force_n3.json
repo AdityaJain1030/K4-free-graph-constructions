@@ -1,0 +1,46 @@
+{
+  "n": 3,
+  "pareto_frontier": [
+    {
+      "alpha": 1,
+      "d_max": 2,
+      "c_log": 0.9618,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "g6": "Bw"
+    },
+    {
+      "alpha": 2,
+      "d_max": 1,
+      "c_log": null,
+      "edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "g6": "B_"
+    },
+    {
+      "alpha": 3,
+      "d_max": 0,
+      "c_log": null,
+      "edges": [],
+      "g6": "B?"
+    }
+  ],
+  "min_c_log": 0.9618,
+  "total_k4free_graphs": 8
+}

@@ -1,0 +1,80 @@
+{
+  "best_per_n": [
+    {
+      "n": 3,
+      "min_alpha": 1,
+      "d_max": 2,
+      "min_c_log": 0.9618,
+      "method": "brute"
+    },
+    {
+      "n": 4,
+      "min_alpha": "-",
+      "d_max": "-",
+      "min_c_log": null,
+      "method": "brute"
+    },
+    {
+      "n": 5,
+      "min_alpha": 2,
+      "d_max": 2,
+      "min_c_log": 1.1542,
+      "method": "brute"
+    },
+    {
+      "n": 6,
+      "min_alpha": 2,
+      "d_max": 2,
+      "min_c_log": 0.9618,
+      "method": "brute"
+    },
+    {
+      "n": 7,
+      "min_alpha": 2,
+      "d_max": 4,
+      "min_c_log": 0.8244,
+      "method": "brute"
+    },
+    {
+      "n": 8,
+      "min_alpha": 2,
+      "d_max": 4,
+      "min_c_log": 0.7213,
+      "method": "brute"
+    },
+    {
+      "n": 9,
+      "min_alpha": 3,
+      "d_max": 2,
+      "min_c_log": 0.9618,
+      "method": "brute"
+    },
+    {
+      "n": 10,
+      "min_alpha": 3,
+      "d_max": 4,
+      "min_c_log": 0.8656,
+      "method": "brute"
+    },
+    {
+      "n": 11,
+      "min_alpha": 3,
+      "d_max": 4,
+      "min_c_log": 0.7869,
+      "method": "direct_enumeration"
+    }
+  ],
+  "interesting_frontiers": {},
+  "trend": {
+    "vs_n": {
+      "slope": -0.028918,
+      "intercept": 1.118,
+      "r_squared": 0.3271
+    },
+    "vs_ln_n": {
+      "slope": -0.172724,
+      "intercept": 1.2377,
+      "r_squared": 0.2959
+    }
+  }
+}

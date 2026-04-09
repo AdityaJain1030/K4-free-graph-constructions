@@ -1,0 +1,30 @@
+{
+  "n": 4,
+  "pareto_frontier": [
+    {
+      "alpha": 2,
+      "d_max": 1,
+      "c_log": null,
+      "edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "g6": "CK"
+    },
+    {
+      "alpha": 4,
+      "d_max": 0,
+      "c_log": null,
+      "edges": [],
+      "g6": "C?"
+    }
+  ],
+  "min_c_log": null,
+  "total_k4free_graphs": 63
+}
