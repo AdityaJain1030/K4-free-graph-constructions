@@ -15,7 +15,8 @@ from k4free_ilp.graph_io import adj_to_g6, adj_to_edge_list
 
 
 def _solve_subprocess(n: int, max_alpha: int, max_degree: int,
-                      time_limit: int) -> tuple[str, np.ndarray | None, dict]:
+                      time_limit: int,
+                      workers: int = 8) -> tuple[str, np.ndarray | None, dict]:
     """Run solve_k4free in an isolated subprocess, return (status, adj, stats).
 
     The child process builds the model, solves, and exits — freeing all
@@ -24,6 +25,7 @@ def _solve_subprocess(n: int, max_alpha: int, max_degree: int,
     cmd = [
         sys.executable, "-m", "k4free_ilp._solver_worker",
         str(n), str(max_alpha), str(max_degree), str(time_limit),
+        "--workers", str(workers),
     ]
     # Allow generous wall-clock time: solver time_limit + overhead for model
     # construction, subprocess startup, and serialization.
