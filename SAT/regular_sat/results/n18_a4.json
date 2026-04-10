@@ -2,7 +2,7 @@
   "n": 18,
   "max_alpha": 4,
   "status": "FEASIBLE",
-  "solve_time": 58.696,
+  "solve_time": 453.772,
   "method": "cpsat_direct",
   "iterations": 0,
   "num_edges": 53,
