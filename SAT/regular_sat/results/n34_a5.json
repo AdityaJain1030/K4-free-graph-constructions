@@ -1,0 +1,19 @@
+{
+  "n": 34,
+  "max_alpha": 5,
+  "status": "INFEASIBLE",
+  "solve_time": 3617.267,
+  "method": "cpsat_direct",
+  "iterations": 0,
+  "num_edges": null,
+  "alpha": null,
+  "D": null,
+  "d_min": null,
+  "d_max": null,
+  "d_avg": null,
+  "c_log": null,
+  "beta": null,
+  "edges": null,
+  "g6": null,
+  "degree_sequence": null
+}
