@@ -2,7 +2,7 @@
 # HTCondor Submit File — Regular SAT Minimum Edge Solver
 # ----------------------------------------------------------------------
 universe = vanilla
-executable = regular_sat/run_cluster.sh
+executable = run_cluster.sh
 initialdir = /home/adityaj8/k4free/SAT
 getenv = True
 
