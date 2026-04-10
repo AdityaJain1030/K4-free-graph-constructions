@@ -7,6 +7,14 @@ echo "Host: $(hostname), CPUs: $(nproc), RAM: $(free -g | awk '/Mem:/{print $2}'
 # os.cpu_count() sees ALL machine CPUs, not the HTCondor allocation
 WORKERS=16
 
+micromamba activate ILP_pareto_enum
+
+# Run from the project directory
+cd /home/adityaj8/k4free/SAT
+
+# Ensure logs directory exists
+mkdir -p logs
+
 # Full scan over known ranges
 python -m regular_sat.cli scan --n_min 12 --n_max 35 --time_limit 3600 --workers $WORKERS
 
