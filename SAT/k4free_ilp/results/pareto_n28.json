@@ -1,6 +1,6 @@
 {
   "n": 28,
-  "time_limit": 600,
+  "time_limit": 1800,
   "pareto_frontier": [
     {
       "alpha": 5,
@@ -593,7 +593,7 @@
         ]
       ],
       "g6": "[SogJafDPYmG?NxS?gqdMaghyddChqUOOT`hCMD{cmPUP?g\\c?h?asBXck?O?FLn",
-      "solve_time": 54.622,
+      "solve_time": 53.046,
       "method": "direct_enumeration",
       "iterations": 0
     },
@@ -656,15 +656,15 @@
         ],
         [
           4,
+          5
+        ],
+        [
+          4,
           6
         ],
         [
           4,
           7
-        ],
-        [
-          4,
-          16
         ],
         [
           5,
@@ -773,6 +773,10 @@
         [
           12,
           18
+        ],
+        [
+          13,
+          19
         ],
         [
           14,
@@ -887,10 +891,10 @@
           26
         ]
       ],
-      "g6": "[`K_OQ@DAB?H?B@UC?PCLa?G?c`?s??GW@?NCKDOC`U???????@???@_??sG??LK",
-      "solve_time": 160.004,
+      "g6": "[`KgOQ@DAB?H?B@UC?PCL_?G?c`?s??IW@?NCKDOC`U???????@???@_??sG??LK",
+      "solve_time": 149.845,
       "method": "lazy",
-      "iterations": 86
+      "iterations": 90
     },
     {
       "alpha": 10,
@@ -904,6 +908,10 @@
         [
           0,
           16
+        ],
+        [
+          1,
+          10
         ],
         [
           2,
@@ -920,6 +928,10 @@
         [
           2,
           14
+        ],
+        [
+          2,
+          18
         ],
         [
           3,
@@ -1004,6 +1016,10 @@
         [
           10,
           14
+        ],
+        [
+          10,
+          16
         ],
         [
           11,
@@ -1126,10 +1142,10 @@
           26
         ]
       ],
-      "g6": "[`G_OO@@_@?@?B@TC@?_l_?G?c??CG?AS@?DCKCOC`T???????@???@_??KG??BK",
-      "solve_time": 131.427,
+      "g6": "[`G_OO@@a@?@?B@TC@?_l_AG?c@?CG?AS@?DCKCOC`T???????@???@_??KG??BK",
+      "solve_time": 144.094,
       "method": "lazy",
-      "iterations": 50
+      "iterations": 57
     },
     {
       "alpha": 11,
@@ -1350,9 +1366,9 @@
         ]
       ],
       "g6": "[`GGOO??i??@???Rc?OC??AC?_P?O_??W@AB?C_WCAS_??A???D???`_??PW??Cw",
-      "solve_time": 215.298,
+      "solve_time": 213.406,
       "method": "lazy",
-      "iterations": 90
+      "iterations": 91
     },
     {
       "alpha": 12,
@@ -1497,9 +1513,9 @@
         ]
       ],
       "g6": "[_?G????@??A?G?OC??AA??G??OC@???G??@???W?AD???@???B???D_??EW??@w",
-      "solve_time": 153.28,
+      "solve_time": 150.137,
       "method": "lazy",
-      "iterations": 82
+      "iterations": 83
     },
     {
       "alpha": 14,
@@ -1584,29 +1600,29 @@
     {
       "alpha": 13,
       "d_max": 5,
-      "time": 135.71
+      "time": 129.309
     },
     {
       "alpha": 11,
       "d_max": 9,
-      "time": 102.62
+      "time": 104.262
     },
     {
       "alpha": 10,
       "d_max": 11,
-      "time": 86.763
+      "time": 97.994
     },
     {
       "alpha": 9,
       "d_max": 13,
-      "time": 102.75
+      "time": 91.805
     },
     {
       "alpha": 8,
       "d_max": 15,
-      "time": 72.982
+      "time": 84.796
     }
   ],
-  "total_time": 1832.891,
-  "wall_time": 2454.328
+  "total_time": 1807.54,
+  "wall_time": 2492.457
 }
