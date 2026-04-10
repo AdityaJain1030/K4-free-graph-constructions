@@ -45,6 +45,27 @@ C_BG = "#FAFAFA"
 NODE_SIZE_BASE = 260
 FONT_SIZE_LABEL = 8
 
+# Plottable attributes across all Pareto points
+_PLOT_ATTRS = ["n", "α", "d_max", "c_log", "edges", "density"]
+
+
+def _extract_attr(point, name):
+    """Extract a numeric attribute from a Pareto point. Returns None if unavailable."""
+    if name == "n":
+        return point["n"]
+    if name == "α":
+        return point["alpha"]
+    if name == "d_max":
+        return point["d_max"]
+    if name == "c_log":
+        return point.get("c_log")
+    if name == "edges":
+        return len(point["edges"])
+    if name == "density":
+        n = point["n"]
+        return 2 * len(point["edges"]) / (n * (n - 1)) if n > 1 else 0
+    return None
+
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
@@ -234,7 +255,6 @@ class App(tk.Tk):
                      font=("sans-serif", 14)).pack(expand=True)
             return
 
-        self.n_values = sorted(self.data.keys())
         self.n_idx = 0
         self.pt_idx = 0
 
@@ -243,6 +263,9 @@ class App(tk.Tk):
         self.dragging = None
         self.selected_node = None
         self.layout_name = tk.StringVar(value="Spring")
+
+        # Filter toggle
+        self.filter_min_clog = tk.BooleanVar(value=False)
 
         # Highlight toggles
         self.hl_mis = tk.BooleanVar(value=False)
@@ -255,8 +278,40 @@ class App(tk.Tk):
         self._tri_cache = None
         self._high_deg_cache = None
 
+        # Cross-graph plot controls
+        self.cg_x = tk.StringVar(value="n")
+        self.cg_y = tk.StringVar(value="c_log")
+        self.cg_agg = tk.StringVar(value="min")
+
+        # Histogram control
+        self.hist_var = tk.StringVar(value="c_log")
+
+        # Build view (filtered or full)
+        self._recompute_view()
+
         self._build_ui()
         self._load_current_graph()
+
+    def _recompute_view(self):
+        """Rebuild the active view data based on the min-c_log filter."""
+        if self.filter_min_clog.get():
+            self._view_data = {}
+            for n, pts in self.data.items():
+                best = None
+                for pt in pts:
+                    c = pt.get("c_log")
+                    if c is not None and (best is None or c < best.get("c_log")):
+                        best = pt
+                if best is not None:
+                    self._view_data[n] = [best]
+        else:
+            self._view_data = self.data
+
+        self._view_n_values = sorted(self._view_data.keys())
+        self._view_all_points = []
+        for n in self._view_n_values:
+            for pt in self._view_data[n]:
+                self._view_all_points.append(pt)
 
     # ---- UI construction ----
 
@@ -330,7 +385,14 @@ class App(tk.Tk):
 
         self.lbl_summary = tk.Label(rp, text="", bg=C_BG, font=("sans-serif", 10),
                                      anchor="w", justify=tk.LEFT)
-        self.lbl_summary.pack(fill=tk.X, padx=8, pady=(0, 4))
+        self.lbl_summary.pack(fill=tk.X, padx=8, pady=(0, 2))
+
+        filter_frame = tk.Frame(rp, bg=C_BG)
+        filter_frame.pack(fill=tk.X, padx=8, pady=(0, 4))
+        tk.Checkbutton(filter_frame, text="Only show min c_log per n",
+                       variable=self.filter_min_clog, bg=C_BG,
+                       font=("sans-serif", 9, "bold"),
+                       command=self._on_filter_changed).pack(side=tk.LEFT)
 
         # --- Layout selector ---
         self._section_label(rp, "Layout")
@@ -386,6 +448,53 @@ class App(tk.Tk):
         self.canvas_lap = FigureCanvasTkAgg(self.fig_lap, master=rp)
         self.canvas_lap.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=8, pady=2)
 
+        # --- Cross-graph scatter plot ---
+        self._section_label(rp, "Cross-Graph Plot (All Pareto Points)")
+
+        cg_ctrl = tk.Frame(rp, bg=C_BG)
+        cg_ctrl.pack(fill=tk.X, padx=8, pady=2)
+
+        tk.Label(cg_ctrl, text="X:", bg=C_BG, font=("sans-serif", 9)).pack(side=tk.LEFT)
+        cg_x_menu = ttk.Combobox(cg_ctrl, textvariable=self.cg_x, values=_PLOT_ATTRS,
+                                  width=8, state="readonly")
+        cg_x_menu.pack(side=tk.LEFT, padx=(2, 8))
+
+        tk.Label(cg_ctrl, text="Y:", bg=C_BG, font=("sans-serif", 9)).pack(side=tk.LEFT)
+        cg_y_menu = ttk.Combobox(cg_ctrl, textvariable=self.cg_y, values=_PLOT_ATTRS,
+                                  width=8, state="readonly")
+        cg_y_menu.pack(side=tk.LEFT, padx=(2, 8))
+
+        tk.Label(cg_ctrl, text="Best:", bg=C_BG, font=("sans-serif", 9)).pack(side=tk.LEFT)
+        tk.Radiobutton(cg_ctrl, text="min", variable=self.cg_agg, value="min",
+                       bg=C_BG, command=self._draw_cross_graph).pack(side=tk.LEFT)
+        tk.Radiobutton(cg_ctrl, text="max", variable=self.cg_agg, value="max",
+                       bg=C_BG, command=self._draw_cross_graph).pack(side=tk.LEFT)
+
+        cg_x_menu.bind("<<ComboboxSelected>>", lambda e: self._draw_cross_graph())
+        cg_y_menu.bind("<<ComboboxSelected>>", lambda e: self._draw_cross_graph())
+
+        self.fig_cg = plt.Figure(figsize=(3.8, 2.4), dpi=100, facecolor=C_BG)
+        self.ax_cg = self.fig_cg.add_subplot(111)
+        self.canvas_cg = FigureCanvasTkAgg(self.fig_cg, master=rp)
+        self.canvas_cg.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=8, pady=2)
+
+        # --- Histogram ---
+        self._section_label(rp, "Histogram (All Pareto Points)")
+
+        hist_ctrl = tk.Frame(rp, bg=C_BG)
+        hist_ctrl.pack(fill=tk.X, padx=8, pady=2)
+
+        tk.Label(hist_ctrl, text="Variable:", bg=C_BG, font=("sans-serif", 9)).pack(side=tk.LEFT)
+        hist_menu = ttk.Combobox(hist_ctrl, textvariable=self.hist_var, values=_PLOT_ATTRS,
+                                  width=10, state="readonly")
+        hist_menu.pack(side=tk.LEFT, padx=(2, 0))
+        hist_menu.bind("<<ComboboxSelected>>", lambda e: self._draw_histogram())
+
+        self.fig_hist = plt.Figure(figsize=(3.8, 2.4), dpi=100, facecolor=C_BG)
+        self.ax_hist = self.fig_hist.add_subplot(111)
+        self.canvas_hist = FigureCanvasTkAgg(self.fig_hist, master=rp)
+        self.canvas_hist.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=8, pady=2)
+
         # Keyboard shortcuts
         self.bind("<Left>", lambda e: self._prev_pt())
         self.bind("<Right>", lambda e: self._next_pt())
@@ -401,11 +510,25 @@ class App(tk.Tk):
         tk.Label(f, text=text, bg="#E0E0E0", font=("sans-serif", 10, "bold"),
                  anchor="w").pack(fill=tk.X, padx=4, pady=2)
 
+    # ---- Filter ----
+
+    def _on_filter_changed(self):
+        """Recompute view and reload, preserving current n if possible."""
+        cur_n = self._view_n_values[self.n_idx] if self._view_n_values else None
+        self._recompute_view()
+        # Try to stay on the same n
+        if cur_n is not None and cur_n in self._view_data:
+            self.n_idx = self._view_n_values.index(cur_n)
+        else:
+            self.n_idx = 0
+        self.pt_idx = 0
+        self._load_current_graph()
+
     # ---- Navigation ----
 
     def _current_point(self):
-        n = self.n_values[self.n_idx]
-        pts = self.data[n]
+        n = self._view_n_values[self.n_idx]
+        pts = self._view_data[n]
         return pts[self.pt_idx]
 
     def _prev_n(self):
@@ -415,7 +538,7 @@ class App(tk.Tk):
             self._load_current_graph()
 
     def _next_n(self):
-        if self.n_idx < len(self.n_values) - 1:
+        if self.n_idx < len(self._view_n_values) - 1:
             self.n_idx += 1
             self.pt_idx = 0
             self._load_current_graph()
@@ -426,8 +549,8 @@ class App(tk.Tk):
             self._load_current_graph()
 
     def _next_pt(self):
-        n = self.n_values[self.n_idx]
-        if self.pt_idx < len(self.data[n]) - 1:
+        n = self._view_n_values[self.n_idx]
+        if self.pt_idx < len(self._view_data[n]) - 1:
             self.pt_idx += 1
             self._load_current_graph()
 
@@ -436,8 +559,8 @@ class App(tk.Tk):
     def _load_current_graph(self):
         """Load graph, compute layout, metrics, redraw everything."""
         pt = self._current_point()
-        n = self.n_values[self.n_idx]
-        total_pts = len(self.data[n])
+        n = self._view_n_values[self.n_idx]
+        total_pts = len(self._view_data[n])
 
         # Update labels
         self.lbl_n.config(text=str(n))
@@ -471,6 +594,8 @@ class App(tk.Tk):
         self._draw_degree_dist(degrees)
         self._draw_eigenvalues(eig_adj, self.ax_eig, self.canvas_eig, "Adjacency eigenvalues")
         self._draw_eigenvalues(eig_lap, self.ax_lap, self.canvas_lap, "Laplacian eigenvalues")
+        self._draw_cross_graph()
+        self._draw_histogram()
 
         # Draw graph
         self._draw_graph()
@@ -691,6 +816,104 @@ class App(tk.Tk):
         ax.tick_params(labelsize=7)
         self.fig_deg.tight_layout()
         self.canvas_deg.draw_idle()
+
+    def _draw_cross_graph(self):
+        """Draw scatter plot of best y per unique x across all Pareto points."""
+        ax = self.ax_cg
+        ax.clear()
+
+        x_name = self.cg_x.get()
+        y_name = self.cg_y.get()
+        agg = self.cg_agg.get()  # "min" or "max"
+        agg_fn = min if agg == "min" else max
+
+        # Collect (x, y) from all points, skipping None
+        groups = {}  # x_val -> [y_vals]
+        all_xy = []  # (x, y, point) for all valid points
+        for pt in self._view_all_points:
+            xv = _extract_attr(pt, x_name)
+            yv = _extract_attr(pt, y_name)
+            if xv is None or yv is None:
+                continue
+            all_xy.append((xv, yv, pt))
+            groups.setdefault(xv, []).append(yv)
+
+        if not groups:
+            ax.set_title(f"No data for {x_name} vs {y_name}", fontsize=8)
+            self.fig_cg.tight_layout()
+            self.canvas_cg.draw_idle()
+            return
+
+        # All points as small gray dots
+        all_x = [t[0] for t in all_xy]
+        all_y = [t[1] for t in all_xy]
+        ax.scatter(all_x, all_y, s=15, color=C_DIM, edgecolors="#AAA",
+                   linewidths=0.5, zorder=1, label="all points")
+
+        # Best per group
+        best_x = sorted(groups.keys())
+        best_y = [agg_fn(groups[xv]) for xv in best_x]
+        ax.plot(best_x, best_y, "o-", color=C_NODE, markersize=5, linewidth=1.5,
+                zorder=2, label=f"{agg}({y_name})")
+
+        # Highlight current point
+        cur = self._current_point()
+        cx = _extract_attr(cur, x_name)
+        cy = _extract_attr(cur, y_name)
+        if cx is not None and cy is not None:
+            ax.scatter([cx], [cy], s=80, color=C_MIS, edgecolors="#922B21",
+                       linewidths=2, zorder=3, marker="*", label="current")
+
+        ax.set_xlabel(x_name, fontsize=8)
+        ax.set_ylabel(f"{agg}({y_name})", fontsize=8)
+        ax.tick_params(labelsize=7)
+        ax.legend(fontsize=6, loc="best")
+        ax.grid(True, alpha=0.3)
+        self.fig_cg.tight_layout()
+        self.canvas_cg.draw_idle()
+
+    def _draw_histogram(self):
+        """Draw histogram of a chosen variable across all Pareto points."""
+        ax = self.ax_hist
+        ax.clear()
+
+        var_name = self.hist_var.get()
+        values = []
+        for pt in self._view_all_points:
+            v = _extract_attr(pt, var_name)
+            if v is not None:
+                values.append(v)
+
+        if not values:
+            ax.set_title(f"No data for {var_name}", fontsize=8)
+            self.fig_hist.tight_layout()
+            self.canvas_hist.draw_idle()
+            return
+
+        # Choose bins: for integer-valued attrs use integer bins, else auto
+        unique = sorted(set(values))
+        if all(v == int(v) for v in values) and len(unique) <= 30:
+            lo = int(min(values))
+            hi = int(max(values))
+            bins = range(lo, hi + 2)  # +2 so last value gets its own bin
+        else:
+            bins = min(20, max(5, len(values) // 3))
+
+        ax.hist(values, bins=bins, color=C_NODE, edgecolor="#333", linewidth=0.5,
+                alpha=0.85)
+
+        # Mark current point's value
+        cur = self._current_point()
+        cv = _extract_attr(cur, var_name)
+        if cv is not None:
+            ax.axvline(cv, color=C_MIS, linewidth=2, linestyle="--", label=f"current={cv}")
+            ax.legend(fontsize=6, loc="best")
+
+        ax.set_xlabel(var_name, fontsize=8)
+        ax.set_ylabel("Count", fontsize=8)
+        ax.tick_params(labelsize=7)
+        self.fig_hist.tight_layout()
+        self.canvas_hist.draw_idle()
 
     def _draw_eigenvalues(self, eigenvalues, ax, canvas, title):
         ax.clear()

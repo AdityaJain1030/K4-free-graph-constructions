@@ -59,6 +59,16 @@ python -m k4free_ilp.run_production --timeout 900  # per-query time limit in sec
 python -m k4free_ilp.run_production --parallel 2   # run 2 n values concurrently
 python -m k4free_ilp.run_production -v             # verbose (show timeouts/infeasible)
 python -m k4free_ilp.run_production -vv            # extra verbose (log every query)
+
+# Targeted search (useful for investigating specific α values)
+python -m k4free_ilp.run_production --force-alpha 4 26 --timeout 1800
+python -m k4free_ilp.run_production --no-break-on-timeout 26 27 28  # don't stop on timeout
+
+# Solver tuning
+python -m k4free_ilp.run_production --solver-strategy lazy 26       # force lazy solver
+python -m k4free_ilp.run_production --lazy-threshold 100000         # lower lazy/direct cutoff
+python -m k4free_ilp.run_production --lazy-max-cuts 5               # multi-cut for faster convergence
+python -m k4free_ilp.run_production --lazy-max-iters 500            # more lazy iterations
 ```
 
 Outputs `k4free_ilp/results/pareto_n{N}.json`, `summary.json`, and `low_c_graphs.g6`.
