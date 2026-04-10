@@ -1,6 +1,6 @@
 {
   "n": 26,
-  "time_limit": 600,
+  "time_limit": 1800,
   "pareto_frontier": [
     {
       "alpha": 5,
@@ -493,7 +493,7 @@
         ]
       ],
       "g6": "YdLkWP_Ha@y@OqP\\CdgeLiQg@tL_CKPLSHcT_koOCpd]CBECy`bxg`_?",
-      "solve_time": 43.823,
+      "solve_time": 39.586,
       "method": "direct_enumeration",
       "iterations": 0
     },
@@ -700,7 +700,7 @@
         ]
       ],
       "g6": "Y`GGOO??i??@???Rc?OC??AC?_P?O_??W@AB??_wCAS???R??AR??As?",
-      "solve_time": 104.006,
+      "solve_time": 111.227,
       "method": "lazy",
       "iterations": 50
     },
@@ -823,7 +823,7 @@
         ]
       ],
       "g6": "Y_?G????@??A?G?OC??AA??G???C@???G??@???W??@_??`??@F??@X?",
-      "solve_time": 82.981,
+      "solve_time": 65.442,
       "method": "lazy",
       "iterations": 66
     },
@@ -906,19 +906,19 @@
     {
       "alpha": 12,
       "d_max": 5,
-      "time": 108.911
+      "time": 90.398
     },
     {
       "alpha": 10,
       "d_max": 9,
-      "time": 62.372
+      "time": 70.78
     },
     {
       "alpha": 9,
       "d_max": 11,
-      "time": 53.203
+      "time": 67.325
     }
   ],
-  "total_time": 1544.657,
-  "wall_time": 2190.563
+  "total_time": 1463.382,
+  "wall_time": 2118.865
 }
