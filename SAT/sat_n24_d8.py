@@ -118,7 +118,7 @@ def on_timeout():
 timer = threading.Timer(TIMEOUT, on_timeout)
 t0 = time.time()
 timer.start()
-result = solver.solve_limited(expect=0)
+result = solver.solve_limited()
 timer.cancel()
 elapsed = time.time() - t0
 
