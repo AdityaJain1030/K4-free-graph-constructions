@@ -8,6 +8,12 @@ Usage:
     python -m k4free_ilp.run_production --timeout 900  # override per-query time limit (seconds)
     python -m k4free_ilp.run_production -v             # verbose logging (show timeouts vs infeasible)
     python -m k4free_ilp.run_production -vv            # extra verbose (log every binary search step)
+    python -m k4free_ilp.run_production --no-break-on-timeout  # keep searching α after timeouts
+    python -m k4free_ilp.run_production --force-alpha 4 26     # only search α=4 for n=26
+    python -m k4free_ilp.run_production --solver-strategy lazy # force lazy solver
+    python -m k4free_ilp.run_production --lazy-threshold 100000  # lower lazy/direct cutoff
+    python -m k4free_ilp.run_production --lazy-max-iters 500   # more lazy iterations
+    python -m k4free_ilp.run_production --lazy-max-cuts 5      # multi-cut lazy mode
 """
 
 import argparse
@@ -29,6 +35,12 @@ RESULTS_DIR = "k4free_ilp/results"
 # Configurable globally so child processes inherit it
 _SOLVER_WORKERS = 8
 _VERBOSITY = 0  # 0=default, 1=verbose, 2=extra verbose
+_BREAK_ON_TIMEOUT = True  # If False, continue α-loop past timeouts
+_MAX_CONSECUTIVE_TIMEOUTS = 3  # Stop after this many consecutive timeout α values
+_SOLVER_STRATEGY = "auto"  # "auto", "direct", or "lazy"
+_LAZY_MAX_ITERS = 200
+_LAZY_MAX_CUTS = 1  # Number of violated independent sets per lazy iteration
+_FORCE_ALPHA = None  # If set, only search this specific α value
 
 
 # --- Search space pruning ---
@@ -82,8 +94,14 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
         elif _VERBOSITY >= 1 and status != "FEASIBLE":
             print(f"    [{label}] α≤{k}, D≤{d}: {status} ({solve_time:.1f}s)", flush=True)
 
+    def _call_solver(n, k, d, tl):
+        return solve_k4free(n, k, d, tl,
+                            strategy=_SOLVER_STRATEGY,
+                            lazy_max_iters=_LAZY_MAX_ITERS,
+                            lazy_max_cuts=_LAZY_MAX_CUTS)
+
     # First check feasibility at hi
-    status, adj, stats = solve_k4free(n, k, hi, time_limit)
+    status, adj, stats = _call_solver(n, k, hi, time_limit)
     total_time += stats["solve_time"]
     _log_query("ceiling", k, hi, status, stats["solve_time"], stats)
 
@@ -99,7 +117,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
 
     while lo < hi:
         mid = (lo + hi) // 2
-        status, adj, stats = solve_k4free(n, k, mid, time_limit)
+        status, adj, stats = _call_solver(n, k, mid, time_limit)
         total_time += stats["solve_time"]
         _log_query("bsearch", k, mid, status, stats["solve_time"], stats)
 
@@ -115,7 +133,7 @@ def _binary_search_min_d(n, k, lo, hi, time_limit):
             lo = mid + 1
 
     if lo == hi and lo < best_D:
-        status, adj, stats = solve_k4free(n, k, lo, time_limit)
+        status, adj, stats = _call_solver(n, k, lo, time_limit)
         total_time += stats["solve_time"]
         _log_query("bsearch", k, lo, status, stats["solve_time"], stats)
         if status == "FEASIBLE":
@@ -153,11 +171,21 @@ def scan_pareto_frontier_production(n: int, time_limit: int) -> dict:
     # Upper α limit: no point going above matching_alpha for d_max > 1
     max_k = min(n - 1, matching_alpha + 1)
 
-    for k in range(max_k, min_k - 1, -1):
-        if k >= matching_alpha:
+    # If --force-alpha is set, only search that single α value
+    if _FORCE_ALPHA is not None:
+        alpha_range = [_FORCE_ALPHA]
+        prev_min_D = 1  # no monotonicity info, search full range
+    else:
+        alpha_range = list(range(max_k, min_k - 1, -1))
+
+    consecutive_failures = 0
+
+    for k in alpha_range:
+        if _FORCE_ALPHA is None and k >= matching_alpha:
             # Matching always works: α=ceil(n/2), D=1
             # No solver call needed, handled by trivial points
             prev_min_D = 1
+            consecutive_failures = 0
             continue
 
         # Binary search bounds:
@@ -181,6 +209,7 @@ def scan_pareto_frontier_production(n: int, time_limit: int) -> dict:
             iterations = best_stats.get("iterations", 0)
             achievable.append((k, best_D, best_adj, qt, method, iterations))
             prev_min_D = best_D  # tighten lower bound for next (smaller) α
+            consecutive_failures = 0
             n_to = len(tos)
             to_str = f", timeouts={n_to}" if _VERBOSITY >= 1 and n_to > 0 else ""
             print(f"  n={n}, α≤{k}: min_D={best_D}, time={qt:.1f}s, method={method}{to_str}",
@@ -190,10 +219,22 @@ def scan_pareto_frontier_production(n: int, time_limit: int) -> dict:
             has_timeouts = len(tos) > 0
             if has_timeouts:
                 reason = "TIMEOUT"
+                consecutive_failures += 1
             else:
                 reason = "INFEASIBLE"
-            print(f"  n={n}, α≤{k}: {reason}, stopping α search (time={qt:.1f}s)", flush=True)
-            break
+                consecutive_failures += 1
+
+            if _BREAK_ON_TIMEOUT:
+                print(f"  n={n}, α≤{k}: {reason}, stopping α search (time={qt:.1f}s)", flush=True)
+                break
+            else:
+                print(f"  n={n}, α≤{k}: {reason}, continuing ({consecutive_failures}/"
+                      f"{_MAX_CONSECUTIVE_TIMEOUTS} consecutive failures, time={qt:.1f}s)",
+                      flush=True)
+                if consecutive_failures >= _MAX_CONSECUTIVE_TIMEOUTS:
+                    print(f"  n={n}: hit {_MAX_CONSECUTIVE_TIMEOUTS} consecutive failures, "
+                          f"stopping α search", flush=True)
+                    break
 
     # Add trivial points
     empty_adj = np.zeros((n, n), dtype=np.uint8)
@@ -304,7 +345,10 @@ def print_search_plan(n_values):
 
 
 def run_production(n_values, dry_run=False, parallel=1, workers=8,
-                   timeout=None, verbosity=0):
+                   timeout=None, verbosity=0, break_on_timeout=True,
+                   max_consecutive_timeouts=3, solver_strategy="auto",
+                   lazy_threshold=None, lazy_max_iters=200, lazy_max_cuts=1,
+                   force_alpha=None):
     """Main production sweep.
 
     Args:
@@ -314,16 +358,39 @@ def run_production(n_values, dry_run=False, parallel=1, workers=8,
         workers: number of CP-SAT solver workers per query
         timeout: override per-query time limit (seconds), None = use defaults
         verbosity: 0=default, 1=verbose, 2=extra verbose
+        break_on_timeout: if True (default), stop α search on first timeout
+        max_consecutive_timeouts: stop after this many consecutive failures (when not breaking)
+        solver_strategy: "auto", "direct", or "lazy"
+        lazy_threshold: override C(n,k) threshold for lazy vs direct
+        lazy_max_iters: max lazy solver iterations
+        lazy_max_cuts: violated independent sets per lazy iteration
+        force_alpha: if set, only search this specific α value
     """
-    global _VERBOSITY, _TIMEOUT_OVERRIDE
+    global _VERBOSITY, _TIMEOUT_OVERRIDE, _BREAK_ON_TIMEOUT
+    global _MAX_CONSECUTIVE_TIMEOUTS, _SOLVER_STRATEGY
+    global _LAZY_MAX_ITERS, _LAZY_MAX_CUTS, _FORCE_ALPHA
     _VERBOSITY = verbosity
     _TIMEOUT_OVERRIDE = timeout
+    _BREAK_ON_TIMEOUT = break_on_timeout
+    _MAX_CONSECUTIVE_TIMEOUTS = max_consecutive_timeouts
+    _SOLVER_STRATEGY = solver_strategy
+    _LAZY_MAX_ITERS = lazy_max_iters
+    _LAZY_MAX_CUTS = lazy_max_cuts
+    _FORCE_ALPHA = force_alpha
+
     if dry_run:
+        if force_alpha is not None:
+            print(f"Force α={force_alpha}, strategy={solver_strategy}")
         print_search_plan(n_values)
         return
 
     # Set solver workers globally
     import k4free_ilp.ilp_solver as solver_mod
+
+    # Apply lazy threshold override
+    if lazy_threshold is not None:
+        solver_mod._LAZY_THRESHOLD = lazy_threshold
+
     # Patch _solve_and_extract to use configured workers
     _orig_solve = solver_mod._solve_and_extract
     def _patched_solve(model, x, n, time_limit):
@@ -555,12 +622,38 @@ def main():
                         help="Override per-query time limit in seconds (default: 300 for n≤20, 600 for n>20)")
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="Increase verbosity (-v: show timeouts/infeasible, -vv: log every query)")
+
+    # Search behavior
+    parser.add_argument("--no-break-on-timeout", action="store_true",
+                        help="Continue α search past timeouts instead of stopping")
+    parser.add_argument("--max-consecutive-timeouts", type=int, default=3,
+                        help="Stop α search after N consecutive failures (with --no-break-on-timeout, default: 3)")
+    parser.add_argument("--force-alpha", type=int, default=None,
+                        help="Only search this specific α value (skip full sweep)")
+
+    # Solver strategy
+    parser.add_argument("--solver-strategy", choices=["auto", "direct", "lazy"], default="auto",
+                        help="Force solver strategy: auto (default), direct, or lazy")
+    parser.add_argument("--lazy-threshold", type=int, default=None,
+                        help="Override C(n,k) threshold for lazy vs direct (default: 5000000)")
+    parser.add_argument("--lazy-max-iters", type=int, default=200,
+                        help="Max iterations for lazy solver (default: 200)")
+    parser.add_argument("--lazy-max-cuts", type=int, default=1,
+                        help="Violated independent sets per lazy iteration (default: 1, try 5 for faster convergence)")
+
     args = parser.parse_args()
 
     n_values = args.n_values if args.n_values else list(range(11, 36))
     run_production(n_values, dry_run=args.dry_run,
                    parallel=args.parallel, workers=args.workers,
-                   timeout=args.timeout, verbosity=args.verbose)
+                   timeout=args.timeout, verbosity=args.verbose,
+                   break_on_timeout=not args.no_break_on_timeout,
+                   max_consecutive_timeouts=args.max_consecutive_timeouts,
+                   solver_strategy=args.solver_strategy,
+                   lazy_threshold=args.lazy_threshold,
+                   lazy_max_iters=args.lazy_max_iters,
+                   lazy_max_cuts=args.lazy_max_cuts,
+                   force_alpha=args.force_alpha)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,9 @@ from ortools.sat.python import cp_model
 from k4free_ilp.k4_check import is_k4_free
 from k4free_ilp.alpha_exact import alpha_exact
 
+# Configurable threshold: C(n, alpha+1) above this triggers lazy solver
+_LAZY_THRESHOLD = 5_000_000
+
 # Known Ramsey numbers R(s,t) used to derive implied degree bounds.
 # R(s,t) = min N such that every 2-coloring of K_N has red K_s or blue K_t.
 KNOWN_RAMSEY = {
@@ -251,12 +254,15 @@ def solve_k4free_direct(n: int, max_alpha: int, max_degree: int,
 
 
 def solve_k4free_lazy(n: int, max_alpha: int, max_degree: int,
-                      time_limit: int = 600, max_iterations: int = 200
+                      time_limit: int = 600, max_iterations: int = 200,
+                      max_cuts_per_iter: int = 1,
                       ) -> tuple[str, np.ndarray | None, dict]:
     """
     Same interface as solve_k4free, but uses lazy cutting planes for α.
 
     Iteratively solves, checks α, and adds violated independent set constraints.
+    When max_cuts_per_iter > 1, finds multiple violated independent sets per
+    iteration to converge faster.
     """
     eff_min, eff_max = _effective_degree_bounds(n, max_alpha, max_degree)
 
@@ -334,13 +340,36 @@ def solve_k4free_lazy(n: int, max_alpha: int, max_degree: int,
             }
             return "FEASIBLE", adj, stats
 
-        # Add cutting plane: the independent set must contain at least one edge
-        cut_edges = []
-        for ii in range(len(indep_set)):
-            for jj in range(ii + 1, len(indep_set)):
-                u, v = indep_set[ii], indep_set[jj]
-                cut_edges.append((min(u, v), max(u, v)))
-        cuts.append(cut_edges)
+        # Add cutting planes: find violated independent sets and forbid them
+        def _add_cut_from_indep(indep):
+            cut_edges = []
+            for ii in range(len(indep)):
+                for jj in range(ii + 1, len(indep)):
+                    u, v = indep[ii], indep[jj]
+                    cut_edges.append((min(u, v), max(u, v)))
+            cuts.append(cut_edges)
+
+        _add_cut_from_indep(indep_set)
+
+        # Try to find additional violated independent sets on the same graph
+        if max_cuts_per_iter > 1:
+            remaining_adj = adj.copy()
+            used_vertices = set(indep_set)
+            for _ in range(max_cuts_per_iter - 1):
+                # Mask out vertices from previous independent sets
+                sub_adj = remaining_adj.copy()
+                for v in used_vertices:
+                    sub_adj[v, :] = 0
+                    sub_adj[:, v] = 0
+                remaining_n = int((sub_adj.sum(axis=1) > 0).sum()) + \
+                              (sub_adj.shape[0] - len(used_vertices))
+                if remaining_n <= max_alpha:
+                    break
+                sub_alpha, sub_indep = alpha_exact(sub_adj)
+                if sub_alpha <= max_alpha:
+                    break
+                _add_cut_from_indep(sub_indep)
+                used_vertices.update(sub_indep)
 
     # Max iterations reached
     stats = {
@@ -354,16 +383,34 @@ def solve_k4free_lazy(n: int, max_alpha: int, max_degree: int,
 
 
 def solve_k4free(n: int, max_alpha: int, max_degree: int,
-                 time_limit: int = 300) -> tuple[str, np.ndarray | None, dict]:
+                 time_limit: int = 300,
+                 strategy: str = "auto",
+                 lazy_max_iters: int = 200,
+                 lazy_max_cuts: int = 1,
+                 ) -> tuple[str, np.ndarray | None, dict]:
     """
-    Auto-selecting solver: uses direct enumeration if C(n, max_alpha+1) <= 5M,
+    Auto-selecting solver: uses direct enumeration if C(n, max_alpha+1) <= threshold,
     otherwise uses lazy cutting planes. Applies Ramsey-derived degree bounds.
+
+    Args:
+        strategy: "auto" (default), "direct", or "lazy"
+        lazy_max_iters: max iterations for lazy solver
+        lazy_max_cuts: max violated independent sets to add per lazy iteration
     """
     k = max_alpha + 1
     num_subsets = comb(n, k) if k <= n else 0
 
-    if num_subsets <= 5_000_000:
+    if strategy == "direct":
+        use_direct = True
+    elif strategy == "lazy":
+        use_direct = False
+    else:
+        use_direct = num_subsets <= _LAZY_THRESHOLD
+
+    if use_direct:
         return solve_k4free_direct(n, max_alpha, max_degree, time_limit)
     else:
-        print(f"  Using lazy solver: C({n},{k}) = {num_subsets} > 5M", flush=True)
-        return solve_k4free_lazy(n, max_alpha, max_degree, time_limit)
+        print(f"  Using lazy solver: C({n},{k}) = {num_subsets} > {_LAZY_THRESHOLD}", flush=True)
+        return solve_k4free_lazy(n, max_alpha, max_degree, time_limit,
+                                  max_iterations=lazy_max_iters,
+                                  max_cuts_per_iter=lazy_max_cuts)
