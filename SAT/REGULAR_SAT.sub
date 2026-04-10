@@ -1,0 +1,21 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — Regular SAT Minimum Edge Solver
+# ----------------------------------------------------------------------
+universe = vanilla
+executable = regular_sat/run_cluster.sh
+initialdir = /home/adityaj8/k4free/SAT
+getenv = True
+
+output = logs/regular_sat_$(Cluster)_$(Process).out
+error  = logs/regular_sat_$(Cluster)_$(Process).err
+log    = logs/regular_sat_$(Cluster)_$(Process).log
+
+# ----------------------------------------------------------------------
+# Resource Requests
+# ----------------------------------------------------------------------
+request_cpus   = 16
+request_memory = 120GB
+request_disk   = 5GB
+
+Requirements = (Machine == "vision-c23.cs.illinois.edu")
+queue

@@ -1,0 +1,26 @@
+Analysis of minimum-edge K4-free near-regular graphs
+=======================================================
+
+Data points: 19 solved instances, N in [9, 27]
+
+c_log trend:
+  Range: [0.6789, 0.9618]
+  Mean:  0.7622
+  Linear fit: c_log = -0.00450 * N + 0.8432 (r=-0.4024)
+
+beta trend:
+  Range: [-4.3113, 1.0627]
+  Mean:  0.4330
+  Linear fit: beta = 0.11313 * N + -1.6034 (r=0.5430)
+
+Assessment:
+  beta is increasing with N (slope=0.1131).
+  beta is approaching 1 from below for larger N.
+  This is consistent with d_avg ~ (N/alpha) * ln(N/alpha),
+  i.e. the Ramsey-theoretic lower bound is tight.
+  If beta -> 1, then c_log -> constant, suggesting the
+  conjecture (c bounded away from 0) may be TRUE.
+
+CAVEAT: many results are FEASIBLE (not OPTIMAL) due to solver timeouts
+on lower D values. True optima may have fewer edges and different beta.
+Cluster runs with longer time limits will provide more definitive data.
