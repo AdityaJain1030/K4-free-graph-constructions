@@ -1,0 +1,16 @@
+python train.py \
+  --env_name ramsey_4_t \
+  --exp_name datagen_n35 \
+  --exp_id 2026_04_04_15_27_38 \
+  --N 35 \
+  --alpha_mode approx \
+  --approx_restarts 200 \
+  --encoding_tokens single_integer \
+  --gensize 0 \
+  --pop_size 5000000 \
+  --num_samples_from_model 2000000 \
+  --ntest 10000 \
+  --temperature 0.6 \
+  --inc_temp 0.1 \
+  --process_pool true \
+  --dump_path "checkpoints/"
