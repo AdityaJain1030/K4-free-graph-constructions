@@ -54,6 +54,6 @@ Requirements = (Machine == "vision-c23.cs.illinois.edu") \
 
 # Prevent the job from being evicted mid-sweep.
 # Remove or reduce if the cluster policy disallows long jobs.
-+MaxJobRetirementTime = 604800    # 7 days in seconds
+# +MaxJobRetirementTime = 604800    # 7 days in seconds
 
 queue
