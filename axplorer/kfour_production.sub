@@ -21,7 +21,7 @@ executable = run_kfour_production.sh
 
 # Axplorer repo root on the remote server.
 # EDIT THIS before submitting.
-initialdir = /home/adityaj8/axplorer
+initialdir = /home/adityaj8/k4free/axplorer
 
 getenv = True
 
