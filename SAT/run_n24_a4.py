@@ -9,7 +9,7 @@ from k4free_ilp.alpha_exact import alpha_exact
 import os
 import numpy as np
 
-n, alpha, w = 24, 4, os.cpu_count()
+n, alpha, w = 24, 4, 8
 print(f"Workers: {w}")
 
 for D in [7, 8, 9]:

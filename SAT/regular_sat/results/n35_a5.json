@@ -1,8 +1,8 @@
 {
-  "n": 33,
+  "n": 35,
   "max_alpha": 5,
   "status": "INFEASIBLE",
-  "solve_time": 7213.982,
+  "solve_time": 7223.331,
   "method": "cpsat_direct",
   "iterations": 0,
   "num_edges": null,
