@@ -39,7 +39,7 @@ log    = logs/job_$(Cluster)_$(Process).log
 # ----------------------------------------------------------------------
 request_cpus   = 16
 request_memory = 150GB
-request_disk   = 100GB    # model checkpoints × 38 runs + logs; ~200 MB/run worst case
+# request_disk   = 100GB    # model checkpoints × 38 runs + logs; ~200 MB/run worst case
 request_gpus   = 1
 
 # ----------------------------------------------------------------------
