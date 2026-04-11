@@ -189,13 +189,25 @@ def solve_min_edges(n: int, max_alpha: int, time_limit: int = 600,
     d_lo, d_hi = _degree_bounds(n, max_alpha)
     k = max_alpha + 1
     direct = (k > n) or (comb(n, k) <= _LAZY_THRESHOLD)
+    method_name = "cpsat_direct" if direct else "cpsat_lazy"
 
     print(f"solve_min_edges(n={n}, α≤{max_alpha}): D∈[{d_lo},{d_hi}], "
           f"{'direct' if direct else 'lazy'}, workers={num_workers}", flush=True)
 
+    # Per-D log file
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, f"n{n}_a{max_alpha}_Dlog.csv")
+    write_header = not os.path.exists(log_path)
+    log_file = open(log_path, "a")
+    if write_header:
+        log_file.write("n,max_alpha,D,status,budget_s,elapsed_s,iterations,edges,method\n")
+        log_file.flush()
+
     if d_lo > d_hi:
         elapsed = time.time() - t0
         print(f"  INFEASIBLE by Ramsey bounds", flush=True)
+        log_file.close()
         return _result("INFEASIBLE", None, n, max_alpha, None, elapsed, "ramsey", 0)
 
     all_infeasible = True  # track whether all lower D values were proved infeasible
@@ -205,14 +217,17 @@ def solve_min_edges(n: int, max_alpha: int, time_limit: int = 600,
         if remaining <= 1:
             elapsed = time.time() - t0
             print(f"  D={D}: out of time", flush=True)
-            return _result("TIMEOUT", None, n, max_alpha, D, elapsed,
-                           "cpsat_direct" if direct else "cpsat_lazy", 0)
+            log_file.write(f"{n},{max_alpha},{D},OUT_OF_TIME,0,{elapsed:.1f},0,,{method_name}\n")
+            log_file.flush()
+            log_file.close()
+            return _result("TIMEOUT", None, n, max_alpha, D, elapsed, method_name, 0)
 
         # Budget: split remaining time among remaining D values
         D_left = d_hi + 1 - D
         budget = remaining / D_left
         print(f"  D={D} (budget {budget:.0f}s)...", end=" ", flush=True)
 
+        d_t0 = time.time()
         if direct:
             status, adj = _solve_for_D_direct(n, max_alpha, D, budget, num_workers)
             iterations = 0
@@ -220,16 +235,18 @@ def solve_min_edges(n: int, max_alpha: int, time_limit: int = 600,
             status, adj, iterations = _solve_for_D_lazy(
                 n, max_alpha, D, budget, num_workers)
 
+        d_elapsed = time.time() - d_t0
         elapsed = time.time() - t0
 
         if status == "FEASIBLE" and adj is not None:
             ne = int(adj.sum()) // 2
             print(f"FEASIBLE, edges={ne} ({elapsed:.1f}s total)", flush=True)
-            method = "cpsat_direct" if direct else "cpsat_lazy"
-            # OPTIMAL only if all lower D values were proved infeasible
             result_status = "OPTIMAL" if all_infeasible else "FEASIBLE"
+            log_file.write(f"{n},{max_alpha},{D},{result_status},{budget:.1f},{d_elapsed:.1f},{iterations},{ne},{method_name}\n")
+            log_file.flush()
+            log_file.close()
             return _result(result_status, adj, n, max_alpha, D, elapsed,
-                           method, iterations)
+                           method_name, iterations)
 
         if status == "TIMEOUT":
             all_infeasible = False
@@ -237,11 +254,16 @@ def solve_min_edges(n: int, max_alpha: int, time_limit: int = 600,
         else:
             print(f"INFEASIBLE ({elapsed:.1f}s total)", flush=True)
 
+        log_file.write(f"{n},{max_alpha},{D},{status},{budget:.1f},{d_elapsed:.1f},{iterations},,{method_name}\n")
+        log_file.flush()
+
     # All D values exhausted
     elapsed = time.time() - t0
-    print(f"  All D values infeasible/timed out", flush=True)
-    return _result("INFEASIBLE", None, n, max_alpha, None, elapsed,
-                   "cpsat_direct" if direct else "cpsat_lazy", 0)
+    final_status = "INFEASIBLE" if all_infeasible else "UNKNOWN"
+    print(f"  All D values exhausted: {final_status}", flush=True)
+    log_file.close()
+    return _result(final_status, None, n, max_alpha, None, elapsed,
+                   method_name, 0)
 
 
 if __name__ == "__main__":
