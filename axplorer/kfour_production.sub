@@ -49,8 +49,7 @@ request_gpus   = 1
 # EDIT the Machine name to match the actual hostname.
 # CUDAGlobalMemoryMb >= 45000 guards against accidentally landing on a
 # smaller GPU if the machine constraint is relaxed later.
-Requirements = (Machine == "vision-c23.cs.illinois.edu") \
-            && (CUDAGlobalMemoryMb >= 45000)
+Requirements = (Machine == "vision-c23.cs.illinois.edu")
 
 # Prevent the job from being evicted mid-sweep.
 # Remove or reduce if the cluster policy disallows long jobs.
