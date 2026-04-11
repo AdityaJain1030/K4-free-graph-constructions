@@ -6,10 +6,9 @@
 # only one HTCondor job is queued.
 #
 # Before submitting:
-#   1. Set initialdir to the axplorer repo root on the server
-#   2. Set the Machine name in Requirements
-#   3. Run:  mkdir -p <initialdir>/results/kfour/logs
-#   4. Ensure micromamba + env_axplorer are set up on the target machine
+#   1. Run:  chmod +x /home/adityaj8/k4free/axplorer/run_kfour_production.sh
+#   2. Run:  mkdir -p /home/adityaj8/k4free/axplorer/logs
+#   3. Ensure micromamba + env_axplorer are set up on the target machine
 #
 # Submit with:
 #   condor_submit kfour_production.sub
@@ -17,11 +16,7 @@
 
 universe = vanilla
 
-executable = run_kfour_condor_wrapper.sh
-
-# Axplorer repo root on the remote server.
-# EDIT THIS before submitting.
-initialdir = /home/adityaj8/k4free/axplorer
+executable = run_kfour_production.sh
 
 getenv = True
 
