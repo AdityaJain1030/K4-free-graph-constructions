@@ -17,7 +17,7 @@
 
 universe = vanilla
 
-executable = run_kfour_production.sh
+executable = run_kfour_condor_wrapper.sh
 
 # Axplorer repo root on the remote server.
 # EDIT THIS before submitting.
