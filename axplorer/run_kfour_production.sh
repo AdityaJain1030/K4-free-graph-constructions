@@ -35,6 +35,7 @@
 # continue.  -u catches typos in variable names; -o pipefail catches pipe errors.
 set -uo pipefail
 
+cd /home/adityaj8/k4free
 # ─── Paths ─────────────────────────────────────────────────────────────────────
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RESULTS_ROOT="${REPO}/results/kfour"
