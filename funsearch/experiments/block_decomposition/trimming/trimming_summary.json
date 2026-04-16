@@ -1,0 +1,91 @@
+{
+  "wall_time_s": 12.4,
+  "compositions_selected": 50,
+  "compositions_verified": 50,
+  "compositions_trimmed": 50,
+  "trimmed_blocks_with_drops": 0,
+  "comparison": [
+    {
+      "n": 10,
+      "c_original": 0.8656,
+      "c_trimmed": 0.8656,
+      "c_sat_optimal": null,
+      "alpha_sat_optimal": null,
+      "d_max_sat_optimal": null
+    },
+    {
+      "n": 13,
+      "c_original": 0.8878,
+      "c_trimmed": 0.8878,
+      "c_sat_optimal": 0.7728,
+      "alpha_sat_optimal": 3,
+      "d_max_sat_optimal": 6,
+      "gap_to_optimal": 0.115,
+      "improvement_pct": 0.0
+    },
+    {
+      "n": 16,
+      "c_original": 0.9017,
+      "c_trimmed": 0.9017,
+      "c_sat_optimal": 0.7213,
+      "alpha_sat_optimal": 3,
+      "d_max_sat_optimal": 8,
+      "gap_to_optimal": 0.1804,
+      "improvement_pct": 0.0
+    },
+    {
+      "n": 21,
+      "c_original": 0.8876,
+      "c_trimmed": 0.8244,
+      "c_sat_optimal": 0.7328,
+      "alpha_sat_optimal": 4,
+      "d_max_sat_optimal": 8,
+      "gap_to_optimal": 0.0916,
+      "improvement_pct": 7.1
+    }
+  ],
+  "enrichment": null,
+  "decomposition": {
+    "n16_alpha4_d4": {
+      "g6": "OAD?\\?_T`@ODgQB_OKaoA",
+      "isomorphic_to_trimmed": false,
+      "decompositions_found": 0,
+      "decompositions": []
+    },
+    "n16_entry_0": {
+      "alpha": 3,
+      "d_max": 8,
+      "c": 0.7213,
+      "decomposes": false,
+      "num_decompositions": 0
+    },
+    "n16_entry_1": {
+      "alpha": 4,
+      "d_max": 4,
+      "c": 0.7213,
+      "decomposes": false,
+      "num_decompositions": 0
+    },
+    "n16_entry_2": {
+      "alpha": 6,
+      "d_max": 2,
+      "c": 1.082,
+      "decomposes": true,
+      "num_decompositions": 5
+    },
+    "n16_entry_3": {
+      "alpha": 8,
+      "d_max": 1,
+      "c": null,
+      "decomposes": true,
+      "num_decompositions": 5
+    },
+    "n16_entry_4": {
+      "alpha": 16,
+      "d_max": 0,
+      "c": null,
+      "decomposes": false,
+      "num_decompositions": 0
+    }
+  }
+}

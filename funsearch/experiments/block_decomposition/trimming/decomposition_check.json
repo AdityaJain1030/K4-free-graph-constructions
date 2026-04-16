@@ -1,0 +1,43 @@
+{
+  "n16_alpha4_d4": {
+    "g6": "OAD?\\?_T`@ODgQB_OKaoA",
+    "isomorphic_to_trimmed": false,
+    "decompositions_found": 0,
+    "decompositions": []
+  },
+  "n16_entry_0": {
+    "alpha": 3,
+    "d_max": 8,
+    "c": 0.7213,
+    "decomposes": false,
+    "num_decompositions": 0
+  },
+  "n16_entry_1": {
+    "alpha": 4,
+    "d_max": 4,
+    "c": 0.7213,
+    "decomposes": false,
+    "num_decompositions": 0
+  },
+  "n16_entry_2": {
+    "alpha": 6,
+    "d_max": 2,
+    "c": 1.082,
+    "decomposes": true,
+    "num_decompositions": 5
+  },
+  "n16_entry_3": {
+    "alpha": 8,
+    "d_max": 1,
+    "c": null,
+    "decomposes": true,
+    "num_decompositions": 5
+  },
+  "n16_entry_4": {
+    "alpha": 16,
+    "d_max": 0,
+    "c": null,
+    "decomposes": false,
+    "num_decompositions": 0
+  }
+}
