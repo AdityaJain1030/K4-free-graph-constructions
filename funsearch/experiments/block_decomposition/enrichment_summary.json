@@ -1,0 +1,245 @@
+[
+  {
+    "round": 1,
+    "candidates_considered": 30,
+    "sat_verified": 30,
+    "alpha_match": 30,
+    "alpha_mismatch": 0,
+    "sat_timeout": 0,
+    "k4_violations": 0,
+    "dropping_sets_found": 4,
+    "no_dropping_sets": 25,
+    "duplicates_skipped": 1,
+    "blocks_added": 4,
+    "new_block_sizes": [
+      13,
+      13,
+      13,
+      13
+    ],
+    "round_summary": {
+      "library_size": 5607,
+      "total_alpha_dropping_sets": 78892,
+      "alpha_critical_count": 0,
+      "total_valid_compositions": 6223947664,
+      "stored_compositions": 10000,
+      "best_c_by_n": {
+        "10": {
+          "best_c": 0.8656,
+          "count": 4,
+          "mean_c": 0.8656
+        },
+        "13": {
+          "best_c": 0.8878,
+          "count": 476,
+          "mean_c": 0.8878
+        },
+        "16": {
+          "best_c": 0.9017,
+          "count": 9296,
+          "mean_c": 0.9017
+        },
+        "21": {
+          "best_c": 0.8876,
+          "count": 224,
+          "mean_c": 0.8876
+        }
+      },
+      "sat_verification": {
+        "total_verified": 50,
+        "alpha_exact_match": 50,
+        "alpha_mismatches": 0,
+        "k4_free_all": true,
+        "mean_sat_time_s": 0.002,
+        "alpha_gap_distribution": {
+          "0": 50
+        }
+      },
+      "good_compositions": {
+        "count_c_lt_1_5": 10000,
+        "top_blocks": [
+          {
+            "block_id": 4539,
+            "count": 1249,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQuQw"
+          },
+          {
+            "block_id": 4963,
+            "count": 1167,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCrJcs"
+          },
+          {
+            "block_id": 4960,
+            "count": 592,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCrJdc"
+          },
+          {
+            "block_id": 5579,
+            "count": 590,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GQjRfG"
+          },
+          {
+            "block_id": 4876,
+            "count": 586,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCrRSs"
+          },
+          {
+            "block_id": 5575,
+            "count": 496,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GQhVeo"
+          },
+          {
+            "block_id": 5513,
+            "count": 474,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GEhuSw"
+          },
+          {
+            "block_id": 4567,
+            "count": 396,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQurW"
+          },
+          {
+            "block_id": 4959,
+            "count": 315,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCrJec"
+          },
+          {
+            "block_id": 5583,
+            "count": 293,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GQjRdK"
+          },
+          {
+            "block_id": 4249,
+            "count": 288,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQVQw"
+          },
+          {
+            "block_id": 4746,
+            "count": 279,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCpVUg"
+          },
+          {
+            "block_id": 4915,
+            "count": 269,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCpvUg"
+          },
+          {
+            "block_id": 15,
+            "count": 242,
+            "n": 5,
+            "alpha": 2,
+            "d_max": 3,
+            "g6": "DTw"
+          },
+          {
+            "block_id": 14,
+            "count": 242,
+            "n": 5,
+            "alpha": 2,
+            "d_max": 4,
+            "g6": "DU{"
+          },
+          {
+            "block_id": 4889,
+            "count": 241,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCrRuW"
+          },
+          {
+            "block_id": 5125,
+            "count": 240,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCZUuW"
+          },
+          {
+            "block_id": 4563,
+            "count": 238,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQvQw"
+          },
+          {
+            "block_id": 4536,
+            "count": 215,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQuRg"
+          },
+          {
+            "block_id": 4538,
+            "count": 210,
+            "n": 8,
+            "alpha": 3,
+            "d_max": 4,
+            "g6": "GCQuRW"
+          }
+        ],
+        "drop_set_size_distribution": {
+          "2": 10088,
+          "1": 7817,
+          "4": 224,
+          "3": 1871
+        }
+      }
+    }
+  },
+  {
+    "round": 2,
+    "candidates_considered": 30,
+    "sat_verified": 30,
+    "alpha_match": 30,
+    "alpha_mismatch": 0,
+    "sat_timeout": 0,
+    "k4_violations": 0,
+    "dropping_sets_found": 0,
+    "no_dropping_sets": 29,
+    "duplicates_skipped": 1,
+    "blocks_added": 0,
+    "new_block_sizes": []
+  }
+]

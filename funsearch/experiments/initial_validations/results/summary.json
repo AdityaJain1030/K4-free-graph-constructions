@@ -1,0 +1,212 @@
+{
+  "total_graphs": 180,
+  "k4_free_count": 180,
+  "k4_violation_count": 0,
+  "sat_success_count": 180,
+  "sat_timeout_count": 0,
+  "correlations": {
+    "caro_wei_vs_alpha_overall": {
+      "rho": 0.5816,
+      "p_value": 0.0,
+      "n_samples": 180
+    },
+    "greedy_mis_vs_alpha_overall": {
+      "rho": 0.9927,
+      "p_value": 0.0,
+      "n_samples": 180
+    },
+    "caro_wei_vs_alpha_N40": {
+      "rho": 0.5026,
+      "p_value": 4.3e-05,
+      "n_samples": 60
+    },
+    "greedy_mis_vs_alpha_N40": {
+      "rho": 0.9884,
+      "p_value": 0.0,
+      "n_samples": 60
+    },
+    "caro_wei_vs_alpha_N60": {
+      "rho": 0.5254,
+      "p_value": 1.6e-05,
+      "n_samples": 60
+    },
+    "greedy_mis_vs_alpha_N60": {
+      "rho": 0.9832,
+      "p_value": 0.0,
+      "n_samples": 60
+    },
+    "caro_wei_vs_alpha_N80": {
+      "rho": 0.5237,
+      "p_value": 1.8e-05,
+      "n_samples": 60
+    },
+    "greedy_mis_vs_alpha_N80": {
+      "rho": 0.9917,
+      "p_value": 0.0,
+      "n_samples": 60
+    }
+  },
+  "c_values_by_method": {
+    "degree": {
+      "N=40": {
+        "count": 10,
+        "mean": 10.1131,
+        "min": 10.1131,
+        "max": 10.1131,
+        "std": 0.0
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 13.9872,
+        "min": 13.9872,
+        "max": 13.9872,
+        "std": 0.0
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 17.6281,
+        "min": 17.6281,
+        "max": 17.6281,
+        "std": 0.0
+      }
+    },
+    "inverse_degree": {
+      "N=40": {
+        "count": 10,
+        "mean": 2.8673,
+        "min": 2.8673,
+        "max": 2.8673,
+        "std": 0.0
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 3.6145,
+        "min": 3.6145,
+        "max": 3.6145,
+        "std": 0.0
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 4.5688,
+        "min": 4.5688,
+        "max": 4.5688,
+        "std": 0.0
+      }
+    },
+    "random": {
+      "N=40": {
+        "count": 10,
+        "mean": 3.2157,
+        "min": 2.8673,
+        "max": 3.8366,
+        "std": 0.3777
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 4.2051,
+        "min": 3.8642,
+        "max": 4.7636,
+        "std": 0.3077
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 5.0979,
+        "min": 4.738,
+        "max": 5.4631,
+        "std": 0.2736
+      }
+    },
+    "balanced": {
+      "N=40": {
+        "count": 10,
+        "mean": 10.1131,
+        "min": 10.1131,
+        "max": 10.1131,
+        "std": 0.0
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 13.9872,
+        "min": 13.9872,
+        "max": 13.9872,
+        "std": 0.0
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 17.6281,
+        "min": 17.6281,
+        "max": 17.6281,
+        "std": 0.0
+      }
+    },
+    "random_edge": {
+      "N=40": {
+        "count": 10,
+        "mean": 1.5076,
+        "min": 1.3352,
+        "max": 1.7244,
+        "std": 0.0983
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 1.5366,
+        "min": 1.4239,
+        "max": 1.775,
+        "std": 0.1075
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 1.5552,
+        "min": 1.3995,
+        "max": 1.7312,
+        "std": 0.0935
+      }
+    },
+    "random_edge_capped": {
+      "N=40": {
+        "count": 10,
+        "mean": 1.159,
+        "min": 1.0866,
+        "max": 1.328,
+        "std": 0.0844
+      },
+      "N=60": {
+        "count": 10,
+        "mean": 1.2001,
+        "min": 1.2001,
+        "max": 1.2001,
+        "std": 0.0
+      },
+      "N=80": {
+        "count": 10,
+        "mean": 1.2222,
+        "min": 1.1677,
+        "max": 1.2455,
+        "std": 0.0376
+      }
+    }
+  },
+  "sat_timing": {
+    "N=40": {
+      "mean_s": 0.02,
+      "median_s": 0.01,
+      "max_s": 0.1,
+      "timeout_count": 0,
+      "total_graphs": 60
+    },
+    "N=60": {
+      "mean_s": 0.36,
+      "median_s": 0.01,
+      "max_s": 2.88,
+      "timeout_count": 0,
+      "total_graphs": 60
+    },
+    "N=80": {
+      "mean_s": 0.27,
+      "median_s": 0.02,
+      "max_s": 2.54,
+      "timeout_count": 0,
+      "total_graphs": 60
+    }
+  }
+}

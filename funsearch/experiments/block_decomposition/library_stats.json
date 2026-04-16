@@ -1,0 +1,36 @@
+{
+  "total_blocks": 5603,
+  "alpha_critical": 0,
+  "by_n": {
+    "3": {
+      "count": 1,
+      "alpha_critical": 0,
+      "total_dropping_sets": 3
+    },
+    "4": {
+      "count": 4,
+      "alpha_critical": 0,
+      "total_dropping_sets": 10
+    },
+    "5": {
+      "count": 11,
+      "alpha_critical": 0,
+      "total_dropping_sets": 59
+    },
+    "6": {
+      "count": 67,
+      "alpha_critical": 0,
+      "total_dropping_sets": 521
+    },
+    "7": {
+      "count": 500,
+      "alpha_critical": 0,
+      "total_dropping_sets": 4625
+    },
+    "8": {
+      "count": 5020,
+      "alpha_critical": 0,
+      "total_dropping_sets": 73670
+    }
+  }
+}

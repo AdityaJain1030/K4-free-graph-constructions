@@ -1,0 +1,56 @@
+{
+  "finding": "Code is CORRECT. Zero alpha-critical blocks in the library is a genuine mathematical result, not a bug.",
+  "explanation": "Alpha-critical graphs (every edge removal increases alpha) and graphs with alpha-dropping sets (an IS whose removal drops alpha by 1) are mutually exclusive properties for K4-free connected graphs at n=3-8.",
+  "verification": {
+    "C5_alpha_critical": true,
+    "C5_alpha_dropping_sets": 0,
+    "K3_alpha_critical": true,
+    "K3_alpha_dropping_sets": 0,
+    "C7_alpha_critical": true,
+    "C7_alpha_dropping_sets": 0,
+    "P4_alpha_critical": false,
+    "P4_alpha_dropping_sets": 1,
+    "Diamond_alpha_critical": false,
+    "Diamond_alpha_dropping_sets": 3
+  },
+  "exhaustive_search": {
+    "n=3": {
+      "total": 2,
+      "alpha_critical": 1,
+      "has_drops": 1,
+      "both": 0
+    },
+    "n=4": {
+      "total": 5,
+      "alpha_critical": 0,
+      "has_drops": 4,
+      "both": 0
+    },
+    "n=5": {
+      "total": 17,
+      "alpha_critical": 1,
+      "has_drops": 11,
+      "both": 0
+    },
+    "n=6": {
+      "total": 82,
+      "alpha_critical": 1,
+      "has_drops": 67,
+      "both": 0
+    },
+    "n=7": {
+      "total": 536,
+      "alpha_critical": 2,
+      "has_drops": 500,
+      "both": 0
+    },
+    "n=8": {
+      "total": 5606,
+      "alpha_critical": 4,
+      "has_drops": 5020,
+      "both": 0
+    }
+  },
+  "total_checked": 6248,
+  "total_both": 0
+}
