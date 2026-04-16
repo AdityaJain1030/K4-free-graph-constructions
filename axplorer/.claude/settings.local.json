@@ -3,7 +3,9 @@
     "allow": [
       "Bash(micromamba env:*)",
       "Bash(conda env:*)",
-      "Bash(micromamba run:*)"
+      "Bash(micromamba run:*)",
+      "Bash(\"C:\\\\Users\\\\adity\\\\micromamba\\\\envs\\\\env_axplorer\\\\python.exe\" -)",
+      "Bash(taskkill /F /FI \"IMAGENAME eq python.exe\" /T)"
     ]
   }
 }

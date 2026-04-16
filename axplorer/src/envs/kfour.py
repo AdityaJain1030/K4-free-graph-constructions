@@ -1,15 +1,14 @@
 """
 KFour environment for Axplorer.
 
-Complement-graph formulation of the K₄-free independence conjecture.
+Primal formulation of the K₄-free independence conjecture.
 
-We build H (the complement of G) on N vertices and maximize |E(H)| subject to:
-  1. H is K_t-free          (no clique of size t in H)
-              ↔ alpha(G) ≤ t-1  in the original graph
-  2. alpha(H) ≤ 3           (no independent set of size 4 in H)
-              ↔ G is K₄-free
+We build G on N vertices and minimize |E(G)| subject to:
+  1. G is K₄-free          (no 4-clique)
+  2. α(G) ≤ t-1            (no independent set of size t)
 
-Score = |E(H)| if both constraints hold, -1 otherwise.
+self.data stores H = complement(G) for framework compatibility.
+Score = |E(H)| = C(N,2) - |E(G)|, maximized by the framework.
 
 Higher score → fewer edges in G → smaller d_avg(G) → tighter lower bound on c:
     c_lb = (t-1) * d_avg / (N * ln(d_avg))
@@ -42,9 +41,8 @@ def _has_clique(size: int, candidates: int, nbr: list) -> bool:
     Return True iff the subgraph induced by `candidates` (a bitmask) contains
     a clique of `size` vertices, using the provided neighbor masks.
 
-    Enumerates vertices in increasing order to avoid double-counting.
     Edge cases:
-      size=0  → True  (vacuously; used for t=2: any edge creates K_2)
+      size=0  → True  (vacuously)
       size=1  → True iff candidates is non-empty
     """
     if size == 0:
@@ -54,7 +52,6 @@ def _has_clique(size: int, candidates: int, nbr: list) -> bool:
         lsb = tmp & -tmp
         v = lsb.bit_length() - 1
         tmp ^= lsb
-        # Include v; look for rest among neighbors of v that are strictly after v
         if _has_clique(size - 1, nbr[v] & tmp, nbr):
             return True
     return False
@@ -79,88 +76,44 @@ def _find_all_kt(t: int, nbr: list, N: int) -> list:
     return result
 
 
-def _find_fixable_i4(comp_nbr: list, N: int, nbr: list, t: int):
-    """
-    Search for an I_4 in H (4-clique in complement) where at least one of the
-    six vertex pairs can be connected in H without creating K_t.
+def _find_one_kt(t: int, nbr: list, N: int):
+    """Return one K_t as a tuple of vertex indices, or None if none exists."""
+    found = [None]
 
-    Returns (i4_tuple, (x, y)) where (x,y) is the K_t-safe edge to add,
-    or None if every I_4 is fully blocked.
-
-    All six pairs in an I_4 are non-edges in H by definition, so no existence
-    check on self.data is needed.
-    """
     def search(size, path, candidates):
         if size == 0:
-            a, b, c, d = path
-            for x, y in ((a, b), (a, c), (a, d), (b, c), (b, d), (c, d)):
-                # Adding (x,y) creates K_t iff common neighbourhood has K_{t-2}
-                if not _has_clique(t - 2, nbr[x] & nbr[y], nbr):
-                    return (tuple(path), (x, y))
-            return None  # this I_4 is fully blocked
+            found[0] = tuple(path)
+            return True
         tmp = candidates
         while tmp:
             lsb = tmp & -tmp
             v = lsb.bit_length() - 1
             tmp ^= lsb
-            result = search(size - 1, path + [v], comp_nbr[v] & tmp)
-            if result is not None:
-                return result
-        return None
+            if search(size - 1, path + [v], nbr[v] & tmp):
+                return True
+        return False
 
-    return search(4, [], (1 << N) - 1)
+    search(t, [], (1 << N) - 1)
+    return found[0]
 
 
-def _find_swap_move(comp_nbr: list, N: int, nbr: list, t: int):
-    """
-    When every I_4 pair is blocked (adding it would create K_t), look for a
-    swap: remove one edge (ri, rj) from H so that some I_4 pair (ax, ay)
-    becomes K_t-safe to add.
+def _complement_adj(adj: np.ndarray, N: int) -> np.ndarray:
+    """Return complement adjacency matrix (flip edges, keep diagonal 0)."""
+    comp = (1 - adj).astype(np.uint8)
+    np.fill_diagonal(comp, 0)
+    return comp
 
-    The swap is valid iff after removing (ri,rj), adding (ax,ay) does not
-    create K_t.  Both operations are tested atomically (nbr is restored).
 
-    Returns ((ri, rj), (ax, ay)) or None if no such swap exists.
-    """
-    def search(size, path, candidates):
-        if size == 0:
-            a, b, c, d = path
-            for x, y in ((a, b), (a, c), (a, d), (b, c), (b, d), (c, d)):
-                common = nbr[x] & nbr[y]
-                if not _has_clique(t - 2, common, nbr):
-                    continue  # already fixable without swap
-                # Try removing each edge (u,v) that lies inside `common`
-                tmp_u = common
-                while tmp_u:
-                    lsb_u = tmp_u & -tmp_u
-                    u = lsb_u.bit_length() - 1
-                    tmp_u ^= lsb_u
-                    # v must be > u, also in common, and adjacent to u in H
-                    tmp_v = nbr[u] & common & ~((1 << (u + 1)) - 1)
-                    while tmp_v:
-                        lsb_v = tmp_v & -tmp_v
-                        v = lsb_v.bit_length() - 1
-                        tmp_v ^= lsb_v
-                        # Tentatively remove (u, v) from nbr
-                        nbr[u] &= ~(1 << v)
-                        nbr[v] &= ~(1 << u)
-                        safe = not _has_clique(t - 2, nbr[x] & nbr[y], nbr)
-                        nbr[u] |= 1 << v   # restore
-                        nbr[v] |= 1 << u
-                        if safe:
-                            return ((u, v), (x, y))
-            return None
-        tmp = candidates
-        while tmp:
-            lsb = tmp & -tmp
-            v = lsb.bit_length() - 1
-            tmp ^= lsb
-            result = search(size - 1, path + [v], comp_nbr[v] & tmp)
-            if result is not None:
-                return result
-        return None
-
-    return search(4, [], (1 << N) - 1)
+def _has_g_edge_in_mask(mask: int, g_nbr: list) -> bool:
+    """Return True iff the induced subgraph on `mask` contains any edge in G."""
+    tmp = mask
+    while tmp:
+        lsb = tmp & -tmp
+        v = lsb.bit_length() - 1
+        tmp ^= lsb
+        if g_nbr[v] & mask & ~((1 << (v + 1)) - 1):
+            return True
+    return False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -169,13 +122,13 @@ def _find_swap_move(comp_nbr: list, N: int, nbr: list, t: int):
 
 class KFourDataPoint(DataPoint):
     MAKE_OBJECT_CANONICAL = False
-    T = 4  # K_t-free clique bound; set at class level for multiprocessing
+    T = 4  # α(G) ≤ T-1; set at class level for multiprocessing
 
     def __init__(self, N, t=None, init=False):
         super().__init__()
         self.N = N
         self.t = self.__class__.T if t is None else t
-        self.data = np.zeros((N, N), dtype=np.uint8)
+        self.data = np.zeros((N, N), dtype=np.uint8)  # H = complement(G)
 
         if init:
             self._add_edges_greedily()
@@ -188,20 +141,24 @@ class KFourDataPoint(DataPoint):
 
     def calc_score(self):
         N = self.N
-        nbr = _build_nbr_masks(self.data)
         all_mask = (1 << N) - 1
 
-        # Constraint 1: H must be K_t-free
-        if _has_clique(self.t, all_mask, nbr):
+        # G = complement(H = self.data)
+        g_adj = _complement_adj(self.data, N)
+        g_nbr = _build_nbr_masks(g_adj)
+
+        # Constraint 1: G must be K₄-free
+        if _has_clique(4, all_mask, g_nbr):
             self.score = -1
             return -1
 
-        # Constraint 2: alpha(H) <= 3  (no I_4 in H = no K_4 in complement of H)
-        comp_nbr = [(all_mask ^ nbr[v]) & ~(1 << v) for v in range(N)]
-        if _has_clique(4, all_mask, comp_nbr):
+        # Constraint 2: α(G) ≤ t-1  ↔  H is K_t-free
+        h_nbr = _build_nbr_masks(self.data)
+        if _has_clique(self.t, all_mask, h_nbr):
             self.score = -1
             return -1
 
+        # Score = |E(H)| (positive, maximized by the framework)
         self.score = int(self.data.sum()) // 2
         return self.score
 
@@ -216,74 +173,104 @@ class KFourDataPoint(DataPoint):
         N = self.N
         all_mask = (1 << N) - 1
 
-        # Each restart generates a fresh random K_t-free graph (via
-        # _add_edges_greedily), which independently has a ~3-5% chance of
-        # satisfying alpha(H) ≤ 3.  200 restarts gives >99.9% success
-        # probability for N < R(4,t).  Phase 2 direct additions are kept as a
-        # cheap first attempt before giving up on the current graph.
         repaired = False
         for _ in range(200):
-            nbr = _build_nbr_masks(self.data)
+            g_adj = _complement_adj(self.data, N)
+            g_nbr = _build_nbr_masks(g_adj)
+            h_nbr = _build_nbr_masks(self.data)
 
-            # ── Phase 1: repair K_t violations ───────────────────────────────
-            while _has_clique(self.t, all_mask, nbr):
-                cliques = _find_all_kt(self.t, nbr, N)
+            # ── Phase 1a: repair K₄ in G by removing edges ────────────────
+            # Removing edge (i,j) from G = adding (i,j) to H.
+            # Remove the edge appearing in the most K₄s until G is K₄-free.
+            # Note: removing G-edges can only increase α(G), so α repair
+            # follows in Phase 1b.
+            while _has_clique(4, all_mask, g_nbr):
+                k4s = _find_all_kt(4, g_nbr, N)
                 edge_count = {}
-                for clique in cliques:
+                for clique in k4s:
                     for a in range(len(clique)):
                         for b in range(a + 1, len(clique)):
                             e = (clique[a], clique[b])
                             edge_count[e] = edge_count.get(e, 0) + 1
                 i, j = max(edge_count, key=edge_count.get)
-                self.data[i, j] = 0
-                self.data[j, i] = 0
-                nbr[i] &= ~(1 << j)
-                nbr[j] &= ~(1 << i)
+                g_nbr[i] &= ~(1 << j)
+                g_nbr[j] &= ~(1 << i)
+                self.data[i, j] = 1
+                self.data[j, i] = 1
+                h_nbr[i] |= 1 << j
+                h_nbr[j] |= 1 << i
 
-            # ── Phase 2: repair I_4 violations by direct safe additions ──────
-            comp_nbr = [(all_mask ^ nbr[v]) & ~(1 << v) for v in range(N)]
-            if not _has_clique(4, all_mask, comp_nbr):
+            # ── Phase 1b: repair α(G) > t-1 (= K_t in H) ─────────────────
+            # Add edges to G (= remove from H) until H is K_t-free.
+            # Adding (i,j) to G is K₄-safe iff G's common neighborhood of
+            # (i,j) contains no edge — a local, cheap check.
+            stuck = False
+            while _has_clique(self.t, all_mask, h_nbr):
+                kt = _find_one_kt(self.t, h_nbr, N)
+                added = False
+                for a in range(len(kt)):
+                    for b in range(a + 1, len(kt)):
+                        i, j = kt[a], kt[b]
+                        if g_nbr[i] & (1 << j):
+                            continue  # already a G-edge
+                        # K₄-safety: common G-neighborhood must have no edge
+                        if not _has_g_edge_in_mask(g_nbr[i] & g_nbr[j], g_nbr):
+                            g_nbr[i] |= 1 << j
+                            g_nbr[j] |= 1 << i
+                            self.data[i, j] = 0
+                            self.data[j, i] = 0
+                            h_nbr[i] &= ~(1 << j)
+                            h_nbr[j] &= ~(1 << i)
+                            added = True
+                            break
+                    if added:
+                        break
+                if not added:
+                    stuck = True
+                    break  # can't repair α without creating K₄ — restart
+
+            if not stuck:
                 repaired = True
                 break
-            while True:
-                hit = _find_fixable_i4(comp_nbr, N, nbr, self.t)
-                if hit is None:
-                    break
-                _, (x, y) = hit
-                self.data[x, y] = 1
-                self.data[y, x] = 1
-                nbr[x] |= 1 << y
-                nbr[y] |= 1 << x
-                comp_nbr = [(all_mask ^ nbr[v]) & ~(1 << v) for v in range(N)]
-                if not _has_clique(4, all_mask, comp_nbr):
-                    repaired = True
-                    break
 
-            if repaired:
-                break
-
-            # Restart: fresh random K_t-free graph, retry both phases.
+            # Restart with a fresh random K₄-free construction
             self.data = np.zeros((N, N), dtype=np.uint8)
             self._add_edges_greedily()
 
-        # ── Phase 3: greedy densify (only when improve_with_local_search) ────
-        # Adding edges can only reduce independent sets (alpha is non-increasing
-        # under edge addition), so the I_4 constraint is maintained for free.
-        # We only need to guard against K_t.
+        # ── Phase 2: greedy edge removal from G (= addition to H) ─────────
+        # For each G-edge (i,j): removing it adds (i,j) to H.
+        # This is safe iff the new H-edge does not complete a K_t in H.
+        # Fast incremental check: adding (i,j) to H creates K_t iff
+        # K_{t-2} already exists in the common H-neighborhood of i and j.
         if improve_with_local_search:
-            nbr = _build_nbr_masks(self.data)
-            candidates = [
-                (i, j) for i in range(N) for j in range(i + 1, N)
-                if self.data[i, j] == 0
-            ]
-            np.random.shuffle(candidates)
-            for i, j in candidates:
-                common = nbr[i] & nbr[j]
-                if not _has_clique(self.t - 2, common, nbr):
-                    self.data[i, j] = 1
-                    self.data[j, i] = 1
-                    nbr[i] |= 1 << j
-                    nbr[j] |= 1 << i
+            # Rebuild to ensure g_nbr/h_nbr are current after repair
+            g_adj = _complement_adj(self.data, N)
+            g_nbr = _build_nbr_masks(g_adj)
+            h_nbr = _build_nbr_masks(self.data)
+
+            g_edges = []
+            for i in range(N):
+                tmp = g_nbr[i] & ~((1 << (i + 1)) - 1)
+                while tmp:
+                    lsb = tmp & -tmp
+                    j = lsb.bit_length() - 1
+                    tmp ^= lsb
+                    g_edges.append((i, j))
+            np.random.shuffle(g_edges)
+
+            for i, j in g_edges:
+                if not (g_nbr[i] & (1 << j)):
+                    continue  # edge already removed earlier in this pass
+                # Reject if adding (i,j) to H would create K_t
+                if _has_clique(self.t - 2, h_nbr[i] & h_nbr[j], h_nbr):
+                    continue
+                # Safe: remove (i,j) from G, add to H
+                g_nbr[i] &= ~(1 << j)
+                g_nbr[j] &= ~(1 << i)
+                self.data[i, j] = 1
+                self.data[j, i] = 1
+                h_nbr[i] |= 1 << j
+                h_nbr[j] |= 1 << i
 
         if self.MAKE_OBJECT_CANONICAL:
             self.data = sort_graph_based_on_degree(self.data)
@@ -294,29 +281,43 @@ class KFourDataPoint(DataPoint):
 
     def _add_edges_greedily(self):
         """
-        Add edges to H in random order while keeping H K_t-free.
-        Does not enforce alpha(H) <= 3 during construction; calc_score will
-        catch any I_4 violations (some init samples may score -1).
+        Build a maximal K₄-free G on N vertices in random edge order.
+        Adding (i,j) creates K₄ iff G's common neighborhood of (i,j)
+        contains any edge — a purely local check.
+        Stores H = complement(G) in self.data.
         """
-        t = self.t
         N = self.N
-        nbr = [0] * N
+        g_nbr = [0] * N
+        self.data = np.zeros((N, N), dtype=np.uint8)
 
         candidates = [(i, j) for i in range(N) for j in range(i + 1, N)]
         np.random.shuffle(candidates)
 
         for i, j in candidates:
-            # Adding edge (i,j) creates K_t iff common neighborhood contains K_{t-2}
-            common = nbr[i] & nbr[j]
-            if _has_clique(t - 2, common, nbr):
-                continue
-            # Accept: add edge to H
-            self.data[i, j] = 1
-            self.data[j, i] = 1
-            nbr[i] |= 1 << j
-            nbr[j] |= 1 << i
+            if not _has_g_edge_in_mask(g_nbr[i] & g_nbr[j], g_nbr):
+                g_nbr[i] |= 1 << j
+                g_nbr[j] |= 1 << i
+
+        # Store H = complement(G)
+        for i in range(N):
+            for j in range(i + 1, N):
+                if not (g_nbr[i] & (1 << j)):
+                    self.data[i, j] = 1
+                    self.data[j, i] = 1
 
     # ── class-level params (process pool) ────────────────────────────────────
+
+    @classmethod
+    def _batch_generate_and_score(cls, batch_size, N, pars=None):
+        if pars is not None:
+            cls._update_class_params(pars)
+        out = []
+        for _ in range(batch_size):
+            d = cls(N=N, init=True)
+            d.local_search(improve_with_local_search=True)
+            if d.score >= 0:
+                out.append(d)
+        return out
 
     @classmethod
     def _update_class_params(cls, pars):
@@ -365,9 +366,9 @@ class KFourEnvironment(BaseEnvironment):
     @staticmethod
     def register_args(parser):
         parser.add_argument("--N", type=int, default=10,
-                            help="Number of vertices in H")
+                            help="Number of vertices")
         parser.add_argument("--t", type=int, default=4,
-                            help="Clique bound: H must be K_t-free")
+                            help="Independence number bound: alpha(G) <= t-1")
         parser.add_argument("--encoding_tokens", type=str, default="single_integer",
                             help="single_integer | sequence_k_tokens | adjacency")
         parser.add_argument("--make_object_canonical", type=bool_flag, default="false",

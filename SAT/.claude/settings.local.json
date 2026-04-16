@@ -16,7 +16,11 @@
       "Bash(/home/adity/micromamba/envs/ILP_pareto_enum/bin/python:*)",
       "Bash(/home/adity/micromamba/envs/ILP_pareto_enum/bin/pip show:*)",
       "Bash(ps:*)",
-      "Bash(ls /mnt/c/Users/adity/Downloads/4cycle/SAT/k4free_ilp/results/*.json)"
+      "Bash(ls /mnt/c/Users/adity/Downloads/4cycle/SAT/k4free_ilp/results/*.json)",
+      "Bash(micromamba env:*)",
+      "Bash(conda env:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)"
     ]
   }
 }
