@@ -1,0 +1,108 @@
+{
+  "reuse_tests": [
+    {
+      "test": "reuse_forced_vertex_twice",
+      "block_id": 594,
+      "predicted_alpha_if_counted_once": 17,
+      "predicted_alpha_naive_sum": 16,
+      "actual_alpha": 17,
+      "N": 24,
+      "d_max": 5,
+      "k4_free": true
+    },
+    {
+      "test": "reuse_forced_vertex_twice",
+      "block_id": 600,
+      "predicted_alpha_if_counted_once": 17,
+      "predicted_alpha_naive_sum": 16,
+      "actual_alpha": 17,
+      "N": 24,
+      "d_max": 5,
+      "k4_free": true
+    },
+    {
+      "test": "reuse_forced_vertex_twice",
+      "block_id": 93,
+      "predicted_alpha_if_counted_once": 14,
+      "predicted_alpha_naive_sum": 13,
+      "actual_alpha": 14,
+      "N": 21,
+      "d_max": 4,
+      "k4_free": true
+    },
+    {
+      "test": "reuse_forced_vertex_twice",
+      "block_id": 589,
+      "predicted_alpha_if_counted_once": 17,
+      "predicted_alpha_naive_sum": 16,
+      "actual_alpha": 17,
+      "N": 24,
+      "d_max": 6,
+      "k4_free": true
+    },
+    {
+      "test": "reuse_forced_vertex_twice",
+      "block_id": 596,
+      "predicted_alpha_if_counted_once": 17,
+      "predicted_alpha_naive_sum": 16,
+      "actual_alpha": 17,
+      "N": 24,
+      "d_max": 6,
+      "k4_free": true
+    }
+  ],
+  "nonforced_tests": [
+    {
+      "test": "nonforced_endpoint",
+      "block_id": 594,
+      "predicted_alpha_both_forced": 11,
+      "actual_alpha_both_forced": 11,
+      "predicted_alpha_mixed": 11,
+      "actual_alpha_mixed": 12,
+      "alpha_drop_mixed": 0
+    },
+    {
+      "test": "nonforced_endpoint",
+      "block_id": 600,
+      "predicted_alpha_both_forced": 11,
+      "actual_alpha_both_forced": 11,
+      "predicted_alpha_mixed": 11,
+      "actual_alpha_mixed": 12,
+      "alpha_drop_mixed": 0
+    },
+    {
+      "test": "nonforced_endpoint",
+      "block_id": 93,
+      "predicted_alpha_both_forced": 9,
+      "actual_alpha_both_forced": 9,
+      "predicted_alpha_mixed": 9,
+      "actual_alpha_mixed": 10,
+      "alpha_drop_mixed": 0
+    },
+    {
+      "test": "nonforced_endpoint",
+      "block_id": 589,
+      "predicted_alpha_both_forced": 11,
+      "actual_alpha_both_forced": 11,
+      "predicted_alpha_mixed": 11,
+      "actual_alpha_mixed": 12,
+      "alpha_drop_mixed": 0
+    },
+    {
+      "test": "nonforced_endpoint",
+      "block_id": 596,
+      "predicted_alpha_both_forced": 11,
+      "actual_alpha_both_forced": 11,
+      "predicted_alpha_mixed": 11,
+      "actual_alpha_mixed": 12,
+      "alpha_drop_mixed": 0
+    }
+  ],
+  "alpha_gap_distribution": {
+    "n": 666,
+    "mean": 0.0,
+    "max": 0,
+    "min": 0,
+    "zero_fraction": 1.0
+  }
+}
