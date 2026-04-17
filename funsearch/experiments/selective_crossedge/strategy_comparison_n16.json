@@ -1,0 +1,32 @@
+{
+  "random": {
+    "best_c": 0.8372,
+    "mean_c": 1.4058,
+    "median_c": 1.2022,
+    "best_config": "4+3+3+3+3",
+    "best_d_cap": 6,
+    "best_alpha": 4,
+    "best_d_max": 6,
+    "num_trials": 4160
+  },
+  "degree_balance": {
+    "best_c": 0.9017,
+    "mean_c": 1.3677,
+    "median_c": 1.2022,
+    "best_config": "4+4+8",
+    "best_d_cap": 4,
+    "best_alpha": 5,
+    "best_d_max": 4,
+    "num_trials": 1040
+  },
+  "alpha_stop": {
+    "best_c": 0.8372,
+    "mean_c": 1.3406,
+    "median_c": 1.165,
+    "best_config": "4+3+3+3+3",
+    "best_d_cap": 6,
+    "best_alpha": 4,
+    "best_d_max": 6,
+    "num_trials": 1040
+  }
+}

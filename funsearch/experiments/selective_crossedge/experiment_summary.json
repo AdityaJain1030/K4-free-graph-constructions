@@ -1,0 +1,233 @@
+{
+  "20": {
+    "depth_ablation": [
+      {
+        "depth": 2,
+        "config": "8+8+4dummy",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 0.5
+      },
+      {
+        "depth": 3,
+        "config": "5+5+5+5",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 0.7
+      },
+      {
+        "depth": 4,
+        "config": "4+4+4+4+4",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 1.0
+      },
+      {
+        "depth": 5,
+        "config": "4+4+3+3+3+3",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 0.5
+      },
+      {
+        "depth": 6,
+        "config": "3+3+3+3+3+3+2",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 1.0
+      },
+      {
+        "depth": 19,
+        "config": "raw_20x1",
+        "best_strategy": "random",
+        "best_c": 0.932,
+        "alpha": 6,
+        "d_max": 5,
+        "d_cap": 5,
+        "gap_to_sat": 0.2125,
+        "p": 0.7
+      }
+    ],
+    "strategy_comparison": {
+      "random": {
+        "best_c": 0.932,
+        "mean_c": 1.1641,
+        "median_c": 1.1542,
+        "best_config": "8+8+4dummy",
+        "best_d_cap": 5,
+        "best_alpha": 6,
+        "best_d_max": 5,
+        "num_trials": 3520
+      },
+      "degree_balance": {
+        "best_c": 0.932,
+        "mean_c": 1.1271,
+        "median_c": 1.1542,
+        "best_config": "8+8+4dummy",
+        "best_d_cap": 5,
+        "best_alpha": 6,
+        "best_d_max": 5,
+        "num_trials": 880
+      },
+      "alpha_stop": {
+        "best_c": 0.932,
+        "mean_c": 1.1065,
+        "median_c": 1.1542,
+        "best_config": "8+6+6",
+        "best_d_cap": 5,
+        "best_alpha": 6,
+        "best_d_max": 5,
+        "num_trials": 880
+      }
+    },
+    "sat_optimal": {
+      "alpha": 4,
+      "d_max": 7,
+      "c": 0.7195,
+      "edges": 69
+    },
+    "num_trials": 5280,
+    "elapsed_s": 5.0
+  },
+  "24": {
+    "depth_ablation": [
+      {
+        "depth": 2,
+        "config": "8+8+8",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 0.7
+      },
+      {
+        "depth": 3,
+        "config": "6+6+6+6",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 0.7
+      },
+      {
+        "depth": 4,
+        "config": "5+5+5+5+4",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 8,
+        "d_max": 4,
+        "d_cap": 4,
+        "gap_to_sat": 0.2405,
+        "p": 1.0
+      },
+      {
+        "depth": 5,
+        "config": "4+4+4+4+4+4",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 0.7
+      },
+      {
+        "depth": 6,
+        "config": "4+4+4+3+3+3+3",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 0.5
+      },
+      {
+        "depth": 7,
+        "config": "3+3+3+3+3+3+3+3",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 1.0
+      },
+      {
+        "depth": 23,
+        "config": "raw_24x1",
+        "best_strategy": "random",
+        "best_c": 0.9618,
+        "alpha": 6,
+        "d_max": 8,
+        "d_cap": 8,
+        "gap_to_sat": 0.2405,
+        "p": 0.7
+      }
+    ],
+    "strategy_comparison": {
+      "random": {
+        "best_c": 0.9618,
+        "mean_c": 1.159,
+        "median_c": 1.1221,
+        "best_config": "8+8+8",
+        "best_d_cap": 8,
+        "best_alpha": 6,
+        "best_d_max": 8,
+        "num_trials": 2560
+      },
+      "degree_balance": {
+        "best_c": 0.9618,
+        "mean_c": 1.1239,
+        "median_c": 1.1162,
+        "best_config": "8+8+8",
+        "best_d_cap": 8,
+        "best_alpha": 6,
+        "best_d_max": 8,
+        "num_trials": 640
+      },
+      "alpha_stop": {
+        "best_c": 0.9618,
+        "mean_c": 1.114,
+        "median_c": 1.1162,
+        "best_config": "8+8+8",
+        "best_d_cap": 8,
+        "best_alpha": 6,
+        "best_d_max": 8,
+        "num_trials": 640
+      }
+    },
+    "sat_optimal": {
+      "alpha": 6,
+      "d_max": 4,
+      "c": 0.7213,
+      "edges": 48
+    },
+    "num_trials": 3840,
+    "elapsed_s": 30.2
+  }
+}

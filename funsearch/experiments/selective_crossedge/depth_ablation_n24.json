@@ -1,0 +1,79 @@
+[
+  {
+    "depth": 2,
+    "config": "8+8+8",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 0.7
+  },
+  {
+    "depth": 3,
+    "config": "6+6+6+6",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 0.7
+  },
+  {
+    "depth": 4,
+    "config": "5+5+5+5+4",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 8,
+    "d_max": 4,
+    "d_cap": 4,
+    "gap_to_sat": 0.2405,
+    "p": 1.0
+  },
+  {
+    "depth": 5,
+    "config": "4+4+4+4+4+4",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 0.7
+  },
+  {
+    "depth": 6,
+    "config": "4+4+4+3+3+3+3",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 0.5
+  },
+  {
+    "depth": 7,
+    "config": "3+3+3+3+3+3+3+3",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 1.0
+  },
+  {
+    "depth": 23,
+    "config": "raw_24x1",
+    "best_strategy": "random",
+    "best_c": 0.9618,
+    "alpha": 6,
+    "d_max": 8,
+    "d_cap": 8,
+    "gap_to_sat": 0.2405,
+    "p": 0.7
+  }
+]

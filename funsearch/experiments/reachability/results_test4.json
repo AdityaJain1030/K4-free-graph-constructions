@@ -1,0 +1,63 @@
+{
+  "sat_optimal": {
+    "alpha": 4,
+    "d_max": 4,
+    "c": 0.7213,
+    "num_edges": 32,
+    "degree_sequence": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "g6": "OAD?\\?_T`@ODgQB_OKaoA"
+  },
+  "selective_crossedge": {
+    "alpha": 4,
+    "d_max": 6,
+    "c": 0.8372,
+    "num_edges": 48,
+    "degree_sequence": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+    ],
+    "config": "4+3+3+3+3",
+    "seed": 15
+  },
+  "comparison": {
+    "edge_overlap": 15,
+    "jaccard_similarity": 0.2308,
+    "symmetric_difference": 50,
+    "only_in_sat": 17,
+    "only_in_sc": 33,
+    "is_isomorphic": false,
+    "same_degree_sequence": false,
+    "same_alpha": true
+  }
+}

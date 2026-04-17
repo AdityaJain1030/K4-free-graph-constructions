@@ -1,0 +1,72 @@
+{
+  "17": {
+    "num_feasible": 0,
+    "best_c": null,
+    "best_alpha": null,
+    "best_d_max": null,
+    "best_blocks": null,
+    "best_target_alpha": null,
+    "best_degree_sequence": null,
+    "best_g6": null,
+    "sat_optimal_c": 0.6789,
+    "sat_optimal_alpha": 3,
+    "sat_optimal_d_max": 8,
+    "gap_to_sat": null
+  },
+  "18": {
+    "num_feasible": 0,
+    "best_c": null,
+    "best_alpha": null,
+    "best_d_max": null,
+    "best_blocks": null,
+    "best_target_alpha": null,
+    "best_degree_sequence": null,
+    "best_g6": null,
+    "sat_optimal_c": 0.7441,
+    "sat_optimal_alpha": 4,
+    "sat_optimal_d_max": 6,
+    "gap_to_sat": null
+  },
+  "19": {
+    "num_feasible": 0,
+    "best_c": null,
+    "best_alpha": null,
+    "best_d_max": null,
+    "best_blocks": null,
+    "best_target_alpha": null,
+    "best_degree_sequence": null,
+    "best_g6": null,
+    "sat_optimal_c": 0.705,
+    "sat_optimal_alpha": 4,
+    "sat_optimal_d_max": 6,
+    "gap_to_sat": null
+  },
+  "20": {
+    "num_feasible": 0,
+    "best_c": null,
+    "best_alpha": null,
+    "best_d_max": null,
+    "best_blocks": null,
+    "best_target_alpha": null,
+    "best_degree_sequence": null,
+    "best_g6": null,
+    "sat_optimal_c": 0.7195,
+    "sat_optimal_alpha": 4,
+    "sat_optimal_d_max": 7,
+    "gap_to_sat": null
+  },
+  "21": {
+    "num_feasible": 0,
+    "best_c": null,
+    "best_alpha": null,
+    "best_d_max": null,
+    "best_blocks": null,
+    "best_target_alpha": null,
+    "best_degree_sequence": null,
+    "best_g6": null,
+    "sat_optimal_c": 0.7328,
+    "sat_optimal_alpha": 4,
+    "sat_optimal_d_max": 8,
+    "gap_to_sat": null
+  }
+}
