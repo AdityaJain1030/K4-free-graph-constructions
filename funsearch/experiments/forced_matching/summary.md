@@ -1,5 +1,12 @@
 # Forced-Matching Construction — Results
 
+> **⚠ Updated verdict (after Large Block Extension):** On library blocks
+> (n ≤ 8) the construction works exactly as advertised, but it hits a
+> structural floor at c ≈ 0.9017 and — as the extension section below
+> shows — **the graphs that achieve competitive c at n ≥ 10 have zero
+> α-forced vertices**, so the construction cannot be applied to them at
+> all. The -1 accounting is sound; the available inputs are the problem.
+
 ## Setup
 
 - Library blocks scanned: 5603 (n=3..8, K₄-free via geng)
@@ -152,3 +159,106 @@ The linear signal is tight — forced-ness on BOTH sides is necessary.
 - `stress_tests.json` — reuse + non-forced tests
 - `tradeoff_plot.png` — scatter of α/|V| vs |S|/|V| colored by achieved c
 - `c_vs_N.png` — c trajectories vs SAT-optimal and random baselines
+- `c_vs_N_per_block.png` — per-block c vs N (left: all 60 swept blocks, top-5 highlighted; right: top-5 detail with k=N/n annotated)
+- `large_blocks_results.json` — Paley/random/pareto probe dump (see `## Large Block Extension`)
+
+
+---
+
+# Large Block Extension
+
+Added large blocks to test whether the c=0.9017 asymptotic floor (set by
+the small-n library with |S| ≤ α and discrete (n,α,d)) can be broken.
+
+## Blocks added
+
+| source | block_id | n | α | d_max | edges | \|S\| | k* | is_triangle_free |
+|--------|----------|---|---|-------|-------|-----|----|------------------|
+| paley17 | 10000 | 17 | 3 | 8 | 68 | 0 | 0 | 0 |
+| random_n10 | 10001 | 10 | 3 | 6 | 29 | 0 | 0 | 0 |
+| random_n12 | 10002 | 12 | 3 | 7 | 38 | 0 | 0 | 0 |
+| random_n16 | 10003 | 16 | 4 | 9 | 68 | 0 | 0 | 0 |
+| pareto_n24 | 10004 | 24 | 4 | 10 | 118 | 0 | 0 | 0 |
+
+## Paley P(17) — the headline
+
+- α(P(17)) = 3, d = 8, 8-regular, 68 edges.
+- α(P(17) − v) = **3** for any vertex v (by vertex-transitivity, this is uniform).
+- Any vertex α-forced? **False** ⇒ k* = 0.
+
+**Finding — construction cannot exploit Paley P(17).**
+
+With k*=0, the forced-matching construction emits zero cross-edges between
+copies of P(17); the resulting graph is just a disjoint union. This means
+the best strongly-regular K₄-free graph at its size class is *invisible*
+to this construction. Predicted asymptotic c = ∞ (no matching at all).
+
+Deeper cause: P(17) is vertex-transitive, so α(P(17) − v) is the same for
+every v. Since α = 3 < n = 17, at least one max IS must omit any given vertex,
+hence α(P(17) − v) = α = 3 for every v. No vertex is α-forced.
+
+### Multi-vertex removal probe (random k-subsets)
+
+| k | α − k (linear pred) | min observed | max observed | mean | hits predicted |
+|---|---------------------|--------------|--------------|------|----------------|
+| 2 | 1 | 3 | 3 | 3.00 | 0/30 |
+| 3 | 0 | 3 | 3 | 3.00 | 0/30 |
+| 4 | -1 | 3 | 3 | 3.00 | 0/30 |
+
+## Per-block best c (new blocks)
+
+| source | best c achieved | N | α | d_max | k_copies |
+|--------|-----------------|---|---|-------|----------|
+| paley17 | — (no forced vertices / no matching) | — | — | — | — |
+| random_n10 | — (no forced vertices / no matching) | — | — | — | — |
+| random_n12 | — (no forced vertices / no matching) | — | — | — | — |
+| random_n16 | — (no forced vertices / no matching) | — | — | — | — |
+| pareto_n24 | — (no forced vertices / no matching) | — | — | — | — |
+
+## Did we break the c=0.9017 floor?
+
+**No — and the reason is deeper than expected.**
+
+Best new c = ∞ (no construction possible). All 5 large blocks have `k* = 0`.
+
+## Broader finding — forced vertices vanish at n ≥ 10
+
+The experiment set out to test whether Paley P(17) (vertex-transitive, predicted
+k*=0) could break the floor. It cannot. But the more interesting finding is that
+**every** large block we tried — random K₄-free graphs, SAT-optimal graphs,
+and Paley — has zero α-forced vertices. Direct per-vertex verification:
+
+| block        | n  | α | # forced vertices (α(G−v) = α−1) |
+|--------------|----|---|-----------------------------------|
+| paley17      | 17 | 3 | 0/17                              |
+| random_n10   | 10 | 3 | 0/10                              |
+| pareto_n24   | 24 | 4 | 0/24                              |
+
+For all three, `α(G−v) = α` for **every** vertex v. There is always a max IS
+that avoids any given vertex, so no vertex is structurally required.
+
+### Why the small-n library has forced vertices but larger blocks don't
+
+In the n ≤ 8 geng library, the combination "K₄-free + integer α + small n"
+imposes tight structural constraints: many graphs end up with vertices that
+must be in every max IS. These give the construction something to hook onto,
+but they also pin `|S| ≤ α ≤ small constant`, which caps c ≥ 0.9017.
+
+At n ≥ 10, graphs have enough room for multiple max IS to "rotate" around
+different vertex sets, and the efficiency pressure that brings α down also
+drives the min-α graphs toward vertex-transitive or near-vertex-transitive
+structure — precisely the regime where no vertex is forced.
+
+### Consequence for the forced-matching construction
+
+The construction is **fundamentally incompatible** with the graphs that
+achieve competitive c. It is not a tuning problem; the floor at 0.9017 is
+structural. A graph with a forced vertex is one that hasn't finished
+"packing" — the forced vertex is a residual rigidity the optimum has
+already eliminated.
+
+This rules out forced-matching as a scalable construction. Any priority
+function (e.g., for FunSearch) that relies on per-block forced vertices
+will plateau at the same 0.9017 floor, because the building blocks it
+can latch onto are exactly the suboptimal ones.
+

@@ -188,3 +188,65 @@ Run both on N=16-30. If either produces c < 0.80 (within 10% of SAT-optimal), th
 4. **Validation experiment design** (validation-experiment): Pre-FunSearch experiment plan with code, SAT encoding, analysis plan.
 
 5. **Experiment prompts** for Claude Code: Environment setup, block decomposition, enrichment, trimming.
+
+---
+
+## Addendum (2026-04-16 evening): Forced-Matching, Pair-Forced, Baselines
+
+Three follow-up experiments were run after the main document was written.
+
+### Forced-matching construction (`experiments/forced_matching/`)
+
+Attempted to improve c by "forcing" α to drop through specific cross-matchings between library blocks. All sweeps hit a hard asymptotic floor at **c = 0.9017** driven by the structural inequality `|S| ≤ α` together with the best (n, α, d) ratio attainable from the n ≤ 8 library. Extension to large blocks (Paley P(17), random K₄-free at n=10/12/16, pareto-n24) gave **k* = 0 for all 5 blocks** — no α-forced vertices exist in any of them. The construction simply cannot be used with large K₄-free blocks.
+
+### Pair-forced cross-edges on P(17) (`experiments/pair_forced/`)
+
+Tested whether any single cross-edge between two disjoint copies of P(17) drops α (from 6 to 5). Result: **0/289 cross-edges drop α.** Row uniformity confirms this is a vertex-transitivity consequence, not a sampling artifact. Greedy multi-edge wiring only makes c worse (0.6789 → 0.8522 over 4 edges, hitting d_cap=12).
+
+### Attractor observation: disjoint unions of P(17) give c = 0.6789
+
+The "best c = 0.6789" in the pair_forced trajectory is the **initial** state — two disjoint copies of P(17) before any cross-edges. This comes from P(17)'s own ratio: α/n · d/log(d) = 3/17 · 8/ln(8) = 0.6789. Disjoint unions preserve the ratio, so **for every N divisible by 17, c ≤ 0.6789 is achievable trivially** with no cross-edges. This is below every heuristic construction's attractor (baselines cluster at c ≈ 0.95–1.20) and below the reliable portion of the ILP Pareto frontier. The takeaway: no construction that produces c > 0.68 is actually novel above this trivial baseline — it's strictly worse than stacking P(17).
+
+### Baselines sweep (`experiments/baselines/`)
+
+Six heuristic methods (random, block-join, regularity-aware, α-aware, c-minimize) run for N=6..20 with d_cap sweep. Attractor values (mean of last 20 c samples):
+
+| method | attractor c |
+|--------|-------------|
+| method1 (random+d_cap) | 0.956 |
+| method2 (block join) | 1.213 |
+| method2r (random block join) | 1.067 |
+| method3 (regularity) | 0.990 |
+| method3b (α-aware) | 0.985 |
+| method4 (c-minimize) | 0.990 |
+
+All methods plateau **above 0.95**, all methods are **strictly worse than P(17) disjoint unions (0.679)**. Methods 3/3b/4 produce identical or near-identical graphs (Jaccard ≈ 1.0), so they are effectively duplicates.
+
+### SAT-optimal reference is unreliable for N ≥ 26
+
+The ILP Pareto frontier in `SAT/k4free_ilp/results/pareto_n*.json` used time-limited solves (600s–1800s). Anomalies: N=25 gives c=0.72 (α=5, d=7) but N=26 gives c=0.93 (α=5, d=12); N=32+ gives c > 1.55 which is worse than random. Treat these as incomplete upper bounds, not proven optima.
+
+### Paley family sweep — P(17) is the ceiling
+
+Tested P(q) for all primes q ≡ 1 mod 4 up to q ≤ 61:
+
+| q | n | d | α | K4-free | c |
+|---|---|---|---|---------|---|
+| 5 | 5 | 2 | 2 | ✓ | 1.154 |
+| 13 | 13 | 6 | 3 | ✓ | 0.773 |
+| **17** | **17** | **8** | **3** | **✓** | **0.679** |
+| 29 | 29 | 14 | 4 | ✗ | (0.732) |
+| 37 | 37 | 18 | 4 | ✗ | (0.673) |
+| 41 | 41 | 20 | 5 | ✗ | (0.814) |
+| 53 | 53 | 26 | 5 | ✗ | (0.753) |
+| 61 | 61 | 30 | 5 | ✗ | (0.723) |
+
+P(29) onwards contains K4 (ω ≥ 4). So **P(17) is the largest K4-free Paley graph**, and within this family, disjoint unions of P(17) are the minimum-c construction.
+
+### Revised verdict on paths A and B
+
+The c < 0.80 threshold from the original document is **already met by the trivial baseline** of stacking P(17). What we still lack is a construction producing c < 0.679 at large N — nothing tested so far does that. The ambitious goal should be restated as "beat 0.679" not "beat 0.80."
+
+Two directions considered:
+1. **K4-free subgraphs of P(37)** — *tested, negative.* Greedy K4-removal on P(37) over 20 random seeds removes ~80 edges, leaves d_max=16..18, but α jumps from 4 to 8..9, giving c ≈ 1.25 (well worse than P(17) at 0.68). Intuition: removing edges raises α proportionally more than it lowers d. Greedy edge-removal is not viable.
+2. **Cayley graphs on Z_p with non-QR connection sets** — not tested, remains open. Other algebraic connection sets might produce K₄-free graphs with better (α, d) ratios than Paley gives.

@@ -1,0 +1,70 @@
+{
+  "k_copies": 2,
+  "N": 34,
+  "d_cap": 12,
+  "trajectory": [
+    {
+      "step": 0,
+      "edge_added": null,
+      "edges_so_far": 0,
+      "alpha": 6,
+      "d_max": 8,
+      "c": 0.6789
+    },
+    {
+      "step": 1,
+      "edge_added": [
+        0,
+        17
+      ],
+      "edges_so_far": 1,
+      "alpha": 6,
+      "d_max": 9,
+      "c": 0.7228
+    },
+    {
+      "step": 2,
+      "edge_added": [
+        0,
+        18
+      ],
+      "edges_so_far": 2,
+      "alpha": 6,
+      "d_max": 10,
+      "c": 0.7664
+    },
+    {
+      "step": 3,
+      "edge_added": [
+        0,
+        20
+      ],
+      "edges_so_far": 3,
+      "alpha": 6,
+      "d_max": 11,
+      "c": 0.8095
+    },
+    {
+      "step": 4,
+      "edge_added": [
+        0,
+        21
+      ],
+      "edges_so_far": 4,
+      "alpha": 6,
+      "d_max": 12,
+      "c": 0.8522
+    }
+  ],
+  "final_alpha": 6,
+  "final_d_max": 12,
+  "num_edges_added": 4,
+  "best_step": {
+    "step": 0,
+    "edge_added": null,
+    "edges_so_far": 0,
+    "alpha": 6,
+    "d_max": 8,
+    "c": 0.6789
+  }
+}

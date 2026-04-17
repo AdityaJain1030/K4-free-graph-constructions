@@ -11,7 +11,10 @@
       "Bash(cp /tmp/block_enrich/compositions_round1.json /tmp/block_enrich/top50_round1_verified.json /mnt/c/Users/adity/Downloads/4cycle/funsearch/experiments/block_decomposition/)",
       "Bash(cp -r /tmp/block_enrich/plots /mnt/c/Users/adity/Downloads/4cycle/funsearch/experiments/block_decomposition/)",
       "Bash(cp /tmp/block_test_n8/library.json /tmp/block_test_n8/compositions.json /tmp/block_test_n8/top50_sat_verified.json /tmp/block_test_n8/library_stats.json /mnt/c/Users/adity/Downloads/4cycle/funsearch/experiments/block_decomposition/)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(awk -F'_' '{print $1}')",
+      "Bash(awk -F'_' '{print $1\"_\"$2}')",
+      "Bash(tee experiments/evo_search/logs/run.log)"
     ]
   }
 }
