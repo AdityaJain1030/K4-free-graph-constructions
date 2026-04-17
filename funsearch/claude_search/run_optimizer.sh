@@ -21,8 +21,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$HERE"
 
 MODEL="${CLAUDE_MODEL:-claude-sonnet-4-6}"
+EFFORT="${CLAUDE_EFFORT:-high}"   # low | medium | high | xhigh
 MODE="${1:-interactive}"
 ITERATIONS="${2:-20}"
+
+# Validate effort level
+case "$EFFORT" in
+    low|medium|high|xhigh) ;;
+    *) echo "ERROR: CLAUDE_EFFORT=$EFFORT not one of: low, medium, high, xhigh" >&2; exit 2 ;;
+esac
 
 mkdir -p logs
 TS="$(date +%Y%m%d_%H%M%S)"
@@ -37,6 +44,16 @@ if command -v micromamba >/dev/null 2>&1; then
 else
     echo "WARNING: micromamba not on PATH; assuming 'python' already resolves to the funsearch env" >&2
 fi
+
+# Write the effort level into settings.local.json so Claude Code picks it up.
+python - <<PY
+import json, pathlib
+p = pathlib.Path(".claude/settings.local.json")
+d = json.loads(p.read_text())
+d["effortLevel"] = "$EFFORT"
+p.write_text(json.dumps(d, indent=2) + "\n")
+print(f"effortLevel set to: $EFFORT")
+PY
 
 PROMPT="Read RULES.md and CLAUDE.md first (they are your operating manual).
 

@@ -71,14 +71,18 @@ The script activates the `funsearch` env, cds into `claude_search/`,
 and launches Claude Code with the allowlist in
 `.claude/settings.local.json` enforcing the sandbox.
 
-### Overriding the model
+### Overriding the model and effort level
 
 ```bash
 CLAUDE_MODEL=claude-sonnet-4-5-20250929 ./run_optimizer.sh --auto
+CLAUDE_EFFORT=medium ./run_optimizer.sh --auto    # low | medium | high | xhigh
 ```
 
-Default is `claude-sonnet-4-6`. Sonnet is the right call here — the task
-is 10–40-line algebraic functions, not complex engineering.
+Defaults: `claude-sonnet-4-6` at `high` effort. The script patches
+`.claude/settings.local.json` with the selected effort level before
+launch. Sonnet is the right model here — 10–40-line algebraic functions
+don't need Opus-level reasoning. `high` gives a good depth/speed balance;
+drop to `medium` if you want more iterations for the same budget.
 
 ## Monitoring
 
