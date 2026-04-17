@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write(candidates/**)",
+      "Edit(candidates/**)",
+      "Glob",
+      "Grep",
+      "Bash(python eval.py:*)",
+      "Bash(python leaderboard.py)",
+      "Bash(python show_best.py)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)"
+    ],
+    "deny": [
+      "Write(eval.py)",
+      "Write(graph_utils.py)",
+      "Write(leaderboard.py)",
+      "Write(show_best.py)",
+      "Write(RULES.md)",
+      "Write(CLAUDE.md)",
+      "Write(results.jsonl)",
+      "Edit(eval.py)",
+      "Edit(graph_utils.py)",
+      "Edit(leaderboard.py)",
+      "Edit(show_best.py)",
+      "Edit(RULES.md)",
+      "Edit(CLAUDE.md)",
+      "Edit(results.jsonl)",
+      "Bash(pip:*)",
+      "Bash(micromamba install:*)",
+      "Bash(conda install:*)",
+      "Bash(apt:*)",
+      "Bash(git push:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}
