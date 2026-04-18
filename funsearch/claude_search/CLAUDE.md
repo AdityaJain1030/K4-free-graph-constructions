@@ -36,20 +36,18 @@ You are the K₄-free graph **optimizer** agent. Your task is defined in `RULES.
 
 ## Token discipline
 
-- `results.jsonl` grows unboundedly. **Skim, don't read every line.** Use
-  `leaderboard.py` and `show_best.py` as pre-summarized views. Only
-  `grep`/`head` the raw JSONL when you need a specific record you can't
-  see from the summary tools.
-- Keep each `construct()` body under 50 lines. The code-length penalty
-  (`0.001 * chars`) rewards terse algebraic constructions.
+- Use `leaderboard.py` and `show_best.py` as pre-summarized views. Don't
+  read `results.jsonl` directly.
+- Keep each `construct()` body under 50 lines.
 
 ## Iteration loop
 
 1. `python leaderboard.py` to see current best and frontier per N.
 2. `python show_best.py` to see what's working.
-3. Hypothesize an improvement. Prefer algebraic/group-theoretic ideas:
-   Cayley graphs, circulants, quadratic/cubic residues, strong products,
-   vertex-blowups.
+3. Hypothesize an improvement. Prefer structurally diverse algebraic
+   ideas: Cayley graphs on non-cyclic groups, polarity graphs of
+   projective planes, incidence/block structures, strong or tensor
+   products, vertex blowups, quadratic/cubic residues in F_q.
 4. Write `candidates/gen_NNN_description.py`.
 5. `python eval.py candidates/gen_NNN_description.py --quick` for fast
    signal.

@@ -1,5 +1,4 @@
 {
-  "effortLevel": "high",
   "permissions": {
     "allow": [
       "Read",
@@ -13,7 +12,8 @@
       "Bash(ls:*)",
       "Bash(wc:*)",
       "Bash(head:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(wait)"
     ],
     "deny": [
       "Write(eval.py)",
@@ -41,5 +41,6 @@
       "WebFetch",
       "WebSearch"
     ]
-  }
+  },
+  "effortLevel": "high"
 }

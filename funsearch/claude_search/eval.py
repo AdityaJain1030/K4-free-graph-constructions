@@ -39,7 +39,7 @@ from graph_utils import (
 
 RESULTS_PATH = HERE / "results.jsonl"
 
-N_FAST = [20, 25, 30, 40, 50, 60]
+N_FAST = list(range(7, 61))  # every integer N in [7, 60]
 N_ALL = [20, 21, 24, 25, 27, 30, 33, 35, 36, 39, 40, 42, 45, 48, 50,
          51, 54, 55, 57, 60, 63, 65, 66, 69, 70, 72, 75, 78, 80, 81,
          84, 85, 87, 90, 93, 95, 96, 99, 100]

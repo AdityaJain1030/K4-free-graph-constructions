@@ -39,14 +39,24 @@ c = α(G) · d_max / (N · ln(d_max))
 - Run `python leaderboard.py` to see standings.
 - Run `python show_best.py` to inspect source + full per-N metrics for
   the top 3.
-- Study `results.jsonl` (append-only JSON lines) for full history of
-  every attempt, including failures.
 
 ## Scoring
 
 - **Primary score** = mean(finite c values over Stage 1 N values)
   + 0.001 × `code_length`. **Lower is better.**
-- Stage 1 N values: `[20, 25, 30, 40, 50, 60]`.
+- **Partial-N constructions are welcome.** The mean is taken only over N
+  where your construct returned a valid K₄-free graph (failures are
+  dropped, not averaged as infinity). A construction that only works at
+  N ∈ {q² + q + 1 : q prime power} or N ∈ {primes ≡ 1 mod 4}, but scores
+  c = 0.5 at those N, will easily beat a construction that works
+  everywhere averaging c = 0.8. **Finding an infinite family that
+  achieves c → constant < 0.6789 is the goal; covering every N in
+  Stage 1 is not.** Return `[]` or let construct raise for N outside
+  your family's sweet spot.
+- Stage 1 N values: every integer in `[7, 60]` (54 values). The signal is
+  how your construction behaves as a function of N, not just at a handful
+  of points. N=17 is included but will not trivially reward P(17) copies
+  because the penalty is mean over all 54 N.
 - Stage 2 (triggered if Stage 1 mean c < 1.5) evaluates additional N
   values up to 75 by default (100 with `--full`).
 - `score_full` = same formula across ALL evaluated N values (only set
@@ -54,8 +64,6 @@ c = α(G) · d_max / (N · ln(d_max))
 - `score_regularity` = mean `regularity_score` (1.0 = perfectly regular).
   Tracked separately; not part of the primary score but is the single
   strongest predictor of good c.
-- The **code-length penalty** (0.001 × chars) means: if two constructions
-  tie on c, the shorter/more algebraic one wins.
 
 ## Metrics you'll see
 
@@ -91,22 +99,21 @@ your edge selection; `timeout` means your algorithm is too slow for N=60.
 - **Cayley graphs** on finite groups are automatically regular. The group
   action ensures every vertex has the same neighborhood structure.
   The Paley graph is Cayley on (Z/pZ, +) with connection set = QRs.
-- **Circulant graphs** C(N, S) are Cayley on Z/NZ. They're N-vertex
-  |S|-regular (with |S| symmetric, i.e. s ∈ S ⇔ −s ∈ S). The challenge is
-  choosing S so the graph is K₄-free at the target N.
-- **Algebraic connection sets** (quadratic residues, cubic residues,
-  subgroups of multiplicative groups) tend to produce K₄-free graphs
-  much more often than random sets.
-- **Don't bother with:** random edge-by-edge construction, degree-capped
-  random graphs, brute-force adjacency-matrix search. All plateau near
-  c ≈ 0.94 or are too slow.
+- **Explore diverse algebraic families.** Quadratic/cubic residues in
+  F_q, subgroups of multiplicative groups, polarity graphs of projective
+  planes, incidence structures of Steiner systems, generalized quadrangles,
+  strong/tensor products of small graphs, vertex-blowups, Cayley graphs on
+  non-cyclic groups (Z/p × Z/q, dihedral, semidirect products).
+- **Abelian cyclic constructions on Z/NZ have been exhausted** in the
+  archive. They saturate near c ≈ 0.80 because the additive structure is
+  too weak. Do not spend iterations tuning offset sets on Z/NZ.
 - **Handle non-prime N.** If your construction only works at N = p prime,
   you'll score poorly at most Stage 1 N values. Consider: extending to
   Z/pq, bipartite/join composition, vertex-blowup, strong products.
-- **Study `results.jsonl`.** Every prior attempt is recorded with full
-  metrics. Look for patterns: which N values are hard? Which constructions
-  have high regularity but still bad c (then α is the bottleneck)?
-  Which have low α but bad regularity?
+- **Study `leaderboard.py` and `show_best.py` output.** Look for patterns:
+  which N values are hard? Which constructions have high regularity but
+  still bad c (then α is the bottleneck)? Which have low α but bad
+  regularity?
 
 ## Rules
 
@@ -114,8 +121,7 @@ your edge selection; `timeout` means your algorithm is too slow for N=60.
   `show_best.py`, `graph_utils.py`, or `results.jsonl`.
 - Allowed imports in candidate files: `math`, `random`, `itertools`, `numpy`.
 - If you use randomness, seed it: `random.seed(42)` or `numpy.random.seed(42)`.
-- Keep `construct()` body under 50 lines. Algebraic/concise is rewarded by
-  the code-length penalty.
+- Keep `construct()` body under 50 lines. Algebraic/concise is rewarded.
 - Name files descriptively: `gen_042_cayley_cubic_residues.py`, not
   `gen_042.py`.
 - Edges are **undirected**: return each edge once. Duplicates are harmless
