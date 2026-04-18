@@ -40,6 +40,33 @@ c = α(G) · d_max / (N · ln(d_max))
 - Run `python show_best.py` to inspect source + full per-N metrics for
   the top 3.
 
+## Discovery model — evolution, not blank slate
+
+This search is **evolutionary**, not independent. Each candidate should
+build on accumulated knowledge, not start from scratch. Three mechanisms,
+enforced by `CLAUDE.md`:
+
+1. **Persistent memory (`insights.md`).** Every evaluation ends with you
+   appending 1–3 lines of *mathematical* observation (not score): which
+   primes worked, which density threshold failed, which group structure
+   caused K₄s. Read it at the start of every cycle. Mistakes you make
+   without consulting it will be repeats of prior mistakes.
+
+2. **Modify-best over blank-slate.** If a family already has a candidate
+   scoring below 1.0, do NOT rewrite that family from scratch. `cat` the
+   parent, make one small change (swap QR for cubic residues, change
+   prime selection, add one filter), and cite `# Parent: gen_XXX` in the
+   new file's header. Mutations on known-good solutions explore the
+   local neighborhood of what works.
+
+3. **Crossover every 6th candidate.** Read the two best-scoring families'
+   source and combine a structural idea from each (e.g., QR connection
+   set on a product group). Tag `# Family: crossover`. Most crossovers
+   fail; when they land, they define a new family.
+
+The three together implement explore/exploit: insights.md is memory,
+modify-best is local exploitation, crossover is directed exploration.
+
 ## Scoring
 
 - **Primary score** = mean(finite c values over Stage 1 N values)
@@ -96,20 +123,11 @@ your edge selection; `timeout` means your algorithm is too slow for N=60.
 - **Regularity is everything.** Random/greedy methods fail not because
   they can't find K₄-free graphs, but because the degree sequence they
   produce is uneven. Focus on constructions that are regular **by design**.
-- **Cayley graphs** on finite groups are automatically regular. The group
-  action ensures every vertex has the same neighborhood structure.
-  The Paley graph is Cayley on (Z/pZ, +) with connection set = QRs.
 - **Explore diverse algebraic families.** Quadratic/cubic residues in
   F_q, subgroups of multiplicative groups, polarity graphs of projective
   planes, incidence structures of Steiner systems, generalized quadrangles,
   strong/tensor products of small graphs, vertex-blowups, Cayley graphs on
   non-cyclic groups (Z/p × Z/q, dihedral, semidirect products).
-- **Abelian cyclic constructions on Z/NZ have been exhausted** in the
-  archive. They saturate near c ≈ 0.80 because the additive structure is
-  too weak. Do not spend iterations tuning offset sets on Z/NZ.
-- **Handle non-prime N.** If your construction only works at N = p prime,
-  you'll score poorly at most Stage 1 N values. Consider: extending to
-  Z/pq, bipartite/join composition, vertex-blowup, strong products.
 - **Study `leaderboard.py` and `show_best.py` output.** Look for patterns:
   which N values are hard? Which constructions have high regularity but
   still bad c (then α is the bottleneck)? Which have low α but bad

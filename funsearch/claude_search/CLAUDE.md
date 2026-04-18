@@ -42,11 +42,12 @@ You are the K₄-free graph **optimizer** agent. Your task is defined in `RULES.
 
 ## Iteration loop
 
-1. `python leaderboard.py` to see current best and frontier per N.
-2. `python show_best.py` to see what's working.
-3. Hypothesize an improvement. The menu below is a **sample, not a
-   checklist** — pick something that looks rarely tried, or invent your
-   own. Favor novelty over safety.
+1. **Read `insights.md`** to recall what's been learned mathematically.
+2. `python leaderboard.py` to see current best and frontier per N.
+3. `python show_best.py` to see what's working.
+4. Choose your next move using the rules in the next three sections
+   (persistent memory, modify-best, crossover), then hypothesize. The
+   menu below is a **sample, not a checklist** — favor novelty:
      - Cayley graphs on non-cyclic groups (Z/p × Z/q, dihedral, affine,
        semidirect products, (Z/2)^k)
      - k-th power residues in F_q / F_{p²} / F_{p³}
@@ -58,12 +59,93 @@ You are the K₄-free graph **optimizer** agent. Your task is defined in `RULES.
      - Strong / tensor / lexicographic products of small K₃-free graphs
      - Vertex blowups, random lifts, voltage graph constructions
      - Hash-defined edges, polynomial-factorization-defined edges
-4. Write `candidates/gen_NNN_description.py`.
-5. `python eval.py candidates/gen_NNN_description.py --quick` for fast
+5. Write `candidates/gen_NNN_description.py`.
+6. `python eval.py candidates/gen_NNN_description.py --quick` for fast
    signal.
-6. If Stage 1 is promising (mean c < ~1.1), run without `--quick` for
+7. If Stage 1 is promising (mean c < ~1.1), run without `--quick` for
    full Stage 2 evaluation.
-7. Update your mental model from the result; go to 1.
+8. **Append to `insights.md`**: 1–3 lines summarizing the *mathematical*
+   pattern you observed (not just the score). See next section.
+9. Go to 1.
+
+## After every evaluation: update `insights.md`
+
+Append 1–3 lines to `insights.md` summarizing what you learned. Focus on
+MATHEMATICAL patterns, not individual results. Examples:
+
+  "Cubic residues mod p: K4-free for p=13,17,29 but NOT for p=37,41.
+   Fails when (p-1)/3 > 12. The connection set gets too dense."
+
+  "Product groups Z/aZ × Z/bZ: regularity is perfect but α scales
+   as a·α(C_b, S_b) which is too large. Need connection sets that
+   couple the two coordinates."
+
+Read `insights.md` at the start of every session and before choosing
+your next family. Do NOT delete or rewrite it — only append.
+
+## When a family already has a candidate scoring below 1.0: modify, don't restart
+
+Do NOT write a new candidate from scratch. Instead:
+
+1. Run `cat candidates/<best_in_family>.py`.
+2. Read the code carefully.
+3. Make a SPECIFIC, SMALL modification: change one parameter, swap one
+   condition in the connection set, try a different prime selection
+   strategy, add one filter on the output.
+4. Save as a new gen file, cite the parent:
+   `# Parent: gen_034 (modified connection set from QR to cubic residues)`
+
+This applies even when rotating to an underexplored family — if that
+family has ONE attempt that scored below 1.0, modify it rather than
+starting over. Small mutations on good solutions explore the local
+neighborhood of what works.
+
+## Every 6th candidate: crossover
+
+Read the source code of the best candidate from TWO DIFFERENT families
+(pick the two best-scoring families). Write a new candidate that combines
+a structural idea from each. Tag it `# Family: crossover`.
+
+Example: if cayley_cyclic uses quadratic residues on Z/pZ and
+cayley_product uses a tensor structure on Z/aZ × Z/bZ, try quadratic
+residues on the product group Z/aZ × Z/bZ.
+
+Crossover candidates often fail. That's fine — when they work, they
+define new families. Count your crossovers with the `# Family: crossover`
+tag; there should be one in every six submissions.
+
+## Family selection rule
+
+Run `python leaderboard.py` and check the **Family status** section at
+the top. Each family is tagged one of:
+
+- `UNEXPLORED` — no attempts yet.
+- `ACTIVE (underexplored)` — 1 attempt, or still improving with 0 finite scores.
+- `ACTIVE` — recent attempts are still improving the family's best.
+- `SATURATED` — 3+ consecutive attempts with no improvement to the family's best.
+  The leaderboard prints the best candidate's source inline so you can see
+  the ceiling without having to `cat` it.
+
+Rules:
+
+- You **MUST NOT** submit candidates to `SATURATED` families unless you
+  have a fundamentally different algebraic approach (not a parameter
+  tweak, not a connection-set rotation, not a prime-selection change).
+  State in your hypothesis comment at the top of the file *why* this is
+  structurally different from previous attempts in that family. If your
+  justification reduces to "different parameters", pick a different family.
+- If any family is `UNEXPLORED`, your next candidate **MUST** target it.
+  Pick the one that looks most promising from the menu in the iteration
+  loop above.
+- Otherwise, prefer `ACTIVE` families with the fewest attempts. That's
+  where the signal-per-token is highest.
+
+Every candidate file must carry a `# Family: <name>` header line as its
+first or second line so the leaderboard can classify it correctly.
+Use one of: `cayley_cyclic`, `circulant`, `cayley_product`,
+`cayley_dihedral`, `product`, `polarity`, `gq_incidence`, `kneser`,
+`hamming`, `grassmann`, `peisert`, `mathon_srg`, `blowup`, `random_lift`,
+`hash`, `latin_square`, `random_greedy`, `crossover`.
 
 ## Stopping
 

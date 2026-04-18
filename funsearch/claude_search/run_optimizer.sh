@@ -69,11 +69,6 @@ systems and block designs, generalized quadrangles, strong/tensor products
 of small graphs, vertex-blowups, Mattheus-Verstraete-style pseudorandom
 constructions. Keep each construct() body under 50 lines.
 
-**Cyclic/abelian constructions on Z/NZ are EXHAUSTED.** The archive already
-contains dozens of offset-set variants on Z/NZ and they all saturate near
-c ≈ 0.80. Do not spend iterations tuning offset sets — spend them finding
-structurally different graphs.
-
 **You do NOT need to work at every N.** Stage 1 score is the mean of FINITE
 c values only — failures are dropped, not penalized as infinity. A
 construction that works at just 2 of the 19 Stage 1 N values but scores
@@ -96,9 +91,7 @@ Every ~3 iterations, throw structure out the window and try something
 unusual: a random K4-free graph grown by rejection sampling, a tensor/strong
 product of two small graphs, an incidence graph of a Steiner system, a
 Kneser-style construction, or edges picked by a hash function you invent.
-Invalid or bad results are fine — variety is the point. Do NOT spend the
-whole run on circulant-offset tuning; the archive already shows that
-saturates around c=0.80.
+Invalid or bad results are fine — variety is the point. 
 
 ## Work fast, not deeply. If you have a hypothesis, write it and test it. Don't spend more than 30 seconds thinking before writing. Iterate quickly.
 
@@ -144,8 +137,10 @@ case "$MODE" in
         echo "Tail it with:  tail -f $LOG"
         echo
         claude --model "$MODEL" --permission-mode acceptEdits \
-               --strict-mcp-config \
-               -p "$PROMPT" 2>&1 | tee "$LOG"
+               --strict-mcp-config --output-format stream-json --verbose \
+               -p "$PROMPT" 2>&1 \
+            | python -u scripts/stream_pretty.py \
+            | tee "$LOG"
         echo
         echo "Run complete. Final leaderboard:"
         python leaderboard.py | head -15
