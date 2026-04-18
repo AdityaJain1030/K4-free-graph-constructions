@@ -1,153 +1,82 @@
 """
 graph_db/store.py
 =================
-Graph storage and property cache backed by SQLite.
+Graph store (JSON folder) + property cache (SQLite).
 
-Schema design
--------------
-graphs table
-    id       TEXT PRIMARY KEY  -- 16-hex canonical hash (see _canonical_id)
-    sparse6  TEXT NOT NULL     -- canonical sparse6 string
-    n        INT               -- vertex count (indexed for fast filter)
-    m        INT               -- edge count
-    meta     TEXT              -- JSON blob for all optional fields (source, c_log, etc.)
-                               -- adding new optional fields never requires ALTER TABLE
+Graph store
+-----------
+graphs/*.json  — each file is a JSON array of records:
+    [{"id": str, "sparse6": str, "source": str, "metadata": {...}}, ...]
 
-cache table
-    graph_id TEXT PRIMARY KEY  -- references graphs.id
-    data     BLOB              -- pickle of dict {property_name: value}
-                               -- adding new properties never requires ALTER TABLE
+Deduplication key is (id, source).  The same graph may appear multiple times
+if discovered by different methods — that is intentional.  Two records with
+the same id AND same source are considered duplicates.
 
-Deduplication
--------------
-Graphs are identified by the isomorphism class, not vertex labelling.
-Canonical ID is computed as SHA-256[:16] of the canonical sparse6.
-
-Canonical sparse6 is produced by:
-  1. pynauty  (Linux/Mac with nauty binary) -- true canonical labelling
-  2. WL hash fallback -- Weisfeiler-Lehman graph hash from networkx
-     Not 100% collision-free for non-isomorphic graphs, but in practice
-     reliable for K4-free graphs up to N~100. On hash collision the store
-     runs a VF2 isomorphism check to confirm.
-
-Usage
+Cache
 -----
-    from graph_db.store import GraphStore
-
-    db = GraphStore("graphs.db")
-    gid, is_new = db.add(G, source="sat_pareto", alpha=3, d_max=8, c_log=0.679)
-    gid, is_new = db.add(G2)  # deduplication: returns existing id if isomorphic
-
-    graph = db.get(gid)          # returns {"id", "sparse6", "n", "m", **meta}
-    graphs = db.query(n=17)      # filter by any indexed field
-    graphs = db.all_n()          # list of distinct n values in store
-
-    db.cache_set(gid, props)     # store computed property dict
-    props = db.cache_get(gid)    # retrieve; None if not cached
-    db.cache_invalidate(gid)     # force recompute next time
+cache.db  — SQLite, one row per (graph_id, source) pair with every computable
+            property.  Rebuilt from the graph store at any time.
 """
 
+import glob
 import hashlib
 import json
-import pickle
+import os
 import sqlite3
-from contextlib import contextmanager
+import warnings
 from typing import Any
 
 import networkx as nx
+warnings.filterwarnings("ignore", category=UserWarning, module="networkx")
+
+from utils.pynauty import has_pynauty as _has_pynauty
 
 
-# ---------------------------------------------------------------------------
-# Canonical form
-# ---------------------------------------------------------------------------
-
-def _to_nx(G_or_adj):
-    """Accept a networkx Graph or numpy adjacency matrix."""
-    if isinstance(G_or_adj, nx.Graph):
-        return nx.convert_node_labels_to_integers(G_or_adj)
-    import numpy as np
-    return nx.from_numpy_array(np.array(G_or_adj, dtype=np.uint8))
+def _to_int_graph(G) -> nx.Graph:
+    if not isinstance(G, nx.Graph):
+        import numpy as np
+        G = nx.from_numpy_array(np.array(G, dtype=np.uint8))
+    return nx.convert_node_labels_to_integers(G)
 
 
 def _canonical_sparse6_pynauty(G: nx.Graph) -> str:
-    """Use pynauty for a true canonical labelling → canonical sparse6."""
     import pynauty
     n = G.number_of_nodes()
     adj = {v: list(G.neighbors(v)) for v in range(n)}
     g = pynauty.Graph(n, adjacency_dict=adj)
     cert = pynauty.certificate(g)
-    # cert is a byte string that is a canonical adjacency encoding;
-    # reconstruct graph from certificate and serialise as sparse6
-    H = _cert_to_nx(cert, n)
+    H = nx.Graph()
+    H.add_nodes_from(range(n))
+    bit = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            byte_pos, bit_pos = bit // 8, 7 - (bit % 8)
+            if byte_pos < len(cert) and (cert[byte_pos] >> bit_pos) & 1:
+                H.add_edge(i, j)
+            bit += 1
     return nx.to_sparse6_bytes(H, header=False).decode("ascii").strip()
 
 
-def _cert_to_nx(cert: bytes, n: int) -> nx.Graph:
-    """Reconstruct a graph from a pynauty certificate byte string."""
-    H = nx.Graph()
-    H.add_nodes_from(range(n))
-    bit_idx = 0
-    for i in range(n):
-        for j in range(i + 1, n):
-            byte_pos = bit_idx // 8
-            bit_pos = 7 - (bit_idx % 8)
-            if byte_pos < len(cert) and (cert[byte_pos] >> bit_pos) & 1:
-                H.add_edge(i, j)
-            bit_idx += 1
-    return H
-
-
-def _canonical_sparse6_wl(G: nx.Graph) -> str:
+def canonical_id(G) -> tuple[str, str]:
     """
-    WL-hash-based canonical ID fallback (no nauty required).
-
-    Produces a stable string identifier for the isomorphism class using
-    Weisfeiler-Lehman graph hashing. Not guaranteed collision-free for
-    non-isomorphic graphs, but reliable in practice for this graph family.
-
-    Returns the WL hash string (not a sparse6 — used only for ID derivation).
+    Return (graph_id, canonical_sparse6).
+    graph_id = SHA-256[:16] of canonical_sparse6.
+    Falls back to WL hash if pynauty is unavailable.
     """
-    return nx.weisfeiler_lehman_graph_hash(G, iterations=6)
-
-
-_PYNAUTY_AVAILABLE: bool | None = None
-
-
-def _has_pynauty() -> bool:
-    global _PYNAUTY_AVAILABLE
-    if _PYNAUTY_AVAILABLE is None:
-        try:
-            import pynauty  # noqa: F401
-            _PYNAUTY_AVAILABLE = True
-        except ImportError:
-            _PYNAUTY_AVAILABLE = False
-    return _PYNAUTY_AVAILABLE
-
-
-def canonical_id(G: nx.Graph) -> tuple[str, str]:
-    """
-    Return (graph_id, canonical_sparse6) for G.
-
-    graph_id is a 16-hex-char content hash of the isomorphism class.
-    canonical_sparse6 is the canonical sparse6 string (or WL hash string
-    when pynauty is unavailable).
-    """
-    G = _to_nx(G)
+    G = _to_int_graph(G)
     if _has_pynauty():
         try:
             cs6 = _canonical_sparse6_pynauty(G)
-            gid = hashlib.sha256(cs6.encode()).hexdigest()[:16]
-            return gid, cs6
+            return hashlib.sha256(cs6.encode()).hexdigest()[:16], cs6
         except Exception:
             pass
-    # Fallback: WL hash
-    wl = _canonical_sparse6_wl(G)
+    wl = nx.weisfeiler_lehman_graph_hash(G, iterations=6)
     gid = hashlib.sha256(wl.encode()).hexdigest()[:16]
     return gid, wl
 
 
-def graph_to_sparse6(G: nx.Graph) -> str:
-    """Serialise G as a sparse6 string (current labelling, not canonical)."""
+def graph_to_sparse6(G) -> str:
+    G = _to_int_graph(G)
     return nx.to_sparse6_bytes(G, header=False).decode("ascii").strip()
 
 
@@ -155,27 +84,169 @@ def sparse6_to_nx(s6: str) -> nx.Graph:
     return nx.from_sparse6_bytes(s6.encode("ascii"))
 
 
+def edges_to_nx(edges: list, n: int) -> nx.Graph:
+    G = nx.Graph()
+    G.add_nodes_from(range(n))
+    G.add_edges_from(edges)
+    return G
+
+
 # ---------------------------------------------------------------------------
-# GraphStore
+# GraphStore  (JSON folder)
 # ---------------------------------------------------------------------------
 
 class GraphStore:
     """
-    SQLite-backed graph store with integrated property cache.
-
-    Parameters
-    ----------
-    db_path : str
-        Path to the SQLite database file. Created on first use.
+    Reads and writes the graphs/ folder.
+    Each file is a JSON array of {id, sparse6, source, metadata?} records.
+    Dedup key is (id, source): same graph from different sources is allowed.
     """
+
+    def __init__(self, graphs_dir: str):
+        self.graphs_dir = graphs_dir
+        os.makedirs(graphs_dir, exist_ok=True)
+
+    # ── read ──────────────────────────────────────────────────────────────────
+
+    def all_records(self) -> list[dict]:
+        """Return all graph records as a flat list (may contain same id with different sources)."""
+        records: list[dict] = []
+        for path in sorted(glob.glob(os.path.join(self.graphs_dir, "*.json"))):
+            with open(path) as f:
+                batch = json.load(f)
+            records.extend(batch)
+        return records
+
+    def all_id_source_pairs(self) -> set[tuple[str, str]]:
+        """Return set of (id, source) pairs currently in the store."""
+        return {(r["id"], r["source"]) for r in self.all_records()}
+
+    def all_ids(self) -> set[str]:
+        """Return set of all unique graph ids (regardless of source)."""
+        return {r["id"] for r in self.all_records()}
+
+    def all_sources(self) -> list[str]:
+        return sorted({r["source"] for r in self.all_records()})
+
+    # ── write ─────────────────────────────────────────────────────────────────
+
+    def write_batch(self, records: list[dict], filename: str):
+        """
+        Write records to graphs/{filename}.
+        Skips records whose (id, source) pair already exists in the store.
+        Returns (written, skipped) counts.
+        """
+        existing = self.all_id_source_pairs()
+        new = [r for r in records if (r["id"], r["source"]) not in existing]
+        skipped = len(records) - len(new)
+        if new:
+            path = os.path.join(self.graphs_dir, filename)
+            # Append to existing file if it already exists, else create
+            if os.path.exists(path):
+                with open(path) as f:
+                    current = json.load(f)
+                current.extend(new)
+                with open(path, "w") as f:
+                    json.dump(current, f, indent=2)
+            else:
+                with open(path, "w") as f:
+                    json.dump(new, f, indent=2)
+        return len(new), skipped
+
+    def add_graph(self, G, source: str, filename: str, **metadata) -> tuple[str, bool]:
+        """
+        Compute id + sparse6, write a single record to graphs/{filename}.
+        Returns (graph_id, was_new).  was_new=False if (id, source) already exists.
+        """
+        G = _to_int_graph(G)
+        gid, _ = canonical_id(G)
+        if (gid, source) in self.all_id_source_pairs():
+            return gid, False
+        rec = {"id": gid, "sparse6": graph_to_sparse6(G), "source": source}
+        if metadata:
+            rec["metadata"] = metadata
+        self.write_batch([rec], filename)
+        return gid, True
+
+
+# ---------------------------------------------------------------------------
+# PropertyCache  (SQLite)
+# ---------------------------------------------------------------------------
+
+_SCHEMA = """
+CREATE TABLE IF NOT EXISTS cache (
+    graph_id                TEXT    NOT NULL,
+    source                  TEXT    NOT NULL,
+    n                       INTEGER NOT NULL,
+    m                       INTEGER NOT NULL,
+    density                 REAL    NOT NULL,
+    d_min                   INTEGER NOT NULL,
+    d_max                   INTEGER NOT NULL,
+    d_avg                   REAL    NOT NULL,
+    d_var                   REAL    NOT NULL,
+    degree_sequence         TEXT    NOT NULL,
+    is_regular              INTEGER NOT NULL,
+    regularity_d            INTEGER,
+    is_connected            INTEGER NOT NULL,
+    n_components            INTEGER NOT NULL,
+    diameter                INTEGER,
+    radius                  INTEGER,
+    edge_connectivity       INTEGER,
+    vertex_connectivity     INTEGER,
+    girth                   INTEGER,
+    n_triangles             INTEGER NOT NULL,
+    avg_clustering          REAL    NOT NULL,
+    assortativity           REAL,
+    clique_num              INTEGER NOT NULL,
+    greedy_chromatic_bound  INTEGER NOT NULL,
+    is_k4_free              INTEGER NOT NULL,
+    eigenvalues_adj         TEXT    NOT NULL,
+    spectral_radius         REAL    NOT NULL,
+    spectral_gap            REAL,
+    n_distinct_eigenvalues  INTEGER NOT NULL,
+    eigenvalues_lap         TEXT    NOT NULL,
+    algebraic_connectivity  REAL,
+    alpha                   INTEGER NOT NULL,
+    c_log                   REAL,
+    beta                    REAL,
+    turan_density           REAL    NOT NULL,
+    mis_vertices            TEXT    NOT NULL,
+    triangle_edges          TEXT    NOT NULL,
+    triangle_vertices       TEXT    NOT NULL,
+    high_degree_vertices    TEXT    NOT NULL,
+    metadata                TEXT    NOT NULL DEFAULT '{}',
+    PRIMARY KEY (graph_id, source)
+);
+
+CREATE INDEX IF NOT EXISTS idx_source   ON cache(source);
+CREATE INDEX IF NOT EXISTS idx_n        ON cache(n);
+CREATE INDEX IF NOT EXISTS idx_c_log    ON cache(c_log);
+CREATE INDEX IF NOT EXISTS idx_alpha    ON cache(alpha);
+CREATE INDEX IF NOT EXISTS idx_d_max    ON cache(d_max);
+CREATE INDEX IF NOT EXISTS idx_is_k4    ON cache(is_k4_free);
+CREATE INDEX IF NOT EXISTS idx_regular  ON cache(is_regular);
+"""
+
+
+class PropertyCache:
+    """SQLite-backed property cache. One row per (graph_id, source) pair."""
 
     def __init__(self, db_path: str):
         self.db_path = db_path
         self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
-        self._conn.execute("PRAGMA journal_mode=WAL")
-        self._conn.execute("PRAGMA foreign_keys=ON")
-        self._init_schema()
+        self._migrate()
+        self._conn.executescript(_SCHEMA)
+        self._conn.commit()
+
+    def _migrate(self):
+        """Drop old single-PK schema so it gets recreated with composite PK."""
+        existing = self._conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='cache'"
+        ).fetchone()
+        if existing and "PRIMARY KEY (graph_id, source)" not in existing[0]:
+            self._conn.execute("DROP TABLE cache")
+            self._conn.commit()
 
     def close(self):
         self._conn.close()
@@ -186,186 +257,160 @@ class GraphStore:
     def __exit__(self, *_):
         self.close()
 
-    # ------------------------------------------------------------------
-    # Schema
-    # ------------------------------------------------------------------
+    def cached_pairs(self) -> set[tuple[str, str]]:
+        """Return set of (graph_id, source) pairs already in the cache."""
+        return {(r[0], r[1]) for r in self._conn.execute(
+            "SELECT graph_id, source FROM cache"
+        )}
 
-    def _init_schema(self):
-        self._conn.executescript("""
-            CREATE TABLE IF NOT EXISTS graphs (
-                id      TEXT PRIMARY KEY,
-                sparse6 TEXT NOT NULL,
-                n       INT,
-                m       INT,
-                meta    TEXT DEFAULT '{}'
-            );
-            CREATE INDEX IF NOT EXISTS idx_graphs_n ON graphs(n);
+    def cached_ids(self) -> set[str]:
+        """Return set of unique graph_ids in cache (regardless of source)."""
+        return {r[0] for r in self._conn.execute("SELECT DISTINCT graph_id FROM cache")}
 
-            CREATE TABLE IF NOT EXISTS cache (
-                graph_id TEXT PRIMARY KEY,
-                data     BLOB
-            );
-        """)
+    def insert(self, graph_id: str, source: str, props: dict, metadata: dict):
+        def j(v):
+            return json.dumps(v)
+
+        self._conn.execute("""
+            INSERT OR REPLACE INTO cache VALUES (
+                ?,?,  ?,?,?,  ?,?,?,?,?,?,?,
+                ?,?,?,?,?,?,  ?,?,?,?,  ?,?,?,
+                ?,?,?,?,  ?,?,  ?,?,?,?,
+                ?,?,?,?,  ?
+            )
+        """, (
+            graph_id, source,
+            props["n"], props["m"], props["density"],
+            props["d_min"], props["d_max"], props["d_avg"], props["d_var"],
+            j(props["degree_sequence"]),
+            int(props["is_regular"]), props["regularity_d"],
+            int(props["is_connected"]), props["n_components"],
+            props["diameter"], props["radius"],
+            props["edge_connectivity"], props["vertex_connectivity"],
+            props["girth"], props["n_triangles"],
+            props["avg_clustering"], props["assortativity"],
+            props["clique_num"], props["greedy_chromatic_bound"],
+            int(props["is_k4_free"]),
+            j(props["eigenvalues_adj"]), props["spectral_radius"],
+            props["spectral_gap"], props["n_distinct_eigenvalues"],
+            j(props["eigenvalues_lap"]), props["algebraic_connectivity"],
+            props["alpha"], props["c_log"], props["beta"],
+            props["turan_density"],
+            j(props["mis_vertices"]), j(props["triangle_edges"]),
+            j(props["triangle_vertices"]), j(props["high_degree_vertices"]),
+            j(metadata),
+        ))
         self._conn.commit()
 
-    # ------------------------------------------------------------------
-    # Graph CRUD
-    # ------------------------------------------------------------------
-
-    def add(self, G, **meta) -> tuple[str, bool]:
+    def query(self, **filters) -> list[dict]:
         """
-        Insert G into the store.  Returns (graph_id, was_new).
-
-        If an isomorphic graph is already stored, returns its existing id
-        and was_new=False without modifying the database.
-
-        Optional keyword args are stored in the JSON meta blob:
-            source, c_log, alpha, d_max, source_meta, ...
+        Filter by any typed column. Values can be scalars or (min, max) tuples.
+        Example: cache.query(n=17, is_k4_free=1)
+                 cache.query(c_log=(0.0, 0.75), n=(20, 40))
         """
-        G = _to_nx(G)
-        gid, cs6 = canonical_id(G)
-
-        # Check for existing entry (dedup)
-        row = self._conn.execute(
-            "SELECT id FROM graphs WHERE id = ?", (gid,)
-        ).fetchone()
-
-        if row is not None:
-            # If pynauty is unavailable, verify isomorphism on WL collision
-            if not _has_pynauty():
-                existing = self.get(gid)
-                G_existing = sparse6_to_nx(existing["sparse6"])
-                if not nx.is_isomorphic(G, G_existing):
-                    # True WL collision (extremely rare): append suffix
-                    suffix = 0
-                    while True:
-                        candidate = f"{gid}_{suffix:02x}"
-                        if not self._conn.execute(
-                            "SELECT id FROM graphs WHERE id = ?", (candidate,)
-                        ).fetchone():
-                            gid = candidate
-                            break
-                        suffix += 1
-                else:
-                    return gid, False
+        where, params = [], []
+        for col, val in filters.items():
+            if isinstance(val, tuple):
+                where.append(f"{col} >= ? AND {col} <= ?")
+                params.extend(val)
             else:
-                return gid, False
-
-        n = G.number_of_nodes()
-        m = G.number_of_edges()
-        s6 = graph_to_sparse6(G)
-
-        self._conn.execute(
-            "INSERT INTO graphs(id, sparse6, n, m, meta) VALUES (?,?,?,?,?)",
-            (gid, s6, n, m, json.dumps(meta)),
-        )
-        self._conn.commit()
-        return gid, True
-
-    def get(self, graph_id: str) -> dict | None:
-        """Return graph record as dict, or None if not found."""
-        row = self._conn.execute(
-            "SELECT id, sparse6, n, m, meta FROM graphs WHERE id = ?",
-            (graph_id,),
-        ).fetchone()
-        if row is None:
-            return None
-        d = dict(row)
-        d["meta"] = json.loads(d["meta"])
-        return d
-
-    def get_nx(self, graph_id: str) -> nx.Graph | None:
-        """Return the stored graph as a NetworkX Graph."""
-        row = self.get(graph_id)
-        if row is None:
-            return None
-        return sparse6_to_nx(row["sparse6"])
-
-    def query(self, n: int | None = None, **meta_filters) -> list[dict]:
-        """
-        Filter graphs by n and/or meta fields.
-
-        meta_filters are matched exactly against the JSON meta blob.
-        Example: db.query(n=17, source="sat_pareto")
-        """
-        sql = "SELECT id, sparse6, n, m, meta FROM graphs WHERE 1=1"
-        params: list[Any] = []
-        if n is not None:
-            sql += " AND n = ?"
-            params.append(n)
+                where.append(f"{col} = ?")
+                params.append(val)
+        sql = "SELECT * FROM cache"
+        if where:
+            sql += " WHERE " + " AND ".join(where)
         rows = self._conn.execute(sql, params).fetchall()
-        results = []
-        for row in rows:
-            d = dict(row)
-            d["meta"] = json.loads(d["meta"])
-            if all(d["meta"].get(k) == v for k, v in meta_filters.items()):
-                results.append(d)
-        return results
+        return [self._deserialise(dict(r)) for r in rows]
 
-    def all_ids(self) -> list[str]:
-        return [r[0] for r in self._conn.execute("SELECT id FROM graphs").fetchall()]
+    def get(self, graph_id: str, source: str | None = None) -> dict | None:
+        """Return one cache row. If source is None, returns the first matching row."""
+        if source is not None:
+            row = self._conn.execute(
+                "SELECT * FROM cache WHERE graph_id = ? AND source = ?",
+                (graph_id, source),
+            ).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT * FROM cache WHERE graph_id = ?", (graph_id,)
+            ).fetchone()
+        return self._deserialise(dict(row)) if row else None
 
-    def all_n(self) -> list[int]:
-        """Return sorted list of distinct n values in the store."""
+    def get_all(self, graph_id: str) -> list[dict]:
+        """Return all rows for this graph_id (one per source that discovered it)."""
+        rows = self._conn.execute(
+            "SELECT * FROM cache WHERE graph_id = ?", (graph_id,)
+        ).fetchall()
+        return [self._deserialise(dict(r)) for r in rows]
+
+    def all_sources(self) -> list[str]:
         return [r[0] for r in self._conn.execute(
-            "SELECT DISTINCT n FROM graphs ORDER BY n"
-        ).fetchall()]
+            "SELECT DISTINCT source FROM cache ORDER BY source"
+        )]
 
     def count(self) -> int:
-        return self._conn.execute("SELECT COUNT(*) FROM graphs").fetchone()[0]
+        return self._conn.execute("SELECT COUNT(*) FROM cache").fetchone()[0]
 
-    def update_meta(self, graph_id: str, **updates):
-        """Merge new key-value pairs into a graph's meta blob."""
-        row = self._conn.execute(
-            "SELECT meta FROM graphs WHERE id = ?", (graph_id,)
-        ).fetchone()
-        if row is None:
-            raise KeyError(graph_id)
-        meta = json.loads(row["meta"])
-        meta.update(updates)
-        self._conn.execute(
-            "UPDATE graphs SET meta = ? WHERE id = ?",
-            (json.dumps(meta), graph_id),
-        )
-        self._conn.commit()
+    @staticmethod
+    def _deserialise(row: dict) -> dict:
+        for col in ("degree_sequence", "eigenvalues_adj", "eigenvalues_lap",
+                    "mis_vertices", "triangle_edges", "triangle_vertices",
+                    "high_degree_vertices", "metadata"):
+            if isinstance(row.get(col), str):
+                row[col] = json.loads(row[col])
+        return row
 
-    # ------------------------------------------------------------------
-    # Property cache
-    # ------------------------------------------------------------------
 
-    def cache_set(self, graph_id: str, props: dict):
-        """Store a property dict for graph_id. Overwrites existing entry."""
-        data = pickle.dumps(props, protocol=pickle.HIGHEST_PROTOCOL)
-        self._conn.execute(
-            "INSERT OR REPLACE INTO cache(graph_id, data) VALUES (?,?)",
-            (graph_id, data),
-        )
-        self._conn.commit()
+# ---------------------------------------------------------------------------
+# GraphDB  (convenience wrapper)
+# ---------------------------------------------------------------------------
 
-    def cache_get(self, graph_id: str) -> dict | None:
-        """Return cached property dict, or None if not yet computed."""
-        row = self._conn.execute(
-            "SELECT data FROM cache WHERE graph_id = ?", (graph_id,)
-        ).fetchone()
-        if row is None:
-            return None
-        return pickle.loads(row["data"])
+class GraphDB:
+    """
+    Combines GraphStore + PropertyCache.
+    Call sync() to compute and cache properties for any new (graph, source) pairs.
+    """
 
-    def cache_invalidate(self, graph_id: str):
-        """Delete cached properties for graph_id (forces recompute)."""
-        self._conn.execute("DELETE FROM cache WHERE graph_id = ?", (graph_id,))
-        self._conn.commit()
+    def __init__(self, graphs_dir: str, cache_path: str):
+        self.store = GraphStore(graphs_dir)
+        self.cache = PropertyCache(cache_path)
 
-    def cache_missing(self) -> list[str]:
-        """Return ids of graphs that have no cache entry."""
-        return [r[0] for r in self._conn.execute("""
-            SELECT g.id FROM graphs g
-            LEFT JOIN cache c ON g.id = c.graph_id
-            WHERE c.graph_id IS NULL
-        """).fetchall()]
+    def sync(self, show_progress: bool = True):
+        """
+        Find all (id, source) pairs in the store missing from the cache,
+        compute their properties, and insert them.
+        """
+        from graph_db.properties import compute_properties
 
-    def cache_update(self, graph_id: str, **updates):
-        """Merge new keys into an existing cache entry without full recompute."""
-        existing = self.cache_get(graph_id) or {}
-        existing.update(updates)
-        self.cache_set(graph_id, existing)
+        store_recs = self.store.all_records()       # list[dict]
+        cached     = self.cache.cached_pairs()      # set of (graph_id, source)
+
+        missing = [r for r in store_recs if (r["id"], r["source"]) not in cached]
+
+        if not missing:
+            if show_progress:
+                print("Cache up to date.")
+            return
+
+        if show_progress:
+            print(f"Computing properties for {len(missing)} new graph(s)...")
+
+        for i, rec in enumerate(missing, 1):
+            G = sparse6_to_nx(rec["sparse6"])
+            props = compute_properties(G)
+            self.cache.insert(
+                graph_id=rec["id"],
+                source=rec["source"],
+                props=props,
+                metadata=rec.get("metadata", {}),
+            )
+            if show_progress:
+                c = props.get("c_log")
+                c_str = f"{c:.4f}" if c else "  —  "
+                print(f"  [{i}/{len(missing)}] id={rec['id']} "
+                      f"source={rec['source']} n={props['n']} c_log={c_str}")
+
+        if show_progress:
+            print(f"Done. Cache now has {self.cache.count()} entries.")
+
+    def close(self):
+        self.cache.close()

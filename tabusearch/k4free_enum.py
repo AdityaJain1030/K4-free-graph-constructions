@@ -47,39 +47,24 @@ from collections import defaultdict
 
 import networkx as nx
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.graph_props import alpha_exact_nx, is_k4_free_nx
+
 
 # ---------------------------------------------------------------------------
-# Maximum independent set — exact branch & bound
+# Maximum independent set (via utils)
 # ---------------------------------------------------------------------------
 def alpha(G: nx.Graph) -> int:
-    """Exact maximum independent set size via branch-and-bound."""
-    adj = {v: set(G.neighbors(v)) for v in G.nodes()}
-    best = [0]
-
-    def branch(cands, size):
-        if not cands:
-            if size > best[0]:
-                best[0] = size
-            return
-        if size + len(cands) <= best[0]:
-            return
-        v = max(cands, key=lambda x: len(adj[x] & cands))
-        branch(cands - adj[v] - {v}, size + 1)
-        branch(cands - {v}, size)
-
-    branch(set(G.nodes()), 0)
-    return best[0]
+    """Exact maximum independent set size."""
+    size, _ = alpha_exact_nx(G)
+    return size
 
 
 # ---------------------------------------------------------------------------
-# K4-free check (pure-Python fallback only)
+# K4-free check (via utils)
 # ---------------------------------------------------------------------------
 def is_k4_free(G: nx.Graph) -> bool:
-    nodes = list(G.nodes())
-    for quad in itertools.combinations(nodes, 4):
-        if all(G.has_edge(u, v) for u, v in itertools.combinations(quad, 2)):
-            return False
-    return True
+    return is_k4_free_nx(G)
 
 
 def iso_cert(G: nx.Graph) -> tuple:

@@ -1,0 +1,152 @@
+[
+  {
+    "id": "4079efa0bc01604a",
+    "sparse6": ":CcK",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 1,
+      "c_log": 1.365359,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "e16a320a72e9b083",
+    "sparse6": ":CcKN",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 2,
+      "c_log": 1.365359,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "aa5f8145f13fb0fa",
+    "sparse6": ":CcJ",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 3,
+      "c_log": 1.442695,
+      "d_max": 2
+    }
+  },
+  {
+    "id": "05e475d4a4783859",
+    "sparse6": ":Ccn",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 4,
+      "c_log": 1.442695,
+      "d_max": 2
+    }
+  },
+  {
+    "id": "ba285621f5506325",
+    "sparse6": ":Cci",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 5,
+      "c_log": 1.442695,
+      "d_max": 2
+    }
+  },
+  {
+    "id": "ede73ae5059d79ad",
+    "sparse6": ":Da@a~",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 1,
+      "c_log": 1.092287,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "f0ae0c2e784589b0",
+    "sparse6": ":Da@_Y",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 2,
+      "c_log": 1.092287,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "7bd4c5d1823e3e84",
+    "sparse6": ":Da@aR",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 3,
+      "c_log": 1.092287,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "d454e16aa9f0e47e",
+    "sparse6": ":Da@_YN",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 4,
+      "c_log": 1.092287,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "e6c76e3f3814b24d",
+    "sparse6": ":Da@o~",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 5,
+      "c_log": 1.154156,
+      "d_max": 2
+    }
+  },
+  {
+    "id": "6a1085d1c4bd0117",
+    "sparse6": ":Ea@azR",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 1,
+      "c_log": 0.910239,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "eb1248a3fd4fac07",
+    "sparse6": ":Ea@_YlN",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 2,
+      "c_log": 0.910239,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "a896e441692b4cc9",
+    "sparse6": ":Ea@aRlN",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 3,
+      "c_log": 0.910239,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "7268abcead567fb5",
+    "sparse6": ":Ea@aRgs",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 4,
+      "c_log": 0.910239,
+      "d_max": 3
+    }
+  },
+  {
+    "id": "1d9945b80a1fbb68",
+    "sparse6": ":Ea@ozR",
+    "source": "brute_force",
+    "metadata": {
+      "rank": 5,
+      "c_log": 0.961797,
+      "d_max": 2
+    }
+  }
+]

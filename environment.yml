@@ -1,0 +1,94 @@
+# Unified environment for the 4cycle project.
+# Merges ILP_pareto_enum + funsearch deps + graph_db deps + nauty build tools.
+#
+# Create:   micromamba env create -f environment.yml
+# Activate:  micromamba activate 4cycle
+# Post-setup (builds nauty + installs pynauty):
+#            bash scripts/setup_nauty.sh
+#
+# Mac vs Linux notes — see bottom of this file.
+
+name: 4cycle
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+
+  # ── Build tools for setup_nauty.sh ─────────────────────────────────────────
+  # c-compiler is a conda-forge metapackage: resolves to gcc on Linux,
+  # clang (Apple toolchain wrapper) on macOS. Both support autotools builds.
+  - c-compiler
+  - cxx-compiler
+  - make
+  - autoconf
+  - automake
+  - wget          # setup_nauty.sh uses wget; not present by default on macOS
+
+  # ── Core scientific stack (conda-managed for reliable binary wheels) ────────
+  - numpy>=2.0
+  - scipy
+  - matplotlib
+  - pandas
+  - networkx>=3.6
+  - pillow
+  - psutil
+  - tqdm
+
+  # ── UI (tkinter backend for visualizer) ────────────────────────────────────
+  - tk
+
+  # ── pip packages ────────────────────────────────────────────────────────────
+  - pip
+  - pip:
+    # SAT / ILP
+    - ortools==9.15.6755
+    - python-sat==1.9.dev2
+
+    # NOTE: pynauty is NOT listed here.
+    # It is installed by scripts/setup_nauty.sh after nauty itself builds,
+    # so the C compiler chain is known to work and SDKROOT is set on macOS.
+
+    # Google Gemini API (claude_search / funsearch)
+    - google-genai==1.70.0
+    - google-auth==2.49.1
+    - googleapis-common-protos==1.74.0
+
+    # xAI / Grok API (claude_search)
+    - xai-sdk==1.11.0
+
+    # Anthropic API
+    - anthropic
+
+    # HTTP / async support
+    - grpcio==1.80.0
+    - protobuf==6.33.6
+    - httpx==0.28.1
+    - tenacity==9.1.4
+
+    # Data / validation
+    - pydantic==2.12.5
+
+    # Testing
+    - pytest==9.0.3
+
+# ── Mac vs Linux compatibility ─────────────────────────────────────────────────
+#
+# WORKS ON BOTH:
+#   - All conda packages above (c-compiler, make, autoconf, wget, etc.)
+#     conda-forge ships pre-built binaries for linux-64, osx-64, osx-arm64.
+#   - setup_nauty.sh: autotools build, works identically on both platforms
+#     once wget + make + c-compiler are in PATH via this env.
+#   - ortools, networkx, numpy, scipy: binary wheels available for all platforms.
+#   - anthropic, google-genai, xai-sdk: pure Python or binary wheels, fine everywhere.
+#
+# CAVEAT — pynauty on macOS:
+#   pynauty is installed by scripts/setup_nauty.sh (not here) so that we can
+#   set SDKROOT to the Xcode SDK path before pip compiles the C extension.
+#   setup_nauty.sh will warn clearly if Xcode CLT is missing and exit cleanly
+#   rather than producing a cryptic compiler error.
+#   Without pynauty the project is fully functional; graph_db falls back to
+#   WL-hash deduplication.
+#
+# NOT SUPPORTED — Windows (native):
+#   setup_nauty.sh is a bash script and nauty's autotools build does not
+#   support MSVC. WSL2 on Windows works fine (treated as Linux).

@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(micromamba run *)",
+      "Bash(python *)",
+      "Bash(conda run *)",
+      "Read(//home/adity/anaconda3/**)",
+      "Read(//home/adity/miniconda3/**)",
+      "Bash(/mnt/c/Users/adity/micromamba/envs/env_axplorer/python.exe *)"
     ]
   }
 }

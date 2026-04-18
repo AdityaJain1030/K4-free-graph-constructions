@@ -22,24 +22,15 @@ if _PROJECT_ROOT not in sys.path:
 from k4free_ilp.alpha_exact import alpha_exact
 from k4free_ilp.k4_check import is_k4_free
 from k4free_ilp.graph_io import adj_to_g6
-
-KNOWN_RAMSEY = {
-    (3, 3): 6, (3, 4): 9, (3, 5): 14, (3, 6): 18, (3, 7): 23, (3, 8): 28, (3, 9): 36,
-    (4, 3): 9, (4, 4): 18, (4, 5): 25,
-}
-for (s, t), v in list(KNOWN_RAMSEY.items()):
-    KNOWN_RAMSEY[(t, s)] = v
+from utils.ramsey import KNOWN_RAMSEY, degree_bounds as _degree_bounds_ramsey
 
 _LAZY_THRESHOLD = 5_000_000
 
 
 def _degree_bounds(n, max_alpha):
-    """Ramsey-based bounds on the base degree D: (d_lo, d_hi)."""
-    r4a = KNOWN_RAMSEY.get((4, max_alpha))
-    d_lo = max(0, n - r4a) if r4a is not None else 0
-    r3a1 = KNOWN_RAMSEY.get((3, max_alpha + 1))
-    d_hi = r3a1 - 1 if r3a1 is not None else n - 1
-    return d_lo, d_hi
+    """Ramsey-based bounds on the base degree D: (d_lo, d_hi). Defaults 0/n-1 if unavailable."""
+    min_deg, max_deg = _degree_bounds_ramsey(n, max_alpha)
+    return (min_deg if min_deg != -1 else 0), (max_deg if max_deg != -1 else n - 1)
 
 
 def _build_model(n, max_alpha, D, enumerate_alpha=False, alpha_cuts=None):

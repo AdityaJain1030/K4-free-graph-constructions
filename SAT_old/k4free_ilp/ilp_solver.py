@@ -7,43 +7,15 @@ from math import comb
 import numpy as np
 from ortools.sat.python import cp_model
 
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from k4free_ilp.k4_check import is_k4_free
 from k4free_ilp.alpha_exact import alpha_exact
+from utils.ramsey import KNOWN_RAMSEY, degree_bounds as _ramsey_degree_bounds
 
 # Configurable threshold: C(n, alpha+1) above this triggers lazy solver
 _LAZY_THRESHOLD = 5_000_000
-
-# Known Ramsey numbers R(s,t) used to derive implied degree bounds.
-# R(s,t) = min N such that every 2-coloring of K_N has red K_s or blue K_t.
-KNOWN_RAMSEY = {
-    (3, 3): 6, (3, 4): 9, (3, 5): 14, (3, 6): 18, (3, 7): 23, (3, 8): 28, (3, 9): 36,
-    (4, 3): 9, (4, 4): 18, (4, 5): 25,
-}
-# Symmetric: R(s,t) = R(t,s)
-for (s, t), v in list(KNOWN_RAMSEY.items()):
-    KNOWN_RAMSEY[(t, s)] = v
-
-
-def _ramsey_degree_bounds(n: int, max_alpha: int) -> tuple[int, int]:
-    """Derive degree bounds from Ramsey theory for K₄-free graphs with α ≤ max_alpha.
-
-    For vertex v in a K₄-free graph G with α(G) ≤ t:
-      - Non-neighborhood has α ≤ t-1, is K₄-free → size < R(4, t) → deg(v) ≥ n - R(4, t)
-      - Neighborhood is triangle-free with α ≤ t → size < R(3, t+1) → deg(v) ≤ R(3, t+1) - 1
-
-    Returns (min_degree, max_degree_bound). Values of -1 mean no bound available.
-    """
-    t = max_alpha
-
-    # Lower bound on degree from non-neighborhood
-    r4t = KNOWN_RAMSEY.get((4, t))
-    min_deg = max(0, n - r4t) if r4t is not None else -1
-
-    # Upper bound on degree from neighborhood being triangle-free
-    r3tp1 = KNOWN_RAMSEY.get((3, t + 1))
-    max_deg = r3tp1 - 1 if r3tp1 is not None else -1
-
-    return min_deg, max_deg
 
 
 def _generate_hint(n: int, target_degree: int) -> np.ndarray:
