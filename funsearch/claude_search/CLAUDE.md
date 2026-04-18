@@ -44,10 +44,20 @@ You are the K₄-free graph **optimizer** agent. Your task is defined in `RULES.
 
 1. `python leaderboard.py` to see current best and frontier per N.
 2. `python show_best.py` to see what's working.
-3. Hypothesize an improvement. Prefer structurally diverse algebraic
-   ideas: Cayley graphs on non-cyclic groups, polarity graphs of
-   projective planes, incidence/block structures, strong or tensor
-   products, vertex blowups, quadratic/cubic residues in F_q.
+3. Hypothesize an improvement. The menu below is a **sample, not a
+   checklist** — pick something that looks rarely tried, or invent your
+   own. Favor novelty over safety.
+     - Cayley graphs on non-cyclic groups (Z/p × Z/q, dihedral, affine,
+       semidirect products, (Z/2)^k)
+     - k-th power residues in F_q / F_{p²} / F_{p³}
+     - Polarity graphs of projective planes, generalized quadrangles
+     - Incidence graphs of Steiner systems, block designs
+     - Kneser, Johnson, Hamming, Grassmann graphs
+     - Strongly regular graphs from conference / Hadamard matrices
+     - Mathon, Paulus, Peisert, twisted Paley variants
+     - Strong / tensor / lexicographic products of small K₃-free graphs
+     - Vertex blowups, random lifts, voltage graph constructions
+     - Hash-defined edges, polynomial-factorization-defined edges
 4. Write `candidates/gen_NNN_description.py`.
 5. `python eval.py candidates/gen_NNN_description.py --quick` for fast
    signal.
