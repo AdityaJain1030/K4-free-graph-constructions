@@ -28,6 +28,7 @@ dependencies:
   - numpy>=2.0
   - scipy
   - matplotlib
+  - plotly       # WebGL 3D plots in the browser — used by visualizer/plots/*
   - pandas
   - networkx>=3.6
   - pillow

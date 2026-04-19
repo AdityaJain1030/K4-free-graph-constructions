@@ -1,0 +1,74 @@
+[
+  {
+    "id": "47e3d9e52703b92e",
+    "sparse6": ":KiKdHDaKpwaLK`bhaGXAh",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 2,
+      "seed": 0,
+      "trial": 1,
+      "n_pencils": 9,
+      "pencil_size": 4
+    }
+  },
+  {
+    "id": "3999e82cb5d40e15",
+    "sparse6": ":KiMCADLK`gaEWyGaGSqG@CSyD^",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 2,
+      "seed": 0,
+      "trial": 0,
+      "n_pencils": 9,
+      "pencil_size": 4
+    }
+  },
+  {
+    "id": "aba832811a1bd09c",
+    "sparse6": ":KeIgWRHCPboCOkqDL?GqDK^",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 2,
+      "seed": 0,
+      "trial": 2,
+      "n_pencils": 9,
+      "pencil_size": 4
+    }
+  },
+  {
+    "id": "ac2c70ad899ed0b2",
+    "sparse6": ":~??~a?woMOCBOXW]RHDbGGUaAEBxkCOIEcWg[UKbBaCCKJGoYHKgTJq@PWpFDBqsKSMFcqkSYZa@`Gk]QKEh?ccULErcOILGexWo[OLEwOWUKGEBHyQMGCQPOxCBa`h[{_PO?w{eTJDr`t?`PP`OsgZOGW_kWMHDaxhJHDBPxCgTJeRqAKFEdbXuIIEB`x?cUJeRq@P?A`_wc]VLfCIICBCA`x?gWNFsAXT?@`P?o]OHDrHo}`RIGGSMGEeBYHGeTo`Ww_RKERPo}bQHTC?ABDb@p?aYMFRyLJBCAphCgTJeRPw}aQHdCCGEDBqPOoeSidix^A@aPp?cTJDr@pEdSIeBECECa`Ww_PKFsY\\OkUo_Wo]RIdbyHEdRIDSCGKHdRHt?aPhSyhUkWKWOKKIIDRHoy]OGcs?YNHCqxcs[OgsitarYLg?OIHDcaXSs]OitixcrYLUs?ABA`p@?aULFsIHEfSIuJXnA@`?g[SKGCaXOmXMFSA`YrYOO_[OKFDaxoy^OGSyhesZMG?CCBA@POkeSIfBhw}eRiDJHn?@@Ow_QPHDAh[qYLhTIt[nYLf[?CCB@p?c[NGCb@|GdRiDI|iuZ~",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 3,
+      "seed": 0,
+      "trial": 0,
+      "n_pencils": 28,
+      "pencil_size": 9
+    }
+  },
+  {
+    "id": "5a877ef7eb6d71b2",
+    "sparse6": ":~??~b`XGYUE`@?{[RNDRP{CSJFQ@Gs^P_@`kKIQIRacslKGCQ`YMNHdG__QMFdRCO[OHDxGw_S__ogwoZcAP_w]T_A``KmYMRqhgu\\eCAHKgYMpp?c]PIdrCcWPIDRkSKKEbaHdDEECQP|@@DB`xKwaPhW_[QPIFSkWaQHebhxDJGDQx_ycQhdCCEFFcqxkw]RiDKGGIDcAP[q]NgCYPIg_?_gWSMHDbI@AaRiTS?EDCA`X[s[OGSYTMh`?p?g_SKeryDGeRiDSGEFCa`XKkVKERq@Ae``?wk[RIDrq@GdSP?os[UKfBy@AaPiDKWOJEBQPp?`Phcyh]o_?__{iUKfBp|EfSjeCSKGEbqX_w\\PhTQlWnXoOOOmWLfbyLMgUJUJHhA@a@OocSJEsAHGeRiUkSOJEBQ@csZOgcqh_pXlWOKIHDbQXWu_PhdIl[p_?POw_QHdQp[qaPhtj@cv[O?GGMHDAqp[sZMHCiXMgYLwGSKFCCAXSoYLfsi|_pXlfBi?@@`@Ws]UKER`s{^OhCi`cu[OOo[OIDcAhWq[Mfby@AcYLUreGDBa@H?aQHdax_w\\NHCipYmXmN",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 3,
+      "seed": 0,
+      "trial": 2,
+      "n_pencils": 28,
+      "pencil_size": 9
+    }
+  },
+  {
+    "id": "c01a4327b0db18dc",
+    "sparse6": ":~??~d`wgiIE`PPTCXDEPW`CfEDbaKOWR``p?w_SaA@{WQOHDgOkaWa``GwpLFCaXiCKIERcKSJEcQ`WpABaQHs|GDbQPMgTJEsCWSMGCQPKkWOoowgYWLfw_W[VKfcADFCDcQPWm^OO_wcWNIesQPJHDb@x?gUJfSYQULJeBIMIEBbaHoy_Ohcya?NGDRPkw]NgSkCOHDAq@Sw\\OhDCKOLFCAPKgWNhdK?MNGCap_w^OhtCcYOHCqh_s\\NHCieWLIEBH|RBBA@_w]OIDRPxIgVoOgcSQIdaxpEgTJECCOIIDQpkw^RIDix^?ABPx?mXMFsAD`?@`?xCeVKebXt?jVkUSOIHFcRPt?aPiDQlWn__o_{kXLGCQXMgTItax^AAa@PkwcQhcyt[nWKucCCBDdaxp?aPhdIhYna@Ooc[RLFRqDEfSIdzHev[O_o[OHDAq@Ce`QiDa|crYmGWgWLFEBHgy^OGcaTUlWlvBiAEBa@O{_PHCrXs{cQkUZPiw[o?OKMGDb@xGeSIeRPlAbXlUr\\v??____QIDb@gw_PHCq`SubUjdzLkw",
+    "source": "mattheus_verstraete",
+    "metadata": {
+      "q": 3,
+      "seed": 0,
+      "trial": 1,
+      "n_pencils": 28,
+      "pencil_size": 9
+    }
+  }
+]

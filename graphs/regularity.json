@@ -1,0 +1,250 @@
+[
+  {
+    "id": "9cb24591b489ddc6",
+    "sparse6": ":I`KS`qF?PGbJ?`gdMb",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "4c1fde100f37167e",
+    "sparse6": ":J`?L@rHUXJQMaHc^",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 3
+    }
+  },
+  {
+    "id": "a7b5ca49e5d92fcc",
+    "sparse6": ":K`O[aQEUOqQEQ@RpKa?Si",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "c903e6d73bec1204",
+    "sparse6": ":L`A?POB?c@QEOsQDLCXAqIXKqeM`SPFOdV",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "623d853e40dfd182",
+    "sparse6": ":M`SXHQGYpxePKiCpCQ?qD_CQ~",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "d6107811d65bef28",
+    "sparse6": ":N`KTPccMOyEi]PGdOe@bhaPSCIZ",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "a64f69c5cd2125b9",
+    "sparse6": ":O`OOxBdMPBRI]XAgcOiWeOm@si_CpuoAWzN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 5
+    }
+  },
+  {
+    "id": "45ade354252a541a",
+    "sparse6": ":Pa@_@AdCfCDEcEFdEFeGHcDEGH_GHIJ`ACDE_@BCFL_ABIK_@ADIN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "fc885a0250e91f1b",
+    "sparse6": ":Q____ABeDddEeFGeFHkFJ`JK`IJKbCDaBGN`AJL",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "a4e5aaeaf3cfe2d5",
+    "sparse6": ":R___A_@BeDdEefddHIfHIgIeGLaLM`JK`CHOaBGN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "da9912b6f52dc551",
+    "sparse6": ":S_bAbaCbCDaCDabghfGIeHJgIhJ_JN`IM`LNO_KMP",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "6b5d2c5880afb01a",
+    "sparse6": ":T____AB_@_ABDgFffGfGHcGIJdGHJ`FGHL`DIJ`DHL`EHMNOaBFIOaBCIKQaBCEKN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "5bc7fedd5b59e1b0",
+    "sparse6": ":Ua?`_A`BC__dF_BaBEGaDEFHaCEFHI_@BGHIJ`ABEFGHI`BCFGHIK`ACEFGI`ADEFHKLMO_BCEGJLNObCDFGHIJKQ_@ADEFJKLM_@CDEGHJNO",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 10
+    }
+  },
+  {
+    "id": "3b8121b600602cf6",
+    "sparse6": ":V____BeDgFfGfGhIjedFLdELaKMNaGIKaJKLbDE`CR`CH`BST",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "68ef2fcb725b8335",
+    "sparse6": ":W__@_@_B_ACfEfggkHJhIJhIJhIJdEMdEFGN`EFOaFGNQbIKLcJKMcKLST`ABEO",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 5
+    }
+  },
+  {
+    "id": "56c90ff50d75def9",
+    "sparse6": ":X_cBbbDgFffGHaaJmGHJhIJKdLcLeLOcLPQcGMPdEFO`K_ABU_@AU",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "f2d496a5949cb1b0",
+    "sparse6": ":Y_cABbdaDaDbEGcEFGHaBCEFGH_F`CK`DEFK_BCGLM_AIJLMN`ABEHKLN`BEGHKLM`DEFIJKQ_ABCDILOP`ABCDFHIO_ABCDFGHLO_CDEFGIJKQ_@EKLMNRST_@AGHKMNPR",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 10
+    }
+  },
+  {
+    "id": "9688a86f0c88c501",
+    "sparse6": ":Z___A_@BeDdfiDEHgHhIJjKgHILgJhKLeFdEGPdEFaQR`PRScMNOcLNO`AFSTaBPV`BNUX",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 5
+    }
+  },
+  {
+    "id": "29b96164c91bc979",
+    "sparse6": ":[_bAaBeDdEhGjIiJiKeGfHLfGHLNfHMeGMNcGIJQcJLbIJSbCKST_AKP_ABD`DHP`DEMX_@AVW",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 5
+    }
+  },
+  {
+    "id": "35190c62ac239f53",
+    "sparse6": ":\\____ABfEhGkHgKiJiJdMNdIJNdKLfILMeGHQeKOcF`bJVbGHT`UVWaDEF`AUV",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "d1021722d9440791",
+    "sparse6": ":]____ABhFggIfHfHhLgneLeKMdNOdOReOPQcDEbDSU`GMNaIJ`I`JYbXYZaFKP",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "244a97b5c2993c59",
+    "sparse6": ":^_cBaaCeffjIlIKiLjMjNiKjOkgKPRgLMRgPRdHUhOQhNQWbDVbCEF`DY_ABC_@A[",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "f4f40853bf07f819",
+    "sparse6": ":__bAbaCaBDaBCcdfGeHjigIhJgLMhKNkNPlMOklstrTVqSUtVsU`VY_UZ`XZ\\_WY[",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "3cf5a335d79d8d42",
+    "sparse6": ":`_P?[KHFBPxOePGCq`WqQIEBW_YGDBByOGEP`CWPMEDFp_wmMGDqPPQCPhdBDSkVgeYPcx@MFW@gv??fb~",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  },
+  {
+    "id": "53ea93e43b24302e",
+    "sparse6": ":a_OGC?F?AO?OUUHcahwyQIDb`{gYNdApo{bHDAp_{bGCbGwcSJEP_waELFO_w_lEBa@`Op@EbaP]ALFcAHiCDCDgGKYMIDwOSMGKFGGKGJEdwGKGFIDWOOIEJFN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "67dacb3f61077e32",
+    "sparse6": ":b_OGC?D??o?WOJGBpxWiOHcAPccXIcap{ibNGchx?dIDbaHMUMGCacs]QHdH?s_QJQ`pCeVfBqHOiX_`pGspAA`pcCIFCBB[KGIDfGOKK]__ogkxA@`@@|@@@@?o[~",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "b66096698c20860d",
+    "sparse6": ":c_POc_NICr@GgVGDbHGoZHDq`Wo[Nca`Ws^HDAp{GKFa@wW[PDEbgW_[U`@?pQCCB@q[GEEHdBCKIGIda{KIGJDrKCKRIDWG[h?Gcbs?]OHFb{CIIIfb{?CCBEBk?AA@`?n",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "66cd8e58125f56f0",
+    "sparse6": ":d_O?KWGDc@xOaTGba`ccUKEq`WoZHDb@o}IE``GWSQQa@aHGfBA@OsMMGDAwXYGDGcgwaQUceB\\CkWbegP_u[Moaxc|@JFBk?iZNORPxD?LGCIN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 5
+    }
+  },
+  {
+    "id": "3fe094eb80008b08",
+    "sparse6": ":e_OoSICB`@GOSLHCQH_mUKgB`{_QIGQPO{_PfBx`MWMFcxgw]OIDX_seSeBPpKhBCaaKWVCBbRSKIGCabKOKFLEw_WMXLEw?gUQ_`Qxg~@@`@[?USIdrCCOHFBqC?EDCFSK?AANgCN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "00a05119d91ff36e",
+    "sparse6": ":f_OoSICC`?wOSLJCAX?eOHDbHwy^NGQ`xASOGchxCcRdAp_uSJECqkcSPHDg__\\BCAPOkXDBEGW[tCAa@paGEEebcKGFCeBkKIEBeb[C[T_Baxl@?GEwGw]S_CCAHF@GdCQLH??_cADD",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 6
+    }
+  },
+  {
+    "id": "0452eb8aa0aa13ea",
+    "sparse6": ":g_OGC?CBb@X?]PGeAxwycOGtQ@I_PIrQ@CdMHdhpKiWfcqc{eSLQ`WqSJEBXGoYPcbPo}QIDfGo]IFCGWgWM``@OsCES__qaUAAAHN",
+    "source": "regularity",
+    "metadata": {
+      "d_cap": 4
+    }
+  }
+]

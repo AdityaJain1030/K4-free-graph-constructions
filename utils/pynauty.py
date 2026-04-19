@@ -52,13 +52,20 @@ def _canonical_sparse6_pynauty(G: nx.Graph) -> str:
     n = G.number_of_nodes()
     adj = {v: list(G.neighbors(v)) for v in range(n)}
     g = pynauty.Graph(n, adjacency_dict=adj)
-    cg = pynauty.canon_graph(g)
+    # pynauty.canon_graph iterates bit positions to set_length*8 and can emit
+    # phantom neighbors ≥ n from the row padding; replicate its logic but
+    # clip to range(n).
+    c = pynauty.certificate(g)
+    set_length = len(c) // n
+    sets = [c[set_length * k : set_length * (k + 1)] for k in range(n)]
     H = nx.Graph()
     H.add_nodes_from(range(n))
-    for u, nbrs in cg.adjacency_dict.items():
-        for v in nbrs:
-            if u < v:
-                H.add_edge(u, v)
+    for u in range(n):
+        row = sets[u]
+        for v in range(n):
+            if row[-1 - v // 8] & (1 << (7 - v % 8)):
+                if u < v:
+                    H.add_edge(u, v)
     return nx.to_sparse6_bytes(H, header=False).decode("ascii").strip()
 
 
