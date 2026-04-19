@@ -211,8 +211,8 @@ class DB:
         return len(self.query(**filters))
 
     def stats(self) -> dict:
-        """Summary numbers for `scripts.py stats` and quick sanity checks."""
-        row = self.cache._conn.execute(
+        """Summary numbers for `scripts/db_cli.py stats` and quick sanity checks."""
+        rows = self.cache.raw_execute(
             """
             SELECT COUNT(*)                       AS n_pairs,
                    COUNT(DISTINCT graph_id)       AS n_graphs,
@@ -225,8 +225,8 @@ class DB:
                    SUM(is_regular)                AS n_regular
             FROM cache
             """
-        ).fetchone()
-        return dict(row) if row else {}
+        )
+        return rows[0] if rows else {}
 
     # ── graph access ──────────────────────────────────────────────────────────
 
@@ -411,6 +411,44 @@ class DB:
                 metadata=rec.get("metadata", {}),
             )
         return len(store_recs)
+
+    # ── clean ─────────────────────────────────────────────────────────────────
+
+    def clean(self, apply: bool = False, verbose: bool = True):
+        """
+        Repair-and-dedup pass over the store, optionally pruning orphaned
+        cache rows. Returns a CleanReport.
+
+        apply=False (default): dry run, report only.
+        apply=True: rewrite graphs/ JSON files and prune cache orphans.
+        """
+        from graph_db.clean import clean as _clean
+        report = _clean(
+            graphs_dir=self.store.graphs_dir,
+            cache_path=self.cache.db_path,
+            apply=apply,
+            verbose=verbose,
+        )
+        if apply:
+            self._invalidate_sparse6_cache()
+        return report
+
+    # ── schema introspection ─────────────────────────────────────────────────
+
+    def schema_columns(self) -> set[str]:
+        """Return the set of cache columns usable in query()/top()/frontier()."""
+        return self.cache.schema_columns()
+
+    # ── raw SQL escape hatch ─────────────────────────────────────────────────
+
+    def raw_execute(self, sql: str, params: tuple = ()) -> list[dict]:
+        """
+        Run an arbitrary SELECT against the cache. Rows come back as dicts
+        with JSON columns already deserialised. Use this only when the
+        typed query helpers (`query`, `top`, `frontier`) can't express
+        what you need — e.g. aggregations or window functions.
+        """
+        return self.cache.raw_execute(sql, params)
 
 
 # ── module-level convenience ──────────────────────────────────────────────────

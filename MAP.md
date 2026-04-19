@@ -117,7 +117,7 @@ The glue layer for comparing results across solvers.
 - `store.py` — `GraphStore`: reads `graphs/`, writes `cache.db`.
 - `properties.py` — `compute_properties(G, hint)` → full row.
 - `verify.py`, `api.py` — verification + query API.
-- Deduplicates by canonical sparse6 (pynauty when available, WL-hash fallback).
+- Deduplicates by canonical sparse6 via pynauty (required).
 
 ## `graphs/` — The canonical graph store (committed)
 
@@ -140,9 +140,6 @@ format.
 
 ## `scripts/` — Orchestration / helper CLIs
 
-- `run_brute_force.py`, `run_circulant.py` — drive the `search_N` searchers.
-- `import_sat_pareto.py` — ingest SAT/ILP Pareto results into `graphs/`.
-- `add_graph.py` — manual insertion into `graphs/`.
 - `open_visualizer.py` — launch the tkinter visualizer.
 - `setup_nauty.sh` — build `nauty`/`geng` (required for brute force on N≥8).
 

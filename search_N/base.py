@@ -35,13 +35,9 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from graph_db import GraphStore
+from graph_db import GraphStore, DEFAULT_GRAPHS
 from utils.graph_props import alpha_exact_nx, is_k4_free_nx, c_log_value
 from search_N.logger import SearchLogger
-
-_GRAPHS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "graphs"
-)
 
 
 class Search(ABC):
@@ -138,10 +134,10 @@ class Search(ABC):
         **metadata,
     ) -> tuple[str, bool]:
         """Persist G to the graph store under source=self.name."""
-        if filename is None:
-            filename = f"{self.name}.json"
-        store = GraphStore(_GRAPHS_DIR)
-        return store.add_graph(G, source=self.name, filename=filename, **metadata)
+        fn = filename or f"{self.name}.json"
+        return GraphStore(DEFAULT_GRAPHS).add_graph(
+            G, source=self.name, filename=fn, **metadata
+        )
 
     def save_all(
         self,
@@ -150,4 +146,9 @@ class Search(ABC):
         **metadata,
     ) -> list[tuple[str, bool]]:
         """Persist every graph in the list; returns [(graph_id, was_new), ...]."""
-        return [self.save(G, filename=filename, **metadata) for G in graphs]
+        fn = filename or f"{self.name}.json"
+        store = GraphStore(DEFAULT_GRAPHS)
+        return [
+            store.add_graph(G, source=self.name, filename=fn, **metadata)
+            for G in graphs
+        ]

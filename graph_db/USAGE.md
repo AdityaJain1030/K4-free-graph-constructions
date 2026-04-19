@@ -89,7 +89,7 @@ db.query(
 | `spectral_radius`, `spectral_gap`, `algebraic_connectivity` | |
 | `turan_density`, `beta` | derived scalars |
 
-The full whitelist lives in `PropertyCache.schema_columns()`.
+The full whitelist is available via `db.schema_columns()`.
 
 ### Convenience methods on top of query
 
@@ -180,30 +180,48 @@ with DB() as db, open('frontier.csv', 'w', newline='') as f:
 
 ## Writes
 
-### From a solver / script
+### From a solver / script (preferred)
+
+Producers should write through `GraphStore` directly — no cache work,
+no SQLite connection, no property computation on the hot path:
 
 ```python
-from graph_db import DB
+from graph_db import GraphStore, DEFAULT_GRAPHS
 import networkx as nx
 
 G = build_candidate()          # any nx.Graph
-with DB() as db:
-    gid, was_new = db.add(G, source='my_experiment', filename='my_experiment.json',
-                          rank=1, solver_time_s=12.3)    # metadata is free-form
-    if was_new:
-        print(f"new: {gid}")
+store = GraphStore(DEFAULT_GRAPHS)
+gid, was_new = store.add_graph(
+    G, source='my_experiment', filename='my_experiment.json',
+    rank=1, solver_time_s=12.3,   # metadata is free-form
+)
+if was_new:
+    print(f"new: {gid}")
 ```
 
-`db.add` computes the canonical id + canonical sparse6 for you, skips the
-write if `(graph_id, source)` already exists, and triggers a cache update
-for the new pair on the next `sync` (or auto-sync).
+`add_graph` computes the canonical id + canonical sparse6, skips the
+write if `(graph_id, source)` already exists, and appends one record
+to `graphs/my_experiment.json`. The cache is populated later, on the
+next `db.sync()` (or automatically when someone opens a `DB`).
 
-For bulk writes from a tight loop, use `db.add_batch([...], filename=...)`.
+For bulk writes, use `store.write_batch([...], filename=...)`.
+
+### During interactive analysis
+
+If you're already inside a `DB` session and want the new graph to show
+up in `db.query(...)` immediately, `db.add` / `db.add_batch` do the
+same append plus invalidate the DB's sparse6 cache. They are
+**convenience only** — not the preferred path for bulk producer writes.
+
+```python
+with DB() as db:
+    gid, was_new = db.add(G, source='my_experiment', rank=1)
+```
 
 ### If you extend `search_N/`
 
-Subclass `Search` (see `search_N/base.py`) — it already wires `self.save(G, ...)`
-and `self.save_all([...])` through the DB.
+Subclass `Search` (see `search_N/base.py`) — `self.save(G, ...)` and
+`self.save_all([...])` wire through `GraphStore` directly.
 
 ---
 
@@ -227,7 +245,7 @@ After changing `compute_properties` (adding a column, fixing a bug), use
 
 ## Clean
 
-`db.clean` (and `python -m graph_db.scripts clean`) does a
+`db.clean` (and `python scripts/db_cli.py clean`) does a
 **repair-first** pass over `graphs/*.json`:
 
 1. parse each record, re-derive the canonical id and canonical sparse6 from
@@ -236,8 +254,8 @@ After changing `compute_properties` (adding a column, fixing a bug), use
 3. prune any now-orphaned cache rows.
 
 ```python
-python -m graph_db.scripts clean            # dry run — reports only
-python -m graph_db.scripts clean --apply    # rewrite JSONs + prune cache
+python scripts/db_cli.py clean            # dry run — reports only
+python scripts/db_cli.py clean --apply    # rewrite JSONs + prune cache
 ```
 
 Run `clean` after a canonicalization bug fix, or if you suspect
@@ -248,32 +266,32 @@ semantics and when it's safe to run.
 
 ## CLI cheat sheet
 
-All commands live under `python -m graph_db.scripts`.
+All commands live under `python scripts/db_cli.py`.
 
 ```bash
 # overview
-python -m graph_db.scripts stats
+python scripts/db_cli.py stats
 
 # sync the cache with the store
-python -m graph_db.scripts sync
-python -m graph_db.scripts sync --source sat_pareto --recompute
+python scripts/db_cli.py sync
+python scripts/db_cli.py sync --source sat_pareto --recompute
 
 # query (scalar or 'A..B' ranges; `..B` and `A..` are open-ended)
-python -m graph_db.scripts query --n 17..22 --c-log ..0.75 --top 5
-python -m graph_db.scripts query --is-regular 1 --columns graph_id,n,d_max,c_log
-python -m graph_db.scripts query --source sat_pareto --json
+python scripts/db_cli.py query --n 17..22 --c-log ..0.75 --top 5
+python scripts/db_cli.py query --is-regular 1 --columns graph_id,n,d_max,c_log
+python scripts/db_cli.py query --source sat_pareto --json
 
 # add one graph from the shell
-python -m graph_db.scripts add --sparse6 ':Is??G_p' --source my_experiment \
+python scripts/db_cli.py add --sparse6 ':Is??G_p' --source my_experiment \
     --meta rank=1 --meta note=hand_constructed
 
 # remove
-python -m graph_db.scripts rm --source my_experiment -y
-python -m graph_db.scripts rm --graph-id 002de366faceec58 --source brute_force -y
+python scripts/db_cli.py rm --source my_experiment -y
+python scripts/db_cli.py rm --graph-id 002de366faceec58 --source brute_force -y
 
 # integrity
-python -m graph_db.scripts clean             # dry run
-python -m graph_db.scripts clean --apply
+python scripts/db_cli.py clean             # dry run
+python scripts/db_cli.py clean --apply
 ```
 
 ---
@@ -283,7 +301,7 @@ python -m graph_db.scripts clean --apply
 | symptom | most likely cause |
 |---|---|
 | `unknown column 'xxx'` from `query(...)` | column not in `schema.sql`, or typoed. |
-| `ValueError: delete(): provide graph_id or source` | `db.remove()` refuses to wipe the whole table — pass at least one of them. |
+| `ValueError: remove(): provide graph_id or source (or both)` | `db.remove()` refuses to wipe the whole table — pass at least one of them. |
 | cache row exists but `db.nx(gid)` returns None | the graph was removed from the store but the cache wasn't pruned — run `clean --apply`. |
 | `compute_properties` raises on a row | every row in the store is supposed to be a valid K₄-free-ish graph. If one isn't, fix the producer; don't silence the error in `properties.py`. |
 | results look stale after editing `properties.py` | `db.sync(recompute=True)`. See `EXTENDING.md`. |

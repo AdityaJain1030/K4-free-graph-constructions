@@ -1,9 +1,16 @@
 """
 utils/pynauty.py
 ================
-Project-wide pynauty availability check and nauty/geng graph utilities.
+Project-wide pynauty availability check, canonical isomorphism-class ids,
+and nauty/geng graph utilities.
+
+canonical_id(G) returns (graph_id, canonical_sparse6) where graph_id is
+the first 16 hex chars of SHA-256 over the canonical sparse6 produced by
+pynauty. pynauty is required — canonical_id raises ImportError if it is
+not installed.
 """
 
+import hashlib
 import os
 import shutil
 import subprocess
@@ -25,6 +32,53 @@ def has_pynauty() -> bool:
         except ImportError:
             _PYNAUTY_OK = False
     return _PYNAUTY_OK
+
+
+# ---------------------------------------------------------------------------
+# Canonical isomorphism-class ids
+# ---------------------------------------------------------------------------
+
+def _to_int_graph(G) -> nx.Graph:
+    """Coerce arbitrary graph-like input (adj matrix, nx.Graph) to a 0..n-1 relabelled nx.Graph."""
+    if not isinstance(G, nx.Graph):
+        import numpy as np
+        G = nx.from_numpy_array(np.array(G, dtype=np.uint8))
+    return nx.convert_node_labels_to_integers(G)
+
+
+def _canonical_sparse6_pynauty(G: nx.Graph) -> str:
+    """Canonical sparse6 via pynauty's canonical labeling. Caller must ensure pynauty importable."""
+    import pynauty
+    n = G.number_of_nodes()
+    adj = {v: list(G.neighbors(v)) for v in range(n)}
+    g = pynauty.Graph(n, adjacency_dict=adj)
+    cg = pynauty.canon_graph(g)
+    H = nx.Graph()
+    H.add_nodes_from(range(n))
+    for u, nbrs in cg.adjacency_dict.items():
+        for v in nbrs:
+            if u < v:
+                H.add_edge(u, v)
+    return nx.to_sparse6_bytes(H, header=False).decode("ascii").strip()
+
+
+def canonical_id(G) -> tuple[str, str]:
+    """
+    Return (graph_id, canonical_sparse6) for G.
+
+    graph_id is SHA-256[:16] of the canonical sparse6 produced by pynauty.
+    Two isomorphic graphs therefore produce the same id.
+
+    Raises ImportError if pynauty is not installed.
+    """
+    if not has_pynauty():
+        raise ImportError(
+            "canonical_id requires pynauty. Install it with "
+            "`pip install pynauty` (or via the 4cycle conda environment)."
+        )
+    G = _to_int_graph(G)
+    cs6 = _canonical_sparse6_pynauty(G)
+    return hashlib.sha256(cs6.encode()).hexdigest()[:16], cs6
 
 
 # ---------------------------------------------------------------------------
@@ -69,15 +123,14 @@ def graphs_via_geng(geng: str, n: int, flags: str = "-k"):
 def graphs_via_python(n: int, k4_free: bool = True):
     """
     Enumerate all non-isomorphic graphs on n vertices via pure Python.
-    Feasible only for n ≤ 6.  Uses canonical_id for O(1) isomorphism dedup
-    (pynauty certificate when available, WL hash otherwise).
+    Feasible only for n ≤ 6.  Uses canonical_id for O(1) isomorphism
+    dedup (pynauty canonical sparse6). Requires pynauty.
 
     Parameters
     ----------
     n       : number of vertices.
     k4_free : if True (default) only yield K4-free graphs.
     """
-    from graph_db import canonical_id
     from utils.graph_props import is_k4_free_nx
 
     nodes = list(range(n))

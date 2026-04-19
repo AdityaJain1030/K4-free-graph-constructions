@@ -20,7 +20,6 @@ from graph_db.encoding import (
 )
 from graph_db.properties import compute_properties
 from graph_db.store import GraphStore
-from graph_db.cache import PropertyCache
 
 __all__ = [
     # primary public surface
@@ -30,6 +29,6 @@ __all__ = [
     "canonical_id", "graph_to_sparse6", "sparse6_to_nx", "edges_to_nx",
     # property computation (producers rarely need this)
     "compute_properties",
-    # low-level stores (testing / advanced use)
-    "GraphStore", "PropertyCache",
+    # producer-path store (bare JSON-folder I/O, no cache)
+    "GraphStore",
 ]

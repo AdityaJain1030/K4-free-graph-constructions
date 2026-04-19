@@ -1,14 +1,14 @@
 """
-graph_db/scripts.py
-===================
+scripts/db_cli.py
+=================
 Command-line interface to the graph database.
 
-    python -m graph_db.scripts sync   [options]
-    python -m graph_db.scripts clean  [options]
-    python -m graph_db.scripts add    [options]
-    python -m graph_db.scripts query  [options]
-    python -m graph_db.scripts rm     [options]
-    python -m graph_db.scripts stats
+    python scripts/db_cli.py sync   [options]
+    python scripts/db_cli.py clean  [options]
+    python scripts/db_cli.py add    [options]
+    python scripts/db_cli.py query  [options]
+    python scripts/db_cli.py rm     [options]
+    python scripts/db_cli.py stats
 
 Thin argparse wrappers over the DB methods — no business logic lives
 here.
@@ -18,6 +18,8 @@ import argparse
 import json
 import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from graph_db.db import DB, DEFAULT_CACHE, DEFAULT_GRAPHS
 
@@ -78,13 +80,8 @@ def cmd_sync(args):
 
 
 def cmd_clean(args):
-    from graph_db.clean import clean
-    report = clean(
-        graphs_dir=args.graphs_dir,
-        cache_path=args.cache_path,
-        apply=args.apply,
-        verbose=True,
-    )
+    with DB(args.graphs_dir, args.cache_path, auto_sync=False) as db:
+        report = db.clean(apply=args.apply, verbose=True)
     print(json.dumps(report.as_dict(), indent=2))
 
 

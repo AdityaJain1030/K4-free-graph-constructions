@@ -4,9 +4,14 @@
 
 Give every solver in the repo (SAT, ILP, circulant, tabu, LLM-search) a
 single place to drop the graphs it finds, and give every analysis
-script a single place to read them back. "Drop" means writing a
-tiny JSON record; "read" means a typed SQL query over ~35 graph
-properties.
+script a single place to read them back. "Drop" means writing a tiny
+JSON record into `graphs/`; "read" means a typed SQL query over ~35
+computed graph properties.
+
+The point of the two-file design (`graphs/` JSON + `cache.db` SQLite) is
+to **decouple producing from analyzing** so the same graphs can be
+shared, committed, and re-analyzed by multiple machines or pipelines
+without coupling producer runtimes to property-computation cost.
 
 ## Non-goals
 
@@ -17,29 +22,109 @@ properties.
 
 ---
 
+## Two public classes — which to use when
+
+The package exposes two classes and they correspond to two distinct use
+cases. Pick the one that matches your job:
+
+| If you want to...                                     | Use                  |
+|-------------------------------------------------------|----------------------|
+| Add graphs a solver just found                        | **`GraphStore`**     |
+| Analyze, query, filter, visualize, hydrate graphs     | **`DB`**             |
+| Run a custom SQL query `DB` doesn't expose            | `DB.raw_execute`     |
+
+### `GraphStore` — the producer path
+
+Bare JSON-folder I/O. Producers (SAT sweeps, circulant enumeration,
+tabu, LLM loops, manual inserts) just drop graphs into `graphs/` and
+stop. **No cache involvement** at write time — property computation
+is not a producer concern and should not hold up a long-running search.
+
+```python
+from graph_db import GraphStore
+
+store = GraphStore("graphs")
+store.add_graph(G, source="my_search", filename="my_search.json",
+                solve_time_s=4.2, method="cutting_planes")
+```
+
+This is the right path for any producer that just wants to persist new
+graphs — e.g. `search_N/base.Search.save` and similar ingest scripts.
+All they need is the committed JSON record.
+
+### `DB` — the analysis / visualization path
+
+Combines the store with the property cache. Opening a `DB` auto-syncs
+any new store records into the cache (unless `auto_sync=False`), so by
+the time you query, every graph has its ~35 typed columns filled.
+
+Use this for the visualizer, leaderboard scripts, comparisons across
+sources, hydration of `nx.Graph` objects, rediscovery reports — anything
+that reads, ranks, or filters. `DB.add` / `DB.add_batch` are convenience
+wrappers that are fine during interactive analysis but are **not** the
+preferred path for bulk producer writes (use `GraphStore` directly for
+those).
+
+### `DB.raw_execute` — the SQL escape hatch
+
+Rarely needed. Use it only when `DB.query` / `DB.top` / `DB.frontier` /
+`DB.stats` don't cover what you want. Typical case: an aggregation or
+window function that's easier to express in SQL than in Python.
+
+```python
+from graph_db import DB
+
+with DB() as db:
+    rows = db.raw_execute(
+        "SELECT source, AVG(c_log) FROM cache WHERE n BETWEEN ? AND ? GROUP BY source",
+        (20, 30),
+    )
+```
+
+Rows come back as dicts with JSON columns already deserialised. If you
+find yourself reaching for `raw_execute` often, that's a signal the
+operation probably belongs as a method on `DB`.
+
+`PropertyCache` (the SQLite-only class that backs this) is an internal
+implementation detail — it's intentionally not part of the public
+surface. If you think you need it directly (e.g. opening a shipped
+`cache.db` without a `graphs/` folder on hand), reach into
+`db.cache.raw_execute(...)` via a `DB` built with `auto_sync=False`.
+
+---
+
 ## Architecture
 
 ```
-┌───────────────────────┐            ┌─────────────────────┐
-│      graphs/          │   sync()   │     cache.db        │
-│  JSON batch files     │ ─────────► │   SQLite, typed     │
-│  (source of truth,    │            │   one row per       │
-│   committed)          │            │   (graph_id, source) │
-└───────────────────────┘            └─────────────────────┘
-                                               ▲
-                                               │ query()
-                                               │
-                                     ┌─────────┴─────────┐
-                                     │      DB class     │
-                                     │  (graph_db/db.py) │
-                                     └───────────────────┘
-                                               ▲
-                                               │
-                          ┌────────────────────┼─────────────────────┐
-                          │                    │                     │
-                   visualizer/         scripts/*.py         graph_db/scripts.py
-                   (reads records)   (producers write)     (CLI: sync/clean/...)
+                       Producers (SAT, circulant, tabu, LLM, manual)
+                                        │
+                                        │ GraphStore.add_graph(G, source=..., ...)
+                                        ▼
+                       ┌───────────────────────┐
+                       │      graphs/          │
+                       │  JSON batch files     │
+                       │  (source of truth,    │
+                       │   committed)          │
+                       └───────────┬───────────┘
+                                   │
+                                   │ DB.sync() — computes properties
+                                   ▼
+                       ┌─────────────────────┐
+                       │     cache.db        │
+                       │   SQLite, typed     │
+                       │   one row per       │
+                       │  (graph_id, source) │
+                       └──────────┬──────────┘
+                                  │ DB.query / DB.top / DB.frontier / DB.hydrate
+                                  ▼
+                    Analyzers (visualizer, leaderboards, comparisons)
+
+       Escape hatch: DB.raw_execute(...)  — custom SQL when needed
 ```
+
+The two arrows are deliberately separate steps. A producer's job ends
+when it has written to `graphs/`; the cache is rebuilt on demand by
+whoever wants to analyze. This is why producers don't import `DB`.
 
 ### Source of truth — `graphs/*.json`
 
@@ -105,10 +190,8 @@ This is the one non-obvious design call and it's deliberate.
 `graph_id` is the first 16 hex chars of `SHA-256(canonical_sparse6(G))`.
 Two isomorphic graphs have the same id regardless of the order in which
 their vertices happened to be labelled. Canonicalization uses
-`pynauty.certificate` when available and falls back to Weisfeiler-Lehman
-(6 iterations) otherwise. The WL fallback is not a proof of
-non-isomorphism on collision but is reliable in practice for K₄-free
-graphs up to N ~ 100.
+`pynauty.canon_graph` (see `utils/pynauty.py`). pynauty is required —
+`canonical_id` raises `ImportError` if it is not installed.
 
 A `(graph_id, source)` composite key means the same graph discovered by
 two different methods produces two rows. This is intentional:
@@ -133,29 +216,40 @@ ingest; duplicates within a single source are silently skipped.
 
 ```
 graph_db/
-├── __init__.py        Public surface: DB, compute_properties, encoding helpers
+├── __init__.py        Public surface: DB, GraphStore,
+│                      compute_properties, encoding helpers
 ├── DESIGN.md          This file
 ├── schema.sql         CREATE TABLE + indexes, loaded by cache.py
-├── encoding.py        sparse6 ↔ nx, edges_to_nx, canonical_id, graph_to_sparse6
-├── store.py           GraphStore — JSON folder I/O only
-├── cache.py           PropertyCache — SQLite only
-├── properties.py      compute_properties(G) — unchanged from today
-├── db.py              DB — the one public class, combines store + cache
-├── clean.py           Repair, dedup, compact, orphan-prune
-└── scripts.py         `python -m graph_db.scripts <sync|clean|...>`
+├── encoding.py        sparse6 ↔ nx, edges_to_nx, graph_to_sparse6
+│                      (canonical_id lives in utils/pynauty.py, re-exported here)
+├── store.py           GraphStore — JSON folder I/O only (producer path)
+├── cache.py           PropertyCache — SQLite only (internal, backs DB)
+├── properties.py      compute_properties(G) — the one authoritative scorer
+├── db.py              DB — combines store + cache (analysis path)
+└── clean.py           Repair, dedup, compact, orphan-prune
 ```
 
-Each file has one responsibility. Nothing imports across levels except
-in one direction: `encoding` ← `store`, `cache` ← `properties`, `db` ←
-`store`, `cache`, `encoding`, `properties`. `clean` and `scripts`
-import `db`.
+The CLI lives outside the package at `scripts/db_cli.py` — it's a
+client of `DB`, not part of the library itself.
+
+Each file has one responsibility. Intra-package imports flow in one
+direction — leaf modules (`encoding`, `cache`, `properties`) import
+nothing from the package; higher-level modules compose them:
+
+- `store`     → `encoding`
+- `db`        → `store`, `cache`, `encoding`, `properties`, `clean`
+- `clean`     → `cache`, `encoding`
+- `scripts`   → `db`, `encoding`
+
+No cycles, and the leaves can be unit-tested standalone.
 
 ---
 
-## The `DB` class — public API
+## The `DB` class — analysis API
 
-One class, context-manager capable, the only thing almost any caller
-needs.
+Combines store and cache. This is the class every consumer that reads,
+filters, ranks, or visualizes graphs should use. Producers that only
+need to add graphs should use `GraphStore` directly and skip `DB`.
 
 ### Lifecycle
 
@@ -202,7 +296,14 @@ db.frontier(by='n', minimize='c_log', **filters) -> list[dict]
 
 db.count(**filters) -> int
 db.sources() -> list[str]
-db.stats() -> dict   # {n_graphs, n_pairs, sources, min_c_log, ...}
+db.stats() -> dict
+    # {n_pairs, n_graphs, n_sources,
+    #  n_min, n_max, c_min, c_max,
+    #  n_k4_free, n_regular}
+
+db.schema_columns() -> set[str]
+    # Every cache column usable in query() / top() / frontier().
+    # Useful for UIs that want to expose filters dynamically.
 ```
 
 **Query shorthand.** `db.query(n=17, is_k4_free=1)` routes scalar kwargs
@@ -229,11 +330,12 @@ db.hydrate(records: list[dict]) -> list[dict]
     # avoid the per-record scan.
 ```
 
-### Writes
+### Writes (convenience only)
 
 ```python
 db.add(G, source, filename=None, **metadata) -> (graph_id, was_new)
-    # Compute id + sparse6, append to graphs/{filename or source.json}.
+    # Compute id + sparse6, append to graphs/{filename or source.json},
+    # and invalidate the DB's sparse6 cache so subsequent reads see it.
 
 db.add_batch(records, filename) -> (added, skipped)
     # Bulk ingest pre-built records. Dedups (id, source) against store.
@@ -242,6 +344,17 @@ db.remove(graph_id=None, source=None) -> int
     # Remove matching records from store AND cache. At least one of
     # graph_id/source must be given. Returns number of records removed.
 ```
+
+`db.add` and `db.add_batch` exist so that a live analysis session can
+ingest a just-constructed graph and immediately see it via `db.nx(gid)`
+or `db.query(...)`. They are **not** the preferred path for bulk
+producer writes (SAT sweeps, circulant enumeration, `search_N.save`,
+ad-hoc ingest scripts) — those should write through `GraphStore`
+directly to avoid paying for DB construction and auto-sync on every
+write.
+
+`db.remove` is the one write that *must* go through `DB` because it
+has to remove both the store record and the cache row atomically.
 
 ### Sync
 
@@ -283,9 +396,9 @@ values = [r['c_log'] for r in db.query() if r['c_log'] is not None]
 ```
 
 The visualizer does **not** need SQL. It needs `list[dict]` with the
-typed fields present. That's what `query()` returns, and the
-column deserialisation (JSON → list for spectra, degree sequences, MIS
-vertices) is handled by `PropertyCache`.
+typed fields present. That's what `query()` returns, with JSON columns
+(spectra, degree sequences, MIS vertices) already deserialised back to
+Python lists.
 
 ---
 
@@ -332,35 +445,39 @@ class CleanReport:
   without writing.
 - Unparseable records are never silently dropped without being listed
   in the report — the human reviewing the output decides.
-- Backups are not written. Callers should run under a clean git
-  working tree. `scripts.py clean` refuses to run if `graphs/` is
-  dirty unless `--force` is given.
+- Backups are not written. `clean` defaults to dry-run; the caller must
+  pass `--apply` to actually rewrite. Running under a clean git working
+  tree is the recommended safety net.
 
 ---
 
-## CLI — `graph_db/scripts.py`
+## CLI — `scripts/db_cli.py`
 
-Run as `python -m graph_db.scripts <subcommand>`. All subcommands are
-thin wrappers over `DB` methods; no logic lives in `scripts.py`.
+Run as `python scripts/db_cli.py <subcommand>`. All subcommands are
+thin argparse wrappers over `DB` methods; no business logic lives in
+the CLI.
 
 ```
 sync    [--source NAME] [--recompute] [--dry-run]
         Ingest any new graphs and/or force-recompute existing rows.
 
-clean   [--dry-run] [--force] [--no-repair] [--no-compact]
-        Repair canonical forms, dedup, compact files, prune orphans.
+clean   [--apply]
+        Repair canonical forms, dedup globally, prune orphan cache
+        rows. Dry run by default — pass --apply to rewrite.
 
-add     --sparse6 S | --g6 S | --edges JSON --n N
-        --source TAG [--file NAME] [--meta K=V ...]
+add     --sparse6 S | --g6 S | --edges JSON -n N
+        --source TAG [--file NAME] [--meta K=V ...] [--no-sync]
         Append a single graph to the store.
 
 query   [--source ...] [--n A..B] [--c-log ..T] [--is-regular 0|1]
+        [--is-k4-free 0|1] [--alpha A..B] [--d-max A..B]
         [--top K] [--order-by COL] [--limit N]
-        [--columns graph_id,n,c_log,source]
+        [--columns graph_id,n,c_log,source] [--json]
         Print matching cache rows (TSV by default, JSON with --json).
 
-rm      [--graph-id ID] [--source TAG]  (at least one required)
-        Remove matching records from store AND cache.
+rm      [--graph-id ID] [--source TAG] [-y]
+        Remove matching records from store AND cache. At least one of
+        --graph-id / --source required.
 
 stats   Print summary: total graphs, per-source counts, c_log
         range, n range, count of k4-free / regular.
@@ -369,22 +486,39 @@ stats   Print summary: total graphs, per-source counts, c_log
 Sample session:
 
 ```bash
-python -m graph_db.scripts sync
-python -m graph_db.scripts stats
-python -m graph_db.scripts query --n 17..22 --c-log ..0.75 --top 10 --order-by c_log
-python -m graph_db.scripts clean --dry-run
-python -m graph_db.scripts clean
+python scripts/db_cli.py sync
+python scripts/db_cli.py stats
+python scripts/db_cli.py query --n 17..22 --c-log ..0.75 --top 10 --order-by c_log
+python scripts/db_cli.py clean --dry-run
+python scripts/db_cli.py clean
 ```
 
 ---
 
-## Producer ↔ DB contract
+## Producer contract
 
-A producer (SAT solver, circulant search, LLM loop) writes graphs it
-finds by calling `db.add(G, source=<own_tag>, **metadata)` or by
-dropping records into `graphs/<tag>.json`. It does not touch the
-cache, does not compute properties, does not canonicalize ids. All of
-that happens on `sync()`.
+A producer (SAT solver, circulant search, LLM loop, manual CLI add)
+writes graphs it finds by calling `GraphStore.add_graph(G,
+source=<own_tag>, filename=<tag>.json, **metadata)`, or by dropping a
+pre-built record into `graphs/<tag>.json` directly. It does not import
+`DB`, does not touch the cache, does not compute properties, does not
+canonicalize ids beyond what `add_graph` does internally. All of that
+happens later, on `DB.sync()`.
+
+This decoupling is deliberate. Long-running searches shouldn't pay for
+property computation (α is NP-hard), shouldn't open SQLite connections,
+and shouldn't block on anything that isn't "append a record to a JSON
+file." When an analyst wants to compare results across sources, they
+open a `DB`, which syncs once and serves typed queries from there on.
+
+**Metadata convention.** The `metadata` dict on each record is for
+*solver-specific, free-form* fields: `solve_time_s`, `method`,
+`iterations`, `connection_set`, `rank`, `seed`, lineage, etc. Do not
+put fields that `compute_properties` already produces (`alpha`,
+`d_max`, `c_log`, `n`, `m`, `degree_sequence`, …) into metadata — the
+cache is the single source of truth for those, and duplicating them in
+metadata invites drift (producer-rounded `c_log` vs cache-computed
+`c_log` on the same graph).
 
 Producers set their source tag to a stable identifier. Suggested
 conventions (enforced nowhere):
@@ -414,7 +548,7 @@ Same graph discovered by two tags → two rows. That's the point.
 | Same graph from two sources               | **Kept** — two cache rows, by design |
 | `compute_properties` gets a new column    | `ALTER TABLE ADD COLUMN`, then `db.sync(recompute=True)` |
 | Cache corruption                          | Delete `cache.db`, re-run `sync` |
-| pynauty missing                           | WL hash fallback in `encoding.py`; still deterministic, collision-safe in practice |
+| pynauty missing                           | `canonical_id` raises `ImportError` — install pynauty (`pip install pynauty` or activate the 4cycle env) |
 
 What the design does **not** guarantee:
 
@@ -424,29 +558,3 @@ What the design does **not** guarantee:
 - **Cross-machine cache consistency.** `cache.db` is gitignored; every
   machine builds its own from the committed `graphs/` folder. If you
   want a shared cache, distribute it out-of-band.
-- **WL hash collisions.** On the rare chance of a collision,
-  `clean` will treat two non-isomorphic graphs as one and drop one as
-  a duplicate. Install pynauty to remove this risk.
-
----
-
-## Migration plan
-
-One task per commit, all backward-compatible until the final cleanup
-step:
-
-1. Write new `DESIGN.md` (this file).
-2. Extract `encoding.py` + `schema.sql`; leave shims in `store.py`.
-3. Split `store.py` → `store.py` (GraphStore) + `cache.py`
-   (PropertyCache); drop GraphDB glue.
-4. Create `db.py` with the single `DB` class and expanded query API.
-5. Replace `verify.py` → `clean.py` with repair + global dedup.
-6. Add `scripts.py` CLI.
-7. Update public surface in `__init__.py`; update all callers
-   (visualizer, `scripts/*.py`, `search_N/base.py`, `utils/pynauty.py`).
-8. Delete obsolete `api.py` and `verify.py`.
-9. Smoke-test: sync, query, launch visualizer, run one clean dry-run.
-
-Each step leaves the visualizer working, because the old imports keep
-resolving (`graph_db.api.open_db` re-exports from `db.py` through the
-migration, then the visualizer itself is updated in step 7).

@@ -17,7 +17,7 @@ already exists.
    queryable.
 3. **`properties.py`** — compute the value in `compute_properties(G)` and
    write it to `p["my_invariant"]`.
-4. **Your sync** — `python -m graph_db.scripts sync --recompute` to
+4. **Your sync** — `python scripts/db_cli.py sync --recompute` to
    backfill every existing row.
 5. **Verify** — `db.query(my_invariant=...)` works; `db.stats()` is still
    sane.
@@ -169,11 +169,11 @@ Once the code changes are in:
 ```bash
 # Option A — dev, small dataset, don't care about recomputation cost
 rm cache.db
-python -m graph_db.scripts sync
+python scripts/db_cli.py sync
 
 # Option B — incremental, preserves the existing cache
 # first apply the ALTER TABLE if needed, then:
-python -m graph_db.scripts sync --recompute
+python scripts/db_cli.py sync --recompute
 ```
 
 `sync --recompute` re-runs `compute_properties` on every `(graph_id,
@@ -183,7 +183,7 @@ to stdout with `[i/N] id=... source=... n=... c_log=...`.
 For a partial backfill (one source only):
 
 ```bash
-python -m graph_db.scripts sync --recompute --source my_experiment
+python scripts/db_cli.py sync --recompute --source my_experiment
 ```
 
 ---

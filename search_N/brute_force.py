@@ -4,8 +4,7 @@ search_N/brute_force.py
 Exhaustive K4-free graph search via nauty geng.
 
 Returns the top_k graphs by c_log across all non-isomorphic K4-free graphs
-on n vertices.  Intended to be driven by scripts/run_brute_force.py, which
-is responsible for capping n to what geng can realistically enumerate.
+on n vertices. Cap n to what geng can realistically enumerate.
 """
 
 import os

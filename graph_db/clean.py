@@ -18,8 +18,8 @@ After rewriting the store, orphaned cache rows (i.e. (id, source) rows
 that are no longer backed by any record in graphs/) are pruned.
 
 Usage:
-    python -m graph_db.scripts clean               # report only (dry run)
-    python -m graph_db.scripts clean --apply       # actually rewrite
+    python scripts/db_cli.py clean               # report only (dry run)
+    python scripts/db_cli.py clean --apply       # actually rewrite
 """
 
 import glob
