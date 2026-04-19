@@ -1,5 +1,5 @@
 """
-search_N/brute_force.py
+search/brute_force.py
 =======================
 Exhaustive K4-free graph enumeration via nauty `geng`.
 

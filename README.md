@@ -1,4 +1,4 @@
-# Project Map — 4cycle
+# 4cycle — K₄-free graph constructions
 
 ## What this project is about
 
@@ -22,20 +22,81 @@ of degree irregularity.
 
 Different subfolders attack the same objective from different angles:
 exact solvers (SAT/ILP), algebraic constructions (circulants, Cayley graphs),
-metaheuristics (tabu, GRASP+SA), evolutionary/LLM search (FunSearch-style),
-and a unified graph database + visualizer to compare everything.
+random and greedy baselines, evolutionary/LLM search (FunSearch-style), and
+a unified graph database + visualizer to compare everything.
 
 ---
 
-## Top-level files
+## Setup
 
-| Path | Purpose |
-|------|---------|
-| `README.md` | One-line header — "Some interesting k4-free graph constructions" |
-| `INSIGHTS.md` | Post-mortem on `tabusearch/`: what worked, what didn't, bugs to fix |
-| `environment.yml` | Conda/micromamba environment for the whole repo |
-| `search_circulants.py` | Stand-alone circulant enumerator (same engine used under `tabusearch/`) |
-| `cache.db` | SQLite cache of computed graph properties (gitignored, rebuilt from `graphs/`) |
+### 1. Install `micromamba`
+
+Pick the one-liner for your platform. No admin rights needed — it
+installs to `~/.local/bin` and `~/micromamba`.
+
+```bash
+# Linux / WSL2
+curl -Ls https://micro.mamba.pm/install.sh | bash
+
+# macOS (bash/zsh)
+curl -Ls https://micro.mamba.pm/install.sh | zsh
+
+# Windows — use WSL2 and follow the Linux path. Native Windows is
+# unsupported because nauty's autotools build does not target MSVC.
+```
+
+Restart your shell (or `source ~/.bashrc`) so `micromamba` is on `PATH`.
+
+### 2. Create the `k4free` env
+
+```bash
+micromamba env create -f environment.yml
+```
+
+Installs Python 3.12, the scientific stack (numpy / scipy / matplotlib /
+networkx), the SAT stack (ortools, python-sat), and a C compiler
+chain. See comments in `environment.yml` for the full list. Takes a
+few minutes on a fresh machine.
+
+### 3. Build `nauty` + install `pynauty`
+
+```bash
+micromamba activate k4free
+bash scripts/setup_nauty.sh
+```
+
+This downloads `nauty 2.9.3`, builds it inside the env
+(`$CONDA_PREFIX/src`), wires the binaries onto `PATH` via a conda
+activation hook, and then `pip install`s `pynauty` against the
+just-built library. On macOS it also sets `SDKROOT` to the Xcode SDK
+path; if Xcode CLT is missing the script warns and exits cleanly
+(the rest of the project still works — `graph_db` falls back to
+WL-hash deduplication without `pynauty`).
+
+### 4. Smoke test
+
+```bash
+micromamba run -n k4free python scripts/test_search.py    # search framework
+micromamba run -n k4free python scripts/run_random.py     # random baseline N=10..30
+```
+
+If both complete, the env is healthy.
+
+### Running commands without activating
+
+`micromamba activate k4free` only sticks for the shell session it's
+run in. For one-off invocations — or scripts that don't own a shell —
+prefix with `micromamba run -n k4free ...` and skip the activation
+step entirely.
+
+## Top-level layout
+
+| Path              | Purpose                                                          |
+|-------------------|------------------------------------------------------------------|
+| `environment.yml` | Conda/micromamba environment for the whole repo                  |
+| `cache.db`        | SQLite cache of computed graph properties (gitignored, rebuilt)  |
+| `graphs/`         | Committed JSON batches of canonical graphs (one per source)      |
+| `logs/search/`    | Per-run / aggregate logs from the `search/` framework            |
 
 ---
 
@@ -91,22 +152,6 @@ for any priority function.
 
 ---
 
-## `tabusearch/` — Metaheuristics + circulant catalog
-
-Grab-bag of metaheuristic approaches. The `INSIGHTS.md` at the root is the
-post-mortem on this folder.
-
-- `search_circulants.py` (also at repo root) — systematic K₄-free circulant search N=8–50. **Most useful artifact in the folder.** Global best: P(17) with `c ≈ 0.679`.
-- `k4free_greedy.py` — GRASP + simulated annealing. Weak (`c ≈ 0.83–0.96`).
-- `k4free_tabu.py` — tabu search but on the *wrong problem* (Erdős–Rogers, triangle-free induced subgraph size), not the main conjecture.
-- `k4free_enum.py`, `k4free_explorer.py` — small-N enumeration and exploration.
-- `ground_truth.json` — exact min-c for all `(N, d)` with `N ≤ 10`. Reference data.
-- `output.txt` — full circulant search output N=8–50.
-- `results/` — CSV / JSON of greedy runs.
-- `k4free_db/`, `k4_brute_force.txt` — legacy caches.
-
----
-
 ## `graph_db/` — Unified graph database
 
 The glue layer for comparing results across solvers.
@@ -129,14 +174,19 @@ Just JSON batches consumed by `graph_db/`:
 
 ---
 
-## `search_N/` — Per-N search framework
+## `search/` — Per-N search framework
 
 A lightweight abstraction layer. `base.py` defines an abstract `Search`
-class; subclasses (`brute_force.py`, `circulant.py`) implement `_run()`
-returning `list[nx.Graph]` for a given `N`. `logger.py` handles per-run
-logs in `logs/`. Meant to be the unified framework new algorithms plug
-into, with `c_log` scoring and `save_all` writing into the `graph_db`
-format.
+class; subclasses (`brute_force.py`, `circulant.py`, `random.py`)
+implement `_run()` returning `list[nx.Graph]` for a given `N`.
+`logger.py` handles per-run logs in `logs/search/`. Meant to be the
+unified framework new algorithms plug into, with `c_log` scoring and
+`save()` writing into the `graph_db` format.
+
+- `DESIGN.md` — the spec for the `Search` contract.
+- `ADDING_A_SEARCH.md` — playbook / checklist for writing a new search.
+- `CIRCULANTS.md`, `BRUTE_FORCE.md`, `RANDOM.md` — per-algorithm notes:
+  intuition, caveats, when to use / when not to.
 
 ## `scripts/` — Orchestration / helper CLIs
 
@@ -168,7 +218,7 @@ sidepanels.
    SAT / ILP      ───┐
    regular_sat    ───┤
    circulants     ───┼──►  graphs/*.json  (committed batches)
-   tabusearch     ───┤             │
+   random         ───┤             │
    funsearch      ───┤             ▼
    claude_search  ───┘        graph_db
                               (properties.py)

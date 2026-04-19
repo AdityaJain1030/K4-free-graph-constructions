@@ -1,14 +1,14 @@
-# Unified environment for the 4cycle project.
+# Unified environment for the k4free project.
 # Merges ILP_pareto_enum + funsearch deps + graph_db deps + nauty build tools.
 #
 # Create:   micromamba env create -f environment.yml
-# Activate:  micromamba activate 4cycle
+# Activate:  micromamba activate k4free
 # Post-setup (builds nauty + installs pynauty):
 #            bash scripts/setup_nauty.sh
 #
 # Mac vs Linux notes — see bottom of this file.
 
-name: 4cycle
+name: k4free
 channels:
   - conda-forge
 dependencies:

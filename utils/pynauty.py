@@ -74,7 +74,7 @@ def canonical_id(G) -> tuple[str, str]:
     if not has_pynauty():
         raise ImportError(
             "canonical_id requires pynauty. Install it with "
-            "`pip install pynauty` (or via the 4cycle conda environment)."
+            "`pip install pynauty` (or via the k4free conda environment)."
         )
     G = _to_int_graph(G)
     cs6 = _canonical_sparse6_pynauty(G)

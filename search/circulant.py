@@ -1,5 +1,5 @@
 """
-search_N/circulant.py
+search/circulant.py
 =====================
 K4-free circulant graph enumeration on n vertices.
 

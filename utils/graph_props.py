@@ -1,7 +1,7 @@
 """
 utils/graph_props.py
 ====================
-Canonical graph property utilities shared across SAT_old, tabusearch, and graph_db.
+Canonical graph property utilities shared across SAT_old, search/, and graph_db.
 Do not import funsearch here; funsearch keeps its own copies.
 """
 

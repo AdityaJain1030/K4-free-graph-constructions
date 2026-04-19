@@ -3,7 +3,7 @@ set -e
 
 if [ -z "$CONDA_PREFIX" ]; then
     echo "ERROR: no active conda/micromamba environment detected."
-    echo "  micromamba activate 4cycle"
+    echo "  micromamba activate k4free"
     exit 1
 fi
 

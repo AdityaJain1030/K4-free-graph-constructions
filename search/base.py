@@ -1,5 +1,5 @@
 """
-search_N/base.py
+search/base.py
 ================
 Abstract base class for per-N K4-free graph search algorithms.
 
@@ -37,7 +37,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from graph_db import GraphStore, DEFAULT_GRAPHS
 from utils.graph_props import alpha_exact_nx, is_k4_free_nx, c_log_value
-from search_N.logger import SearchLogger, AggregateLogger
+from search.logger import SearchLogger, AggregateLogger
 
 
 @dataclass(frozen=True)

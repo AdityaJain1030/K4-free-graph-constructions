@@ -218,9 +218,9 @@ with DB() as db:
     gid, was_new = db.add(G, source='my_experiment', rank=1)
 ```
 
-### If you extend `search_N/`
+### If you extend `search/`
 
-Subclass `Search` (see `search_N/base.py`) — `self.save(G, ...)` and
+Subclass `Search` (see `search/base.py`) — `self.save(G, ...)` and
 `self.save_all([...])` wire through `GraphStore` directly.
 
 ---

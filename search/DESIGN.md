@@ -1,4 +1,4 @@
-# search_N — Technical Design
+# search — Technical Design
 
 ## Goal
 
@@ -239,10 +239,12 @@ via `search.verbosity = 2`.
 
 ## Logging
 
-### One file per run
+### One file per invocation
+
+A single `Search` invocation (no parent logger) writes its own file:
 
 ```
-<repo>/logs/search_N/<name>_n<N>_<YYYYMMDD_HHMMSS>.log
+<repo>/logs/search/<name>_n<N>_<YYYYMMDD_HHMMSS>.log
 ```
 
 Line format:
@@ -251,19 +253,17 @@ Line format:
 [HH:MM:SS.mmm] EVENT_NAME   key=value  key=value  ...
 ```
 
-### Joining loggers across runs
+### Sweeps: one file for the whole run
 
-An orchestration script that runs many searches (e.g. BruteForce for
-n=6..10, or three different algorithms on n=20) gets:
-
-1. One per-run log file as usual.
-2. One **aggregate** log file that receives every line from every
-   child run, prefixed with the owning run's identifier.
+When searches are wrapped in an `AggregateLogger`, the whole sweep
+writes **one** log file (the aggregate). Per-instance files are not
+created in that case — the aggregate is already the complete record,
+and per-N files would just fragment it.
 
 API:
 
 ```python
-from search_N import AggregateLogger, BruteForce, CirculantSearch
+from search import AggregateLogger, BruteForce, CirculantSearch
 
 with AggregateLogger(name="sweep") as agg:
     for n in range(6, 11):
@@ -272,28 +272,22 @@ with AggregateLogger(name="sweep") as agg:
 ```
 
 `AggregateLogger` opens a single file
-`logs/search_N/<name>_<timestamp>.agg.log`. Every child run, on every
+`logs/search/<name>_<timestamp>.agg.log`. Every child run, on every
 `self._log(...)`, writes one line to its own file *and* one line to
 the aggregate with a `[<algo>_n<N>]` prefix appended to the event
 column:
 
 ```
-# per-run file (brute_force_n6_20260418_183012.log):
-[18:30:12.145] SEARCH_START   top_k=1  verbosity=0
-[18:30:12.812] NEW_BEST       c_log=0.910239  time_to_find=0.66
-[18:30:12.814] SEARCH_END     status=ok  n_results=1  elapsed_s=0.67
-
-# aggregate file (sweep_20260418_183012.agg.log):
+# aggregate file (sweep_20260418_183012.agg.log) — the only file:
 [18:30:12.145] SEARCH_START  [brute_force_n6]   top_k=1  verbosity=0
 [18:30:12.812] NEW_BEST      [brute_force_n6]   c_log=0.910239  time_to_find=0.66
 [18:30:12.814] SEARCH_END    [brute_force_n6]   status=ok  n_results=1  elapsed_s=0.67
 [18:30:12.820] SEARCH_START  [brute_force_n7]   ...
 ```
 
-Both files are complete records of the run. The per-run file is
-convenient for zooming into one algorithm; the aggregate is convenient
-for diffing runs against each other or eyeballing the sweep as a
-whole.
+Standalone runs (no `parent_logger`) write a single per-invocation
+file instead. Either way, a given script invocation produces exactly
+one log file.
 
 Nesting is flat — child loggers only tee into their immediate parent.
 An orchestration script that wants a two-level hierarchy (sweep → per-N
@@ -366,7 +360,7 @@ directly; the wrapper is what gives the shared behavior.
 ## Module layout
 
 ```
-search_N/
+search/
 ├── __init__.py        Public surface: Search, SearchResult,
 │                      AggregateLogger, concrete classes
 ├── DESIGN.md          This file
@@ -378,10 +372,10 @@ search_N/
 ```
 
 Each concrete search is one file. No sub-packages. If two searches
-share a helper, it goes into `utils/`, not `search_N/`.
+share a helper, it goes into `utils/`, not `search/`.
 
-Logs live at the repo root (`<repo>/logs/search_N/`), not inside this
-package. `search_N/` is source code; logs are runtime artifacts.
+Logs live at the repo root (`<repo>/logs/search/`), not inside this
+package. `search/` is source code; logs are runtime artifacts.
 
 ---
 
@@ -401,7 +395,7 @@ metadata=r.metadata)` for each result. It does not compute properties;
 
 ## Adding a new search
 
-1. Create `search_N/<name>.py`.
+1. Create `search/<name>.py`.
 2. Subclass `Search`, set `name`, implement
    `_run() -> list[nx.Graph]`.
 3. Declare any algorithm-specific constraints (`alpha`, `d_max`,
@@ -411,7 +405,7 @@ metadata=r.metadata)` for each result. It does not compute properties;
    at the moment of discovery.
 5. For algorithm-specific metadata, set `G.graph["metadata"] = {...}`.
 6. For verbose tracing, use `self._log(event, level=N, **kv)`.
-7. Add the class to `search_N/__init__.py`.
+7. Add the class to `search/__init__.py`.
 8. Add a driver in `scripts/run_<name>.py` that instantiates, calls
    `.run()`, filters/inspects the results, and optionally calls
    `.save(results)`.

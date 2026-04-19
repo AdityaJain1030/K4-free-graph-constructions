@@ -2,6 +2,7 @@ from .base import Search, SearchResult
 from .logger import SearchLogger, AggregateLogger
 from .brute_force import BruteForce
 from .circulant import CirculantSearch
+from .random import RandomSearch
 
 __all__ = [
     "Search",
@@ -10,4 +11,5 @@ __all__ = [
     "AggregateLogger",
     "BruteForce",
     "CirculantSearch",
+    "RandomSearch",
 ]

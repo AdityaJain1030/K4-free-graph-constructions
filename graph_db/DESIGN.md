@@ -49,7 +49,7 @@ store.add_graph(G, source="my_search", filename="my_search.json",
 ```
 
 This is the right path for any producer that just wants to persist new
-graphs — e.g. `search_N/base.Search.save` and similar ingest scripts.
+graphs — e.g. `search/base.Search.save` and similar ingest scripts.
 All they need is the committed JSON record.
 
 ### `DB` — the analysis / visualization path
@@ -348,7 +348,7 @@ db.remove(graph_id=None, source=None) -> int
 `db.add` and `db.add_batch` exist so that a live analysis session can
 ingest a just-constructed graph and immediately see it via `db.nx(gid)`
 or `db.query(...)`. They are **not** the preferred path for bulk
-producer writes (SAT sweeps, circulant enumeration, `search_N.save`,
+producer writes (SAT sweeps, circulant enumeration, `search.save`,
 ad-hoc ingest scripts) — those should write through `GraphStore`
 directly to avoid paying for DB construction and auto-sync on every
 write.
@@ -548,7 +548,7 @@ Same graph discovered by two tags → two rows. That's the point.
 | Same graph from two sources               | **Kept** — two cache rows, by design |
 | `compute_properties` gets a new column    | `ALTER TABLE ADD COLUMN`, then `db.sync(recompute=True)` |
 | Cache corruption                          | Delete `cache.db`, re-run `sync` |
-| pynauty missing                           | `canonical_id` raises `ImportError` — install pynauty (`pip install pynauty` or activate the 4cycle env) |
+| pynauty missing                           | `canonical_id` raises `ImportError` — install pynauty (`pip install pynauty` or activate the k4free env) |
 
 What the design does **not** guarantee:
 

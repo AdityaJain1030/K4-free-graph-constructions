@@ -1,10 +1,10 @@
 """
-search_N/logger.py
+search/logger.py
 ==================
 Human-readable structured logger for search runs.
 
-Per-run file: logs/search_N/<algo>_n<N>_<YYYYMMDD_HHMMSS>.log
-Aggregate file (opt-in): logs/search_N/<name>_<YYYYMMDD_HHMMSS>.agg.log
+Per-run file: logs/search/<algo>_n<N>_<YYYYMMDD_HHMMSS>.log
+Aggregate file (opt-in): logs/search/<name>_<YYYYMMDD_HHMMSS>.agg.log
 
 Line format (per-run):
     [HH:MM:SS.mmm] EVENT_NAME   key=value  key=value  ...
@@ -19,7 +19,7 @@ from datetime import datetime
 _LOGS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "logs",
-    "search_N",
+    "search",
 )
 _EVENT_WIDTH = 12
 
@@ -92,11 +92,13 @@ class AggregateLogger:
 
 class SearchLogger:
     """
-    Writes per-run log lines. Opens lazily on first write.
+    Writes log lines for one Search instance.
 
-    If `parent_logger` is given, every line is also teed into that
-    aggregate logger, prefixed with `[<algo>_n<N>]` so the aggregate
-    output remains readable across many concurrent child runs.
+    - Standalone (no `parent_logger`): opens its own per-run file
+      `logs/search/<algo>_n<N>_<ts>.log` lazily on first write.
+    - Under an `AggregateLogger`: writes **only** to the aggregate.
+      No per-instance file is created, so a whole sweep produces one
+      log file instead of one-per-search-instance.
     """
 
     def __init__(
@@ -112,22 +114,24 @@ class SearchLogger:
         self.path = None
 
     def _ensure_open(self):
-        if self._file is None:
-            os.makedirs(_LOGS_DIR, exist_ok=True)
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.path = os.path.join(_LOGS_DIR, f"{self.algo}_n{self.n}_{ts}.log")
-            self._file = open(self.path, "a")
+        if self.parent_logger is not None or self._file is not None:
+            return
+        os.makedirs(_LOGS_DIR, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.path = os.path.join(_LOGS_DIR, f"{self.algo}_n{self.n}_{ts}.log")
+        self._file = open(self.path, "a")
 
     def write(self, event: str, **data):
-        self._ensure_open()
         ts = _now_ts()
         label = event.upper().ljust(_EVENT_WIDTH)
         kv = _fmt_kv(data)
         line = f"[{ts}] {label}  {kv}\n" if kv else f"[{ts}] {label}\n"
-        self._file.write(line)
-        self._file.flush()
 
-        if self.parent_logger is not None:
+        if self.parent_logger is None:
+            self._ensure_open()
+            self._file.write(line)
+            self._file.flush()
+        else:
             self.parent_logger.tee(ts, event, f"{self.algo}_n{self.n}", kv)
 
     def close(self):

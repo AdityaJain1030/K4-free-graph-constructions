@@ -1,2 +1,3 @@
 __pycache__
-logs/search_N/*.log
+logs/search/*.log
+cache.db

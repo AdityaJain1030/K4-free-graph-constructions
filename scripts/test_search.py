@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-scripts/test_search_N.py
+scripts/test_search.py
 ========================
-Smoke test for the search_N framework.
+Smoke test for the search framework.
 
 - Runs BruteForce for n=4..9 and CirculantSearch for n=8..30,
   all under a single AggregateLogger.
@@ -11,7 +11,7 @@ Smoke test for the search_N framework.
 
 Run from repo root::
 
-    python scripts/test_search_N.py
+    python scripts/test_search.py
 """
 
 import os
@@ -21,7 +21,7 @@ import time
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
-from search_N import AggregateLogger, BruteForce, CirculantSearch
+from search import AggregateLogger, BruteForce, CirculantSearch
 from graph_db import DB
 
 
