@@ -21,7 +21,7 @@ import sys
 # Make graph_db importable from repo root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from graph_db.store import GraphStore, canonical_id, graph_to_sparse6, edges_to_nx
+from graph_db import GraphStore, canonical_id, graph_to_sparse6, edges_to_nx
 
 REPO_ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_RESULTS = os.path.join(REPO_ROOT, "SAT_old", "k4free_ilp", "results")
@@ -112,10 +112,9 @@ def main():
           f"({skipped} already existed)")
 
     if args.sync:
-        from graph_db.store import GraphDB
-        db = GraphDB(GRAPHS_DIR, CACHE_PATH)
-        db.sync(show_progress=True)
-        db.close()
+        from graph_db import DB
+        with DB(GRAPHS_DIR, CACHE_PATH, auto_sync=False) as db:
+            db.sync(verbose=True)
 
 
 if __name__ == "__main__":

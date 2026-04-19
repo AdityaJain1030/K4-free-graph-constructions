@@ -1,7 +1,7 @@
 [
   {
-    "id": "4079efa0bc01604a",
-    "sparse6": ":CcK",
+    "id": "9397f79e4e86912f",
+    "sparse6": ":Cp`V",
     "source": "brute_force",
     "metadata": {
       "rank": 1,
@@ -10,8 +10,8 @@
     }
   },
   {
-    "id": "e16a320a72e9b083",
-    "sparse6": ":CcKN",
+    "id": "fdbd418da0289c71",
+    "sparse6": ":CoKI",
     "source": "brute_force",
     "metadata": {
       "rank": 2,
@@ -20,8 +20,8 @@
     }
   },
   {
-    "id": "aa5f8145f13fb0fa",
-    "sparse6": ":CcJ",
+    "id": "7697efba3659d405",
+    "sparse6": ":Cpi",
     "source": "brute_force",
     "metadata": {
       "rank": 3,
@@ -30,8 +30,8 @@
     }
   },
   {
-    "id": "05e475d4a4783859",
-    "sparse6": ":Ccn",
+    "id": "64b30f8ec7208fea",
+    "sparse6": ":Coi",
     "source": "brute_force",
     "metadata": {
       "rank": 4,
@@ -40,7 +40,7 @@
     }
   },
   {
-    "id": "ba285621f5506325",
+    "id": "8091d5c4be3ca7a8",
     "sparse6": ":Cci",
     "source": "brute_force",
     "metadata": {
@@ -50,8 +50,8 @@
     }
   },
   {
-    "id": "ede73ae5059d79ad",
-    "sparse6": ":Da@a~",
+    "id": "967670952879efcb",
+    "sparse6": ":Daqcb",
     "source": "brute_force",
     "metadata": {
       "rank": 1,
@@ -60,8 +60,8 @@
     }
   },
   {
-    "id": "f0ae0c2e784589b0",
-    "sparse6": ":Da@_Y",
+    "id": "3b840a438b5fe67f",
+    "sparse6": ":DgXIAN",
     "source": "brute_force",
     "metadata": {
       "rank": 2,
@@ -70,8 +70,8 @@
     }
   },
   {
-    "id": "7bd4c5d1823e3e84",
-    "sparse6": ":Da@aR",
+    "id": "ea242d418227064d",
+    "sparse6": ":DaoIQN",
     "source": "brute_force",
     "metadata": {
       "rank": 3,
@@ -80,8 +80,8 @@
     }
   },
   {
-    "id": "d454e16aa9f0e47e",
-    "sparse6": ":Da@_YN",
+    "id": "47dd489af0e5a5a5",
+    "sparse6": ":DaHIQN",
     "source": "brute_force",
     "metadata": {
       "rank": 4,
@@ -90,8 +90,8 @@
     }
   },
   {
-    "id": "e6c76e3f3814b24d",
-    "sparse6": ":Da@o~",
+    "id": "c1f7625f3de2723f",
+    "sparse6": ":Daqg~",
     "source": "brute_force",
     "metadata": {
       "rank": 5,
@@ -100,8 +100,8 @@
     }
   },
   {
-    "id": "6a1085d1c4bd0117",
-    "sparse6": ":Ea@azR",
+    "id": "13114571dd0ca30f",
+    "sparse6": ":Eaq_YLN",
     "source": "brute_force",
     "metadata": {
       "rank": 1,
@@ -110,8 +110,8 @@
     }
   },
   {
-    "id": "eb1248a3fd4fac07",
-    "sparse6": ":Ea@_YlN",
+    "id": "912f2fa4957928d2",
+    "sparse6": ":Eaq_bcb",
     "source": "brute_force",
     "metadata": {
       "rank": 2,
@@ -120,8 +120,8 @@
     }
   },
   {
-    "id": "a896e441692b4cc9",
-    "sparse6": ":Ea@aRlN",
+    "id": "3bc16c695de52c52",
+    "sparse6": ":EgGIQcs",
     "source": "brute_force",
     "metadata": {
       "rank": 3,
@@ -130,7 +130,7 @@
     }
   },
   {
-    "id": "7268abcead567fb5",
+    "id": "2e3d074bf6b4283a",
     "sparse6": ":Ea@aRgs",
     "source": "brute_force",
     "metadata": {
@@ -140,7 +140,7 @@
     }
   },
   {
-    "id": "1d9945b80a1fbb68",
+    "id": "e65abe8acd419058",
     "sparse6": ":Ea@ozR",
     "source": "brute_force",
     "metadata": {

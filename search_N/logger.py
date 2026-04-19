@@ -22,7 +22,11 @@ error          Unexpected exception. Includes exc (str).
 import os
 from datetime import datetime
 
-_LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+_LOGS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "logs",
+    "search_N",
+)
 _EVENT_WIDTH = 12  # column width for the event name
 
 

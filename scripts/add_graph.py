@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from graph_db.store import GraphStore, canonical_id, sparse6_to_nx, graph_to_sparse6, edges_to_nx
+from graph_db import GraphStore, canonical_id, sparse6_to_nx, graph_to_sparse6, edges_to_nx
 
 REPO_ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GRAPHS_DIR   = os.path.join(REPO_ROOT, "graphs")
@@ -109,10 +109,9 @@ def main():
 
     # ── Optional cache sync ───────────────────────────────────────────────────
     if args.sync:
-        from graph_db.store import GraphDB
-        db = GraphDB(GRAPHS_DIR, os.path.join(REPO_ROOT, "cache.db"))
-        db.sync(show_progress=True)
-        db.close()
+        from graph_db import DB
+        with DB(GRAPHS_DIR, os.path.join(REPO_ROOT, "cache.db"), auto_sync=False) as db:
+            db.sync(verbose=True)
 
 
 if __name__ == "__main__":

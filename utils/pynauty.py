@@ -59,7 +59,9 @@ def graphs_via_geng(geng: str, n: int, flags: str = "-k"):
             stderr=subprocess.DEVNULL,
             check=False,
         )
-        yield from nx.read_graph6(tmpfile)
+        for G in nx.read_graph6(tmpfile):
+            if isinstance(G, nx.Graph):
+                yield G
     finally:
         os.unlink(tmpfile)
 
@@ -75,7 +77,7 @@ def graphs_via_python(n: int, k4_free: bool = True):
     n       : number of vertices.
     k4_free : if True (default) only yield K4-free graphs.
     """
-    from graph_db.store import canonical_id
+    from graph_db import canonical_id
     from utils.graph_props import is_k4_free_nx
 
     nodes = list(range(n))

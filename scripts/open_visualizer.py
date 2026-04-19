@@ -25,14 +25,9 @@ def main():
     args = parser.parse_args()
 
     if args.sync:
-        from graph_db.store import GraphDB
-        REPO_ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        db = GraphDB(
-            os.path.join(REPO_ROOT, "graphs"),
-            os.path.join(REPO_ROOT, "cache.db"),
-        )
-        db.sync(show_progress=True)
-        db.close()
+        from graph_db import DB
+        with DB(auto_sync=False) as db:
+            db.sync(verbose=True)
 
     from visualizer.visualizer import App
     App(source_filter=args.source).mainloop()

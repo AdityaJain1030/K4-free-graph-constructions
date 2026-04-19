@@ -29,7 +29,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # ── repo root on sys.path ─────────────────────────────────────────────────────
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from graph_db.api import open_db
+from graph_db import DB
 
 # ---------------------------------------------------------------------------
 # Palette
@@ -141,8 +141,8 @@ def _load_data(source_filter: str | None = None) -> dict[int, list[dict]]:
     if source_filter:
         kwargs["source"] = source_filter
 
-    with open_db() as db:
-        records = db.records_with_graphs(**kwargs)
+    with DB() as db:
+        records = db.hydrate(db.query(**kwargs))
 
     data: dict[int, list[dict]] = {}
     for rec in records:

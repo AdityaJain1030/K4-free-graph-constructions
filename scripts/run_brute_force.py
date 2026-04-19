@@ -13,11 +13,12 @@ Usage:
 import argparse
 import os
 import sys
+import atexit
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from search_N import BruteForce
-from graph_db.store import GraphDB
+from graph_db import DB
 
 REPO_ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GRAPHS_DIR = os.path.join(REPO_ROOT, "graphs")
@@ -58,11 +59,11 @@ def main():
 
     if saved_any:
         print("\nSyncing cache...")
-        db = GraphDB(GRAPHS_DIR, CACHE_DB)
-        db.sync(show_progress=True)
-        db.close()
+        with DB(GRAPHS_DIR, CACHE_DB, auto_sync=False) as db:
+            db.sync(verbose=True)
     print("\nDone.")
 
 
 if __name__ == "__main__":
     main()
+    os._exit(0)  # force exit — OR-Tools background threads otherwise hang the process
