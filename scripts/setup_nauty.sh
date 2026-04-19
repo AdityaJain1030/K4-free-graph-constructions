@@ -56,12 +56,12 @@ if [[ "$(uname)" == "Darwin" ]]; then
         export SDKROOT="$SDK"
         echo "macOS SDK: $SDKROOT"
     else
-        echo "WARNING: xcrun not found — Xcode Command Line Tools are not installed."
+        echo "ERROR: xcrun not found — Xcode Command Line Tools are not installed."
         echo "  pynauty requires them to compile on macOS. Run:"
         echo "    xcode-select --install"
         echo "  then re-run this script."
-        echo "  The project works without pynauty (falls back to WL-hash dedup)."
-        exit 0
+        echo "  pynauty is required by graph_db (canonical-id); there is no fallback."
+        exit 1
     fi
 fi
 

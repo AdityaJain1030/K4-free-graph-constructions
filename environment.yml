@@ -85,10 +85,10 @@ dependencies:
 # CAVEAT — pynauty on macOS:
 #   pynauty is installed by scripts/setup_nauty.sh (not here) so that we can
 #   set SDKROOT to the Xcode SDK path before pip compiles the C extension.
-#   setup_nauty.sh will warn clearly if Xcode CLT is missing and exit cleanly
+#   setup_nauty.sh will warn clearly if Xcode CLT is missing and exit
 #   rather than producing a cryptic compiler error.
-#   Without pynauty the project is fully functional; graph_db falls back to
-#   WL-hash deduplication.
+#   pynauty is required — graph_db uses its canonical sparse6 as the
+#   isomorphism-class id and will refuse to run without it.
 #
 # NOT SUPPORTED — Windows (native):
 #   setup_nauty.sh is a bash script and nauty's autotools build does not

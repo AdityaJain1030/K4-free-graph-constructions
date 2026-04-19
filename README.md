@@ -21,9 +21,10 @@ Small `c` = near-counterexample. The benchmark to beat is the Paley graph
 of degree irregularity.
 
 Different subfolders attack the same objective from different angles:
-exact solvers (SAT/ILP), algebraic constructions (circulants, Cayley graphs),
-random and greedy baselines, evolutionary/LLM search (FunSearch-style), and
-a unified graph database + visualizer to compare everything.
+exact solvers (SAT/ILP), algebraic constructions (circulants, Cayley graphs,
+Mattheus–Verstraete), regularity-based and random/greedy baselines,
+evolutionary/LLM search (FunSearch-style), and a unified graph database +
+visualizer to compare everything.
 
 ---
 
@@ -54,9 +55,10 @@ micromamba env create -f environment.yml
 ```
 
 Installs Python 3.12, the scientific stack (numpy / scipy / matplotlib /
-networkx), the SAT stack (ortools, python-sat), and a C compiler
-chain. See comments in `environment.yml` for the full list. Takes a
-few minutes on a fresh machine.
+plotly / networkx), the SAT stack (ortools, python-sat), LLM API clients
+(anthropic, google-genai, xai-sdk), and a C compiler chain. See comments
+in `environment.yml` for the full list. Takes a few minutes on a fresh
+machine.
 
 ### 3. Build `nauty` + install `pynauty`
 
@@ -69,9 +71,9 @@ This downloads `nauty 2.9.3`, builds it inside the env
 (`$CONDA_PREFIX/src`), wires the binaries onto `PATH` via a conda
 activation hook, and then `pip install`s `pynauty` against the
 just-built library. On macOS it also sets `SDKROOT` to the Xcode SDK
-path; if Xcode CLT is missing the script warns and exits cleanly
-(the rest of the project still works — `graph_db` falls back to
-WL-hash deduplication without `pynauty`).
+path; if Xcode CLT is missing the script warns and exits cleanly.
+`pynauty` is required — `graph_db` uses its canonical sparse6 as the
+isomorphism-class id and refuses to run without it.
 
 ### 4. Smoke test
 
@@ -154,58 +156,97 @@ for any priority function.
 
 ## `graph_db/` — Unified graph database
 
-The glue layer for comparing results across solvers.
+The glue layer for comparing results across solvers. Two stores:
 
-- `DESIGN.md` — full design doc. Two stores:
-  1. `graphs/` folder (committed) — JSON arrays of `{id, sparse6, source, metadata?}` records, one file per batch.
-  2. `cache.db` (SQLite, gitignored) — one row per graph with every computable property typed (degree sequence, girth, triangles, spectral radius, Laplacian spectrum, α, c_log, Turán density, MIS / triangle / high-degree highlight sets, …).
-- `store.py` — `GraphStore`: reads `graphs/`, writes `cache.db`.
+1. `graphs/` folder (committed) — JSON arrays of `{id, sparse6, source, metadata?}` records, one file per source.
+2. `cache.db` (SQLite, gitignored) — one row per graph with every computable property typed (degree sequence, girth, triangles, spectral radius, Laplacian spectrum, α, c_log, Turán density, MIS / triangle / high-degree highlight sets, …).
+
+Two public classes for the two use cases:
+
+- **`GraphStore`** — producer path. Bare JSON-folder I/O; no cache involvement at write time. `search/base.Search.save` and ad-hoc ingest scripts use it.
+- **`DB`** — analysis / visualization path. Combines the store with the property cache. Opening a `DB` auto-syncs any new store records into the cache, so queries always see every graph with its full column set.
+
+Files:
+
+- `DESIGN.md`, `USAGE.md`, `EXTENDING.md` — architecture + API + how to add a new computed property.
+- `db.py` — the `DB` class, `open_db()`, and the auto-sync logic.
+- `store.py` — `GraphStore`: JSON batch reader/writer.
+- `cache.py`, `schema.sql` — SQLite cache layer + typed column schema.
 - `properties.py` — `compute_properties(G, hint)` → full row.
-- `verify.py`, `api.py` — verification + query API.
-- Deduplicates by canonical sparse6 via pynauty (required).
+- `encoding.py` — canonical sparse6 + `canonical_id` (SHA-256[:16] of canonical form, via pynauty).
+- `clean.py` — cache rebuild / pruning utilities.
 
 ## `graphs/` — The canonical graph store (committed)
 
-Just JSON batches consumed by `graph_db/`:
+JSON batches consumed by `graph_db/`, one file per producing source:
 
-- `brute_force.json` — small-N brute-force enumeration results.
-- `circulant.json` — circulant catalog (N=8–50).
-- `sat_pareto_ilp.json` — Pareto frontier graphs from the SAT/ILP runs.
+- `circulant.json` — circulant catalog from exhaustive `CirculantSearch` (N ≤ 35).
+- `cayley.json` — residue-class Cayley graphs `Cay(Z_p, R_k)` for `k ∈ {2, 3, 6}`.
+- `mattheus_verstraete.json` — explicit construction from Mattheus–Verstraete 2023.
+- `regularity.json` — outputs of regularity-partition-based constructions.
+- `random.json` — random/greedy baselines.
+
+SAT/ILP results are not yet wired into `graphs/`; they currently live under
+`SAT_old/k4free_ilp/results/` as raw Pareto JSON.
 
 ---
 
 ## `search/` — Per-N search framework
 
 A lightweight abstraction layer. `base.py` defines an abstract `Search`
-class; subclasses (`brute_force.py`, `circulant.py`, `random.py`)
-implement `_run()` returning `list[nx.Graph]` for a given `N`.
-`logger.py` handles per-run logs in `logs/search/`. Meant to be the
-unified framework new algorithms plug into, with `c_log` scoring and
-`save()` writing into the `graph_db` format.
+class; each subclass implements `_run()` returning `list[nx.Graph]` for a
+given `N` (and arbitrary subclass-specific kwargs). `logger.py` handles
+per-run logs in `logs/search/`. This is the unified framework new
+algorithms plug into, with `c_log` scoring and `save()` writing into the
+`graph_db` format.
 
 - `DESIGN.md` — the spec for the `Search` contract.
 - `ADDING_A_SEARCH.md` — playbook / checklist for writing a new search.
-- `CIRCULANTS.md`, `BRUTE_FORCE.md`, `RANDOM.md` — per-algorithm notes:
-  intuition, caveats, when to use / when not to.
+
+Algorithm subclasses, each with its own notes file:
+
+| Module                   | Notes                       | What it does                                                             |
+|--------------------------|-----------------------------|--------------------------------------------------------------------------|
+| `brute_force.py`         | `BRUTE_FORCE.md`            | Exact enumeration via `nauty geng` (N ≤ 10).                             |
+| `circulant.py`           | `CIRCULANTS.md`             | Exhaustive circulant enumeration for N ≤ 35.                             |
+| `cayley.py`              | `CAYLEY.md`                 | Residue-class Cayley graphs `Cay(Z_p, R_k)`, k ∈ {2, 3, 6}.              |
+| `regularity.py`          | `REGULARITY.md`             | Regularity-partition-based construction.                                 |
+| `regularity_alpha.py`    | `REGULARITY_ALPHA.md`       | α-optimised regularity variant.                                          |
+| `mattheus_verstraete.py` | `MATTHEUS_VERSTRAETE.md`    | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
+| `random.py`              | `RANDOM.md`                 | Random + randomized-greedy baselines.                                    |
+
+`SAT_PLAN.md` and `SAT_SIMPLE.md` document the in-progress SAT search
+(actual code still lives in `SAT_old/`).
 
 ## `scripts/` — Orchestration / helper CLIs
 
+- `test_search.py` — smoke test for the `Search` framework.
+- `db_cli.py` — query / inspect `graph_db` from the shell.
 - `open_visualizer.py` — launch the tkinter visualizer.
-- `setup_nauty.sh` — build `nauty`/`geng` (required for brute force on N≥8).
+- `setup_nauty.sh` — build `nauty`/`geng` and install `pynauty`.
+- `run_random.py`, `run_cayley.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py` — per-algorithm sweep drivers.
+- `run_sweep_10_40.py` — unified driver that runs every non-SAT search across N=10..40.
 
 ## `utils/` — Shared primitives
 
 - `graph_props.py` — computes the typed properties that populate `cache.db`.
-- `pynauty.py` — canonical sparse6 via the `nauty` binary (when available).
+- `pynauty.py` — pynauty availability check + `canonical_id` + `geng` helpers (`find_geng`, `graphs_via_geng`). Mirrors the canonical-id logic in `graph_db/encoding.py`.
 - `ramsey.py` — hardcoded Ramsey numbers `R(3,k)`, `R(4,k)` used for pre-solve pruning in the SAT solver.
 
 ## `visualizer/` — Interactive explorer
 
-`visualizer.py` — tkinter + matplotlib UI backed by `graph_db`. Filters by
-source, N, c_log, regularity, etc. Highlights: MIS vertices, triangles,
-high-degree vertices, click-to-select neighborhood. Layouts: spring,
-circular, shell, Kamada-Kawai. Eigenvalue spectra and degree distribution
-sidepanels.
+- `visualizer.py` — tkinter + matplotlib UI backed by `graph_db`. Filters by
+  source, N, c_log, regularity, etc. Highlights: MIS vertices, triangles,
+  high-degree vertices, click-to-select neighborhood. Layouts: spring,
+  circular, shell, Kamada-Kawai. Eigenvalue spectra and degree distribution
+  sidepanels.
+- `plots/` — static and interactive plots over the whole `graph_db`.
+  - `plot_n_alpha_dmax.py` — 3D scatter of every cached graph in
+    `(N, d_max, α)` with the Caro–Wei floor `α = N/(d_max + 1)` drawn
+    as a translucent mesh. Writes a PNG by default; `--html` renders
+    a self-contained Plotly WebGL page that opens in the browser
+    (smooth on WSL2); `-i` opens a rotatable matplotlib window.
+  - `images/` — generated output (PNG / HTML).
 
 ---
 
@@ -215,25 +256,28 @@ sidepanels.
          ┌──────────────────────┐
          │   Search producers   │
          ├──────────────────────┤
-   SAT / ILP      ───┐
-   regular_sat    ───┤
-   circulants     ───┼──►  graphs/*.json  (committed batches)
-   random         ───┤             │
-   funsearch      ───┤             ▼
-   claude_search  ───┘        graph_db
-                              (properties.py)
-                                    │
-                                    ▼
-                               cache.db
-                                    │
-                                    ▼
-                           visualizer  +  leaderboards
+   SAT / ILP        ───┐
+   regular_sat      ───┤
+   circulant        ───┤
+   cayley           ───┤
+   regularity       ───┼──►  graphs/*.json  (committed batches)
+   mattheus_v.      ───┤             │
+   random / greedy  ───┤             ▼
+   funsearch        ───┤         graph_db
+   claude_search    ───┘       (DB auto-sync)
+                                     │
+                                     ▼
+                                 cache.db
+                                     │
+                                     ▼
+                     visualizer + plots + leaderboards
 ```
 
-Each producer writes graphs it finds into a `graphs/*.json` batch. On
-startup, `graph_db` scans the batch files, computes every typed property
-for unseen graphs, and fills `cache.db`. The visualizer and any analysis
-script reads from `cache.db`, filtered by `source`, `n`, `c_log`, etc.
+Each producer writes graphs it finds into a `graphs/*.json` batch via
+`GraphStore`. Opening a `DB` scans the batch files, computes every typed
+property for unseen graphs, and fills `cache.db`. The visualizer, plots,
+and any analysis script read from `cache.db` via `DB.query(...)`,
+filtered by `source`, `n`, `c_log`, etc.
 
 The one constant across everything is `c_log = α · d_max / (N · ln(d_max))`.
 Every subfolder is ultimately asking: *how low can we push this number?*
