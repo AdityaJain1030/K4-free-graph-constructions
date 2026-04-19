@@ -3,10 +3,12 @@ from .logger import SearchLogger, AggregateLogger
 from .brute_force import BruteForce
 from .cayley import CayleyResidueSearch
 from .circulant import CirculantSearch
+from .circulant_fast import CirculantSearchFast
 from .random import RandomSearch
 from .regularity import RegularitySearch
 from .regularity_alpha import RegularityAlphaSearch
 from .mattheus_verstraete import MattheusVerstraeteSearch
+from .sat_exact import SATExact
 
 __all__ = [
     "Search",
@@ -16,8 +18,10 @@ __all__ = [
     "BruteForce",
     "CayleyResidueSearch",
     "CirculantSearch",
+    "CirculantSearchFast",
     "RandomSearch",
     "RegularitySearch",
     "RegularityAlphaSearch",
     "MattheusVerstraeteSearch",
+    "SATExact",
 ]

@@ -24,9 +24,8 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from k4free_ilp.alpha_exact import alpha_exact
-from k4free_ilp.k4_check import find_k4
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from utils.graph_props import alpha_exact, find_k4
 
 # ---------------------------------------------------------------------------
 # Colors

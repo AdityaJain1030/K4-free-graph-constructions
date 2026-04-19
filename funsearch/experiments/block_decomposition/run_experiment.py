@@ -52,7 +52,7 @@ from pysat.solvers import Glucose4
 sys.stdout.reconfigure(line_buffering=True)
 
 PARETO_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "SAT", "k4free_ilp", "results"
+    os.path.dirname(__file__), "..", "..", "..", "SAT_old", "pareto_reference"
 )
 
 

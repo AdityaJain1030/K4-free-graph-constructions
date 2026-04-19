@@ -15,14 +15,15 @@ from math import comb
 import numpy as np
 from ortools.sat.python import cp_model
 
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_SAT_OLD = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for _p in (_REPO_ROOT, _SAT_OLD):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
-from k4free_ilp.alpha_exact import alpha_exact
-from k4free_ilp.k4_check import is_k4_free
-from k4free_ilp.graph_io import adj_to_g6
+from utils.graph_props import alpha_exact, is_k4_free
 from utils.ramsey import KNOWN_RAMSEY, degree_bounds as _degree_bounds_ramsey
+from regular_sat.graph_io import adj_to_g6
 
 _LAZY_THRESHOLD = 5_000_000
 

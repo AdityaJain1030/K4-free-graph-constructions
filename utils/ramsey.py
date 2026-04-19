@@ -2,10 +2,15 @@
 utils/ramsey.py
 ===============
 Known Ramsey numbers and derived degree bounds for K4-free graphs.
-Shared between SAT_old/k4free_ilp and SAT_old/regular_sat.
+Used by search/sat_exact.py and SAT_old/regular_sat.
 """
 
 KNOWN_RAMSEY: dict[tuple[int, int], int] = {
+    # Trivial: R(s, 1) = 1 (the one-vertex graph).
+    (3, 1): 1, (4, 1): 1, (5, 1): 1, (6, 1): 1, (7, 1): 1, (8, 1): 1, (9, 1): 1,
+    # Trivial: R(s, 2) = s (complete graph on s vertices contains either K_s or an edge between any two non-adjacent).
+    (3, 2): 3, (4, 2): 4, (5, 2): 5, (6, 2): 6, (7, 2): 7, (8, 2): 8, (9, 2): 9,
+    # Non-trivial known values.
     (3, 3): 6, (3, 4): 9, (3, 5): 14, (3, 6): 18, (3, 7): 23, (3, 8): 28, (3, 9): 36,
     (4, 3): 9, (4, 4): 18, (4, 5): 25,
 }

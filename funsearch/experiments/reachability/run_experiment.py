@@ -76,7 +76,7 @@ load_library = _sc.load_library
 OUTDIR = _HERE
 PLOT_DIR = os.path.join(OUTDIR, "plots")
 PARETO_DIR = os.path.normpath(
-    os.path.join(_HERE, "..", "..", "..", "SAT", "k4free_ilp", "results")
+    os.path.join(_HERE, "..", "..", "..", "SAT_old", "pareto_reference")
 )
 
 

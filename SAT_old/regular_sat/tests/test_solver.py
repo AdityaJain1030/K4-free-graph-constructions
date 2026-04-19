@@ -5,12 +5,16 @@ import os
 import pytest
 import numpy as np
 
-# Ensure project root is on path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Ensure repo root and SAT_old/ are on path
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_SAT_OLD = os.path.dirname(os.path.dirname(_HERE))
+_REPO_ROOT = os.path.dirname(_SAT_OLD)
+for _p in (_REPO_ROOT, _SAT_OLD):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from regular_sat.solver import solve_min_edges
-from k4free_ilp.k4_check import is_k4_free
-from k4free_ilp.alpha_exact import alpha_exact
+from utils.graph_props import is_k4_free, alpha_exact
 
 
 def _validate_solution(result, n, max_alpha):

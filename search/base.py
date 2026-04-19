@@ -176,11 +176,19 @@ class Search(ABC):
 
     # ── internals ────────────────────────────────────────────────────────────
 
+    def _alpha_of(self, G: nx.Graph) -> tuple[int, list[int]]:
+        """
+        Override hook: exact α(G) for graphs this search returns. Default
+        uses the pure-Python bitmask B&B in utils.graph_props. Searches
+        that ship graphs too large for B&B (e.g. n ≥ 60) should override.
+        """
+        return alpha_exact_nx(G)
+
     def _wrap(self, G: nx.Graph) -> SearchResult:
         """Compute every SearchResult field for one candidate graph."""
         n = G.number_of_nodes()
         d_max = max((d for _, d in G.degree()), default=0)
-        alpha, _ = alpha_exact_nx(G) if n > 0 else (0, [])
+        alpha, _ = self._alpha_of(G) if n > 0 else (0, [])
         c = c_log_value(alpha, n, d_max) if n > 0 else None
         ttf = self._stamps.get(id(G))
         if ttf is None:

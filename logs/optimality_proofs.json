@@ -1,0 +1,54 @@
+[
+  {
+    "n": 15,
+    "alpha": 3,
+    "d_max": 5,
+    "status": "INFEASIBLE_RAMSEY",
+    "wall_s": 0.0,
+    "timeout_s": 30.0,
+    "workers": 4,
+    "symmetry_mode": "edge_lex",
+    "random_seed": null,
+    "witness": null,
+    "timestamp": "2026-04-19 12:26:55"
+  },
+  {
+    "n": 12,
+    "alpha": 3,
+    "d_max": 4,
+    "status": "INFEASIBLE",
+    "wall_s": 0.07,
+    "timeout_s": 60.0,
+    "workers": 4,
+    "symmetry_mode": "edge_lex",
+    "random_seed": null,
+    "witness": null,
+    "timestamp": "2026-04-19 12:27:00"
+  },
+  {
+    "n": 20,
+    "alpha": 4,
+    "d_max": 6,
+    "status": "INFEASIBLE",
+    "wall_s": 1350.76,
+    "timeout_s": 1800.0,
+    "workers": 4,
+    "symmetry_mode": "edge_lex",
+    "random_seed": null,
+    "witness": null,
+    "timestamp": "2026-04-19 12:58:10"
+  },
+  {
+    "n": 21,
+    "alpha": 4,
+    "d_max": 7,
+    "status": "TIMEOUT",
+    "wall_s": 1701.39,
+    "timeout_s": 1800.0,
+    "workers": 4,
+    "symmetry_mode": "edge_lex",
+    "random_seed": null,
+    "witness": null,
+    "timestamp": "2026-04-19 13:29:29"
+  }
+]

@@ -144,3 +144,39 @@ At minimum:
 
 `scripts/test_search.py` is the existing smoke harness — mirror its
 shape for your driver.
+
+---
+
+## Comparing against existing searches — don't re-run them
+
+Every non-SAT search (`brute_force`, `circulant`, `cayley`, `regularity`,
+`random`, `mattheus_verstraete`, …) has already been swept and its
+results are cached in `graph_db`. **Do not re-run those searches to
+benchmark against them.** Query the DB instead:
+
+```python
+from graph_db import DB
+
+with DB() as db:
+    # best c_log at each n, across every existing source
+    baseline = {r['n']: r for r in db.frontier(by='n', minimize='c_log')}
+
+    # or: best from a specific competitor
+    bf = {r['n']: r['c_log']
+          for r in db.frontier(by='n', minimize='c_log', source='brute_force')}
+```
+
+Or from the shell for a quick sanity check:
+
+```bash
+python scripts/db_cli.py query --source brute_force \
+    --columns n,c_log,alpha,d_max --top 20
+
+python scripts/db_cli.py query --n 17..22 --top 5   # overall frontier
+```
+
+The SAT/ILP results aren't in `graph_db` yet (they still live under
+`SAT_old/pareto_reference/`), so those are the only benchmarks that
+still require reading from disk directly.
+
+See `graph_db/USAGE.md` for the full query surface.

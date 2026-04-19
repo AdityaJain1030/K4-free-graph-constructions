@@ -63,6 +63,92 @@ def alpha_exact_nx(G: nx.Graph) -> tuple[int, list[int]]:
     return alpha_exact(adj)
 
 
+def alpha_cpsat(
+    adj: np.ndarray,
+    time_limit: float = 60.0,
+    vertex_transitive: bool = False,
+) -> tuple[int, list[int]]:
+    """
+    Exact α via OR-Tools CP-SAT. Faster than `alpha_exact` past n ≈ 40 on
+    sparse graphs but pays ~100 ms solver-init overhead and allocates
+    ~400 MB RSS per model — prefer `alpha_exact` on small n.
+
+    Set `vertex_transitive=True` to pin x[0]=1 (sound only when some MIS
+    contains vertex 0, i.e. vertex-transitive graphs like circulants).
+    Returns (0, []) if the solver neither finds nor proves optimum inside
+    `time_limit`.
+    """
+    import os
+    from ortools.sat.python import cp_model
+
+    n = adj.shape[0]
+    model = cp_model.CpModel()
+    x = [model.new_bool_var(f"x_{i}") for i in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            if adj[i, j]:
+                model.add(x[i] + x[j] <= 1)
+    if vertex_transitive and n > 0:
+        model.add(x[0] == 1)
+    model.maximize(sum(x))
+
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = time_limit
+    solver.parameters.num_search_workers = min(8, (os.cpu_count() or 4))
+    solver.parameters.log_search_progress = False
+
+    status = solver.solve(model)
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        return 0, []
+    alpha = int(round(solver.objective_value))
+    indep = [i for i in range(n) if solver.value(x[i])]
+    return alpha, indep
+
+
+def alpha_cpsat_nx(
+    G: nx.Graph,
+    time_limit: float = 60.0,
+    vertex_transitive: bool = False,
+) -> tuple[int, list[int]]:
+    """Convenience wrapper: accepts nx.Graph instead of np.ndarray."""
+    adj = np.array(nx.to_numpy_array(G, dtype=np.uint8))
+    return alpha_cpsat(adj, time_limit=time_limit, vertex_transitive=vertex_transitive)
+
+
+def alpha_auto(
+    adj: np.ndarray,
+    cutoff: int = 40,
+    time_limit: float = 60.0,
+    vertex_transitive: bool = False,
+) -> tuple[int, list[int]]:
+    """
+    Dispatch exact α: `alpha_exact` (bitmask B&B) for n ≤ cutoff, else
+    `alpha_cpsat`. Default cutoff=40 keeps small-n callers fast and
+    memory-light while letting CP-SAT handle the large-n regime where
+    B&B hangs (see search/CIRCULANT_FAST.md).
+    """
+    n = adj.shape[0]
+    if n <= cutoff:
+        return alpha_exact(adj)
+    return alpha_cpsat(adj, time_limit=time_limit, vertex_transitive=vertex_transitive)
+
+
+def alpha_auto_nx(
+    G: nx.Graph,
+    cutoff: int = 40,
+    time_limit: float = 60.0,
+    vertex_transitive: bool = False,
+) -> tuple[int, list[int]]:
+    """Convenience wrapper: accepts nx.Graph instead of np.ndarray."""
+    adj = np.array(nx.to_numpy_array(G, dtype=np.uint8))
+    return alpha_auto(
+        adj,
+        cutoff=cutoff,
+        time_limit=time_limit,
+        vertex_transitive=vertex_transitive,
+    )
+
+
 # ---------------------------------------------------------------------------
 # K4-free checking
 # ---------------------------------------------------------------------------

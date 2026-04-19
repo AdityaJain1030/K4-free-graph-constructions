@@ -165,6 +165,42 @@ with DB() as db:
               f"c_log={r['c_log']:.4f}")
 ```
 
+### Benchmarking a new search against every existing one
+
+Every non-SAT producer in the repo (`brute_force`, `circulant`, `cayley`,
+`regularity`, `random`, `mattheus_verstraete`, …) has its output cached
+here. When you're building or tuning a new search, **compare against the
+cached rows — don't re-run the other searches.** A typical one-liner:
+
+```python
+from graph_db import DB
+
+with DB() as db:
+    # per-n baseline c_log across every existing source
+    baseline = {r['n']: r['c_log']
+                for r in db.frontier(by='n', minimize='c_log')}
+
+    # just brute_force (the ground truth where it's feasible)
+    bf = {r['n']: r['c_log']
+          for r in db.frontier(by='n', minimize='c_log', source='brute_force')}
+```
+
+From the shell, the same idea through `db_cli.py`:
+
+```bash
+# frontier across all sources, n in [17, 22]
+python scripts/db_cli.py query --n 17..22 --top 5 \
+    --columns n,c_log,alpha,d_max,source
+
+# frontier filtered to one competitor
+python scripts/db_cli.py query --source circulant \
+    --columns n,c_log,d_max,alpha
+```
+
+SAT/ILP results are **not yet wired into the DB** — they still live under
+`SAT_old/pareto_reference/`. Everything else is here; don't re-run a
+sweep you can get as a `db.query(...)`.
+
 ### Export a frontier to CSV
 
 ```python

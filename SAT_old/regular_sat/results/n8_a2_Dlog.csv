@@ -1,0 +1,2 @@
+n,max_alpha,D,status,budget_s,elapsed_s,iterations,edges,method
+8,2,4,OPTIMAL,30.0,0.0,0,17,cpsat_direct

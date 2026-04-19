@@ -102,33 +102,32 @@ step entirely.
 
 ---
 
-## `SAT/` — Clean entry point for the SAT/ILP solver
+## SAT / ILP — current pipeline
 
-A thin README-only folder. Explains the CP-SAT formulation (K₄-free clauses,
-independence clauses, degree cardinality constraints, symmetry breaking),
-the two solver modes (direct vs lazy cutting planes), Ramsey pre-solve
-pruning, warm-starts from Paley-like circulants, and the degree-pinning
-strategy used in `regular_sat`.
+The active K₄-free CP-SAT pipeline lives in `search/sat_exact.py` +
+`scripts/{run_sat_exact,prove_box,verify_optimality,proof_report}.py`.
+It handles the full Pareto scan, hard-box optimality proofs, and
+certification. See:
 
-Points the reader at `SAT_old/` for actual code.
+- `SAT_EXACT.md` — pipeline walkthrough (model, scan, accelerators,
+  prove_box, verify_optimality).
+- `SAT_OPTIMIZATION.md` — what sped the solver up, what didn't, open ideas.
 
-## `SAT_old/` — CP-SAT solver, full implementation
+## `SAT_old/` — reference implementations + historical infra
 
-The real solver lives here despite the "_old" suffix.
+Kept as a reference point, not as the active code path.
 
-- `k4free_ilp/` — main CP-SAT Pareto scanner.
-  - `ilp_solver.py` — CP-SAT model (K₄ clauses + independence clauses + degree bounds), with both **direct** (all independence clauses upfront) and **lazy cutting-planes** modes.
-  - `run_production.py` — outer sweep over `(α_target, d_max)` pairs for N=11–35.
-  - `pareto_scanner.py` — binary-search Pareto scanner for small N.
-  - `brute_force.py` — exact enumeration via `nauty`'s `geng` for N ≤ 10.
-  - `alpha_exact.py`, `k4_check.py` — bitmask MIS branch-and-bound and K₄ detection.
-  - `visualize.py` — interactive tkinter Pareto-frontier explorer.
-  - `results/` — `pareto_n{N}.json` per N, plus `summary.json` and `low_c_graphs.g6`.
-  - `tests/` — pytest; includes the Ramsey sanity check `R(4,3)=9`, `R(4,4)=18`, `R(4,5)=25`.
-- `regular_sat/` — faster variant that **pins degree** to a single `D` (or `{D, D+1}` near-regular). Scans `D` upward from Ramsey lower bound; first feasible `D` terminates. 10–100× faster than the full Pareto sweep but bakes in a near-regularity assumption.
-- `paley_enumeration/` — Paley-graph / circulant exploration, a plot (`c_vs_N.png`), and CSV of circulant results.
-- `logs/`, `scripts/`, `run_cluster.sh`, `run_job.sh`, `*.sub` (HTCondor) — cluster job infrastructure.
-- `claude.summary.md` — running notes / summary from previous Claude sessions.
+- `regular_sat/` — reference near-regular (degree-pinned) CP-SAT solver.
+  Faster but assumes near-regularity; useful as a smaller model to port
+  onto the cluster and as a sanity reference.
+- `pareto_reference/` — committed `pareto_n{N}.json` from the original
+  unconstrained CP-SAT scanner. Ground-truth `min_c_log` that the new
+  solver validates against.
+- `claude.summary.md` — theoretical results (α-critical ⇒ near-regular;
+  minimise-c ⇔ minimise-|E|; Shearer β-parametrisation of the conjecture).
+- `ILP.sub`, `REGULAR_SAT.sub`, `interactive.sub`, `run_cluster.sh`,
+  `run_job.sh` — original HTCondor templates, kept for the upcoming
+  cluster pipeline.
 
 ---
 
@@ -187,7 +186,7 @@ JSON batches consumed by `graph_db/`, one file per producing source:
 - `random.json` — random/greedy baselines.
 
 SAT/ILP results are not yet wired into `graphs/`; they currently live under
-`SAT_old/k4free_ilp/results/` as raw Pareto JSON.
+`SAT_old/pareto_reference/` as raw Pareto JSON.
 
 ---
 
@@ -215,8 +214,8 @@ Algorithm subclasses, each with its own notes file:
 | `mattheus_verstraete.py` | `MATTHEUS_VERSTRAETE.md`    | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
 | `random.py`              | `RANDOM.md`                 | Random + randomized-greedy baselines.                                    |
 
-`SAT_PLAN.md` and `SAT_SIMPLE.md` document the in-progress SAT search
-(actual code still lives in `SAT_old/`).
+The SAT search lives in `search/sat_exact.py`; see `SAT_EXACT.md` and
+`SAT_OPTIMIZATION.md` at the repo root for the pipeline walkthrough.
 
 ## `scripts/` — Orchestration / helper CLIs
 

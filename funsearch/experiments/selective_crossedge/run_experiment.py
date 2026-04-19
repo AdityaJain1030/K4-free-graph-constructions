@@ -47,7 +47,7 @@ LIBRARY_PATH = os.path.join(
     os.path.dirname(__file__), "..", "block_decomposition", "library.json"
 )
 PARETO_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "SAT", "k4free_ilp", "results")
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "SAT_old", "pareto_reference")
 )
 
 

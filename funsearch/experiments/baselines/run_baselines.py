@@ -56,7 +56,7 @@ canonical_cert = _bd.canonical_cert
 LIBRARY_PATH = os.path.join(_HERE, "..", "block_decomposition", "library.json")
 
 PARETO_DIR = os.path.normpath(
-    os.path.join(_HERE, "..", "..", "..", "SAT", "k4free_ilp", "results")
+    os.path.join(_HERE, "..", "..", "..", "SAT_old", "pareto_reference")
 )
 OUTDIR = _HERE
 GRAPH_DIR = os.path.join(OUTDIR, "graphs")

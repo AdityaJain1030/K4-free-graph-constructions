@@ -1,0 +1,9 @@
+[
+  {"n": 21, "alpha": 4, "d_max": 7, "note": "c_bound=0.6854, c*=0.7328"},
+  {"n": 22, "alpha": 4, "d_max": 7, "note": "c_bound=0.6549, c*=0.6995"},
+  {"n": 23, "alpha": 4, "d_max": 9, "note": "c_bound=0.7123, c*=0.7527"},
+  {"n": 23, "alpha": 4, "d_max": 8, "note": "c_bound=0.6691, c*=0.7527"},
+  {"n": 23, "alpha": 4, "d_max": 7, "note": "c_bound=0.6255, c*=0.7527"},
+  {"n": 23, "alpha": 5, "d_max": 6, "note": "c_bound=0.7281, c*=0.7527"},
+  {"n": 23, "alpha": 5, "d_max": 5, "note": "c_bound=0.6753, c*=0.7527"}
+]

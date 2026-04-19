@@ -76,7 +76,7 @@ def load_sat_optimal(max_n=35):
     import json
     out = {}
     pareto_dir = os.path.normpath(os.path.join(_HERE, "..", "..", "..",
-                                                "SAT", "k4free_ilp", "results"))
+                                                "SAT_old", "pareto_reference"))
     for N in range(2, max_n + 1):
         path = os.path.join(pareto_dir, f"pareto_n{N}.json")
         if not os.path.isfile(path):

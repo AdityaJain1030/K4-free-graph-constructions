@@ -19,7 +19,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from regular_sat.solver import solve_min_edges
-from k4free_ilp.graph_io import adj_to_g6, adj_to_edge_list
+from regular_sat.graph_io import adj_to_g6, adj_to_edge_list
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
