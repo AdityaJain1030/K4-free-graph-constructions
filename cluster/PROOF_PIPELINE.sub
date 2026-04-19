@@ -1,0 +1,33 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — K4-free optimality pipeline
+# scripts/run_proof_pipeline.py (easy scan + hard-box proof per N)
+# ----------------------------------------------------------------------
+
+universe = vanilla
+
+executable = cluster/run_job.sh
+
+# Edit to match your repo location on the cluster.
+initialdir = /home/adityaj8/k4free
+
+getenv = True
+
+output = logs/pipeline/job_$(Cluster)_$(Process).out
+error  = logs/pipeline/job_$(Cluster)_$(Process).err
+log    = logs/pipeline/job_$(Cluster)_$(Process).log
+
+# ----------------------------------------------------------------------
+# Resource Requests
+# 32 CPUs: easy scan uses 8 α-tracks × 4 threads; hard phase uses
+# all 32 in one CP-SAT solve at a time. 200 GB is way more than
+# needed for the CP-SAT models themselves but leaves headroom for
+# the parallel-α fork.
+# ----------------------------------------------------------------------
+request_cpus   = 32
+request_memory = 200GB
+request_disk   = 10GB
+
+# Optional: pin to a specific machine.
+# Requirements = (Machine == "vision-c23.cs.illinois.edu")
+
+queue

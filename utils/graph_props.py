@@ -1,7 +1,7 @@
 """
 utils/graph_props.py
 ====================
-Canonical graph property utilities shared across SAT_old, search/, and graph_db.
+Canonical graph property utilities shared across search/ and graph_db.
 Do not import funsearch here; funsearch keeps its own copies.
 """
 
@@ -115,38 +115,395 @@ def alpha_cpsat_nx(
     return alpha_cpsat(adj, time_limit=time_limit, vertex_transitive=vertex_transitive)
 
 
-def alpha_auto(
-    adj: np.ndarray,
-    cutoff: int = 40,
-    time_limit: float = 60.0,
-    vertex_transitive: bool = False,
-) -> tuple[int, list[int]]:
+# ---------------------------------------------------------------------------
+# B&B with greedy-clique-cover upper bound
+# ---------------------------------------------------------------------------
+
+def alpha_bb_clique_cover(adj: np.ndarray) -> tuple[int, list[int]]:
     """
-    Dispatch exact α: `alpha_exact` (bitmask B&B) for n ≤ cutoff, else
-    `alpha_cpsat`. Default cutoff=40 keeps small-n callers fast and
-    memory-light while letting CP-SAT handle the large-n regime where
-    B&B hangs (see search/CIRCULANT_FAST.md).
+    Exact α via bitmask B&B with a greedy clique-cover upper bound.
+
+    θ(G) ≥ α(G), so a greedy partition of the candidate subgraph into
+    cliques bounds α in that subgraph by the number of cliques. Tighter
+    than `alpha_exact`'s popcount bound, typically 2–5× faster on sparse
+    graphs. Same memory profile as `alpha_exact`.
+
+    (Greedy *colouring* of the candidate subgraph would bound ω, not α —
+    that mistake is easy to make. The MIS-correct analogue is the
+    clique cover.)
     """
     n = adj.shape[0]
-    if n <= cutoff:
-        return alpha_exact(adj)
-    return alpha_cpsat(adj, time_limit=time_limit, vertex_transitive=vertex_transitive)
+    nbr = [0] * n
+    for i in range(n):
+        for j in range(n):
+            if adj[i, j]:
+                nbr[i] |= 1 << j
+
+    def popcount(x):
+        return bin(x).count("1")
+
+    def clique_cover_bound(candidates: int) -> int:
+        """Greedy clique partition of the subgraph induced by `candidates`."""
+        cliques = 0
+        remaining = candidates
+        while remaining:
+            cliques += 1
+            v = (remaining & -remaining).bit_length() - 1
+            # grow a clique containing v by intersecting neighbourhoods
+            clique_mask = 1 << v
+            extendable = remaining & nbr[v]
+            while extendable:
+                w = (extendable & -extendable).bit_length() - 1
+                clique_mask |= 1 << w
+                extendable &= nbr[w]
+                extendable &= ~(1 << w)
+            remaining &= ~clique_mask
+        return cliques
+
+    best_size = 0
+    best_set = 0
+
+    def branch(candidates: int, current_set: int, current_size: int):
+        nonlocal best_size, best_set
+        if candidates == 0:
+            if current_size > best_size:
+                best_size = current_size
+                best_set = current_set
+            return
+        if current_size + popcount(candidates) <= best_size:
+            return
+        if current_size + clique_cover_bound(candidates) <= best_size:
+            return
+        v = (candidates & -candidates).bit_length() - 1
+        branch(candidates & ~nbr[v] & ~(1 << v), current_set | (1 << v), current_size + 1)
+        branch(candidates & ~(1 << v), current_set, current_size)
+
+    branch((1 << n) - 1, 0, 0)
+    result, tmp = [], best_set
+    while tmp:
+        v = (tmp & -tmp).bit_length() - 1
+        result.append(v)
+        tmp &= tmp - 1
+    return best_size, sorted(result)
 
 
-def alpha_auto_nx(
-    G: nx.Graph,
-    cutoff: int = 40,
-    time_limit: float = 60.0,
-    vertex_transitive: bool = False,
-) -> tuple[int, list[int]]:
+def alpha_bb_clique_cover_nx(G: nx.Graph) -> tuple[int, list[int]]:
     """Convenience wrapper: accepts nx.Graph instead of np.ndarray."""
     adj = np.array(nx.to_numpy_array(G, dtype=np.uint8))
-    return alpha_auto(
-        adj,
-        cutoff=cutoff,
-        time_limit=time_limit,
-        vertex_transitive=vertex_transitive,
-    )
+    return alpha_bb_clique_cover(adj)
+
+
+# ---------------------------------------------------------------------------
+# Default α — thin aliases
+# ---------------------------------------------------------------------------
+#
+# `alpha` / `alpha_nx` are the project default. They resolve to
+# `alpha_bb_clique_cover`, which beats every other exact solver we ship on
+# sparse K4-free graphs (the workload here) and is competitive elsewhere —
+# see docs/ALPHA_SOLVERS.md. Use the named variants (`alpha_exact`,
+# `alpha_cpsat`, `alpha_maxsat`, `alpha_approx`, …) only when a caller has
+# a specific reason to pick a different method.
+
+alpha = alpha_bb_clique_cover
+alpha_nx = alpha_bb_clique_cover_nx
+
+
+# ---------------------------------------------------------------------------
+# Numba-jitted B&B
+# ---------------------------------------------------------------------------
+
+_numba_alpha_impl = None  # lazy cache
+
+
+def _get_numba_alpha():
+    """Build and cache the jitted kernel on first call; import is lazy."""
+    global _numba_alpha_impl
+    if _numba_alpha_impl is not None:
+        return _numba_alpha_impl
+
+    import numba
+    from numba import njit, types
+    from numba.typed import List as NumbaList
+
+    @njit(cache=True)
+    def _popcount64(x):
+        x = x - ((x >> 1) & 0x5555555555555555)
+        x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333)
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F
+        return (x * 0x0101010101010101) >> 56
+
+    @njit(cache=True)
+    def _popcount_many(words):
+        s = 0
+        for w in words:
+            s += _popcount64(np.uint64(w))
+        return s
+
+    @njit(cache=True)
+    def _low_bit_index(words):
+        # return index of lowest set bit across the word array, or -1
+        for i in range(words.shape[0]):
+            w = words[i]
+            if w != 0:
+                # position within word
+                v = np.int64(w & -w)
+                # bit_length via shifts
+                pos = 0
+                vv = v
+                while vv > 1:
+                    vv >>= 1
+                    pos += 1
+                return i * 64 + pos
+        return -1
+
+    @njit(cache=True)
+    def _clear_bit(words, bit):
+        i = bit // 64
+        j = bit % 64
+        words[i] &= ~(np.int64(1) << j)
+
+    @njit(cache=True)
+    def _set_bit(words, bit):
+        i = bit // 64
+        j = bit % 64
+        words[i] |= (np.int64(1) << j)
+
+    @njit(cache=True)
+    def _has_bit(words, bit):
+        i = bit // 64
+        j = bit % 64
+        return (words[i] >> j) & 1
+
+    @njit(cache=True)
+    def _and_not_into(dst, src_and, src_not):
+        for i in range(dst.shape[0]):
+            dst[i] = src_and[i] & ~src_not[i]
+
+    @njit(cache=True)
+    def _copy_into(dst, src):
+        for i in range(dst.shape[0]):
+            dst[i] = src[i]
+
+    @njit(cache=True)
+    def _alpha_numba_kernel(nbr_flat, n, W):
+        """
+        nbr_flat: (n * W) int64 array holding neighbour bitmask of each vertex.
+        W = ceil(n / 64).
+        """
+        # Initial candidate mask: all n bits set
+        cand = np.zeros(W, dtype=np.int64)
+        for b in range(n):
+            _set_bit(cand, b)
+
+        best_size = np.int64(0)
+        best_set = np.zeros(W, dtype=np.int64)
+
+        # Work stack — avoid recursion in njit land.
+        # Each frame: (cand_copy, cur_set_copy, cur_size, phase)
+        # phase 0 = about to pick vertex; phase 1 = include branch done, do exclude branch.
+        # Preallocate stacks big enough: depth ≤ n.
+        stack_cand = np.zeros((n + 1, W), dtype=np.int64)
+        stack_cur = np.zeros((n + 1, W), dtype=np.int64)
+        stack_size = np.zeros(n + 1, dtype=np.int64)
+        stack_phase = np.zeros(n + 1, dtype=np.int64)
+        stack_v = np.zeros(n + 1, dtype=np.int64)
+
+        depth = 0
+        _copy_into(stack_cand[0], cand)
+        # stack_cur[0] already zero, stack_size[0] = 0, stack_phase[0] = 0
+
+        while depth >= 0:
+            if stack_phase[depth] == 0:
+                cand = stack_cand[depth]
+                cur_size = stack_size[depth]
+                # popcount of cand
+                pc = 0
+                for i in range(W):
+                    pc += _popcount64(np.uint64(cand[i]))
+                if cur_size + pc <= best_size:
+                    depth -= 1
+                    continue
+                # check empty
+                empty = True
+                for i in range(W):
+                    if cand[i] != 0:
+                        empty = False
+                        break
+                if empty:
+                    if cur_size > best_size:
+                        best_size = cur_size
+                        _copy_into(best_set, stack_cur[depth])
+                    depth -= 1
+                    continue
+                v = _low_bit_index(cand)
+                stack_v[depth] = v
+                stack_phase[depth] = 1
+                # Push include-branch frame
+                new_cand = stack_cand[depth + 1]
+                new_cur = stack_cur[depth + 1]
+                # new_cand = cand & ~nbr[v] & ~{v}
+                for i in range(W):
+                    new_cand[i] = cand[i] & ~nbr_flat[v * W + i]
+                _clear_bit(new_cand, v)
+                _copy_into(new_cur, stack_cur[depth])
+                _set_bit(new_cur, v)
+                stack_size[depth + 1] = cur_size + 1
+                stack_phase[depth + 1] = 0
+                depth += 1
+            else:
+                # Exclude-branch: reuse current frame's cand with v cleared
+                v = stack_v[depth]
+                _clear_bit(stack_cand[depth], v)
+                stack_phase[depth] = 0
+
+        return best_size, best_set
+
+    def alpha_numba(adj: np.ndarray) -> tuple[int, list[int]]:
+        n = int(adj.shape[0])
+        if n == 0:
+            return 0, []
+        W = (n + 63) // 64
+        nbr_flat = np.zeros(n * W, dtype=np.int64)
+        for i in range(n):
+            row = adj[i]
+            for j in range(n):
+                if row[j]:
+                    word = j // 64
+                    bit = j % 64
+                    nbr_flat[i * W + word] |= np.int64(1) << bit
+        best_size, best_words = _alpha_numba_kernel(nbr_flat, n, W)
+        indep = []
+        for b in range(n):
+            word = b // 64
+            bit = b % 64
+            if (best_words[word] >> bit) & 1:
+                indep.append(b)
+        return int(best_size), indep
+
+    _numba_alpha_impl = alpha_numba
+    return alpha_numba
+
+
+def alpha_bb_numba(adj: np.ndarray) -> tuple[int, list[int]]:
+    """
+    Exact α via a Numba-jitted bitmask B&B.
+
+    Same algorithm as `alpha_exact` but with native-speed 64-bit word
+    operations. First call pays the JIT-compile cost (~1–3 s); subsequent
+    calls use the cached kernel. Memory is O(n·W) for neighbour masks
+    plus O(n·W) for the iterative stack, where W = ceil(n / 64). At
+    n=300 that's ~60 KB — orders of magnitude less than CP-SAT.
+    """
+    impl = _get_numba_alpha()
+    return impl(adj)
+
+
+# ---------------------------------------------------------------------------
+# MaxSAT via python-sat RC2
+# ---------------------------------------------------------------------------
+
+def alpha_maxsat(
+    adj: np.ndarray,
+    time_limit: float | None = None,
+) -> tuple[int, list[int]]:
+    """
+    Exact α via MaxSAT (RC2) over a cardinality-maximising encoding.
+
+    For each vertex i a soft unit clause [x_i] with weight 1; for each
+    edge (i, j) a hard clause [¬x_i ∨ ¬x_j]. Maximising satisfied softs
+    = maximising the independent set.
+
+    `time_limit` is advisory — RC2 doesn't expose a hard wallclock, so
+    this implementation lets the solver run to completion. Returns
+    (0, []) if the solver raises or yields no model.
+    """
+    from pysat.examples.rc2 import RC2
+    from pysat.formula import WCNF
+
+    n = adj.shape[0]
+    wcnf = WCNF()
+    for i in range(n):
+        wcnf.append([i + 1], weight=1)  # soft: prefer including vertex
+    for i in range(n):
+        for j in range(i + 1, n):
+            if adj[i, j]:
+                wcnf.append([-(i + 1), -(j + 1)])  # hard
+
+    try:
+        with RC2(wcnf) as solver:
+            model = solver.compute()
+    except Exception:
+        return 0, []
+    if model is None:
+        return 0, []
+    indep = [v - 1 for v in model if 0 < v <= n]
+    return len(indep), sorted(indep)
+
+
+def alpha_maxsat_nx(G: nx.Graph, time_limit: float | None = None) -> tuple[int, list[int]]:
+    """Convenience wrapper: accepts nx.Graph instead of np.ndarray."""
+    adj = np.array(nx.to_numpy_array(G, dtype=np.uint8))
+    return alpha_maxsat(adj, time_limit=time_limit)
+
+
+# ---------------------------------------------------------------------------
+# Max clique on the complement (Bron–Kerbosch with pivot)
+# ---------------------------------------------------------------------------
+
+def alpha_clique_complement(adj: np.ndarray) -> tuple[int, list[int]]:
+    """
+    Exact α via max clique on the graph complement using Bron–Kerbosch
+    with Tomita pivoting. On dense-complement (i.e. sparse-original)
+    K4-free graphs α is large, so the complement is nearly complete and
+    BK can be slow — use as a benchmark comparison, not a production path.
+    """
+    n = adj.shape[0]
+    comp_nbr = [0] * n
+    for i in range(n):
+        mask = 0
+        for j in range(n):
+            if j != i and not adj[i, j]:
+                mask |= 1 << j
+        comp_nbr[i] = mask
+
+    best_size = 0
+    best_set = 0
+
+    def bk(R: int, P: int, X: int, r_size: int):
+        nonlocal best_size, best_set
+        if P == 0 and X == 0:
+            if r_size > best_size:
+                best_size = r_size
+                best_set = R
+            return
+        # pick pivot u from P ∪ X maximising |P ∩ N(u)|
+        PX = P | X
+        u = -1
+        best_overlap = -1
+        tmp = PX
+        while tmp:
+            v = (tmp & -tmp).bit_length() - 1
+            tmp &= tmp - 1
+            overlap = bin(P & comp_nbr[v]).count("1")
+            if overlap > best_overlap:
+                best_overlap = overlap
+                u = v
+        candidates = P & ~comp_nbr[u] if u >= 0 else P
+        while candidates:
+            v = (candidates & -candidates).bit_length() - 1
+            candidates &= candidates - 1
+            Nv = comp_nbr[v]
+            bk(R | (1 << v), P & Nv, X & Nv, r_size + 1)
+            P &= ~(1 << v)
+            X |= 1 << v
+
+    bk(0, (1 << n) - 1, 0, 0)
+    result, tmp = [], best_set
+    while tmp:
+        v = (tmp & -tmp).bit_length() - 1
+        result.append(v)
+        tmp &= tmp - 1
+    return best_size, sorted(result)
 
 
 # ---------------------------------------------------------------------------

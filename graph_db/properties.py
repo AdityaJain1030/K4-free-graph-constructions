@@ -11,7 +11,7 @@ import networkx as nx
 import numpy as np
 
 from utils.graph_props import (
-    alpha_exact,
+    alpha,
     is_k4_free,
     girth,
     triangle_sets,
@@ -109,7 +109,9 @@ def compute_properties(G: nx.Graph) -> dict:
     )
 
     # --- Independence / extremal ---
-    alpha_val, mis_verts = alpha_exact(adj)
+    # `alpha` is the project default (clique-cover B&B). The db boundary
+    # owns this choice — see memory/feedback_alpha_solver_api.md.
+    alpha_val, mis_verts = alpha(adj)
     p["alpha"]        = alpha_val
     p["mis_vertices"] = sorted(int(v) for v in mis_verts)
 

@@ -158,7 +158,7 @@ def generate_random_k4free(n, num_trials, seed=0, verbose=False):
 
 
 def load_min_alpha_n24():
-    """Load minimum-α K4-free from SAT_old/pareto_reference/pareto_n24.json."""
+    """Load minimum-α K4-free from reference/pareto/pareto_n24.json."""
     path = os.path.join(PARETO_DIR, "pareto_n24.json")
     with open(path) as f:
         data = json.load(f)

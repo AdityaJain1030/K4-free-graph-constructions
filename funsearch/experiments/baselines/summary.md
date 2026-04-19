@@ -18,7 +18,7 @@
 ## 2. Gap to SAT-optimal at overlap (N=12..35)
 
 > ⚠️ **Caveat:** The "SAT-optimal" column below reads directly from
-> `SAT_old/pareto_reference/pareto_n{N}.json`. Those ILPs were time-limited
+> `reference/pareto/pareto_n{N}.json`. Those ILPs were time-limited
 > (600s–1800s) and **did not prove optimality** for N ≥ 26. Indicators:
 > N=25 gives c=0.72 (α=5, d=7) but N=26 jumps to c=0.93 (α=5, d=12) —
 > adding one vertex should not double d_max. N=32+ shows c=1.55+, which

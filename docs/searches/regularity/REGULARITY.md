@@ -26,7 +26,7 @@ Ported from the `method3` baseline in
    this one chooses edges to flatten the degree sequence. Comparing
    the two shows whether *regularity by itself* — no α signal — is
    worth anything for minimizing `c_log`.
-2. **Seed generator for near-regular SAT.** `SAT_old/regular_sat` pins
+2. **Seed generator for near-regular SAT.** `search/sat_regular.py` pins
    degrees to a single `D`. The output of this search is a cheap,
    near-regular K₄-free graph that can be fed in as a warm start.
 3. **Ablation partner for `regularity_alpha`.** The `method3b` /

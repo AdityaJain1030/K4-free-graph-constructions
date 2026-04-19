@@ -2,7 +2,7 @@
 utils/ramsey.py
 ===============
 Known Ramsey numbers and derived degree bounds for K4-free graphs.
-Used by search/sat_exact.py and SAT_old/regular_sat.
+Used by search/sat_exact.py and search/sat_regular.py.
 """
 
 KNOWN_RAMSEY: dict[tuple[int, int], int] = {

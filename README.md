@@ -109,25 +109,35 @@ The active K₄-free CP-SAT pipeline lives in `search/sat_exact.py` +
 It handles the full Pareto scan, hard-box optimality proofs, and
 certification. See:
 
-- `SAT_EXACT.md` — pipeline walkthrough (model, scan, accelerators,
-  prove_box, verify_optimality).
-- `SAT_OPTIMIZATION.md` — what sped the solver up, what didn't, open ideas.
+- `docs/searches/sat/SAT.md` — theoretical foundations (what we're
+  actually minimising, α-critical ⇒ near-regular, min c ⇔ min |E|,
+  β-parametrisation of the conjecture).
+- `docs/searches/sat/SAT_EXACT.md` — pipeline walkthrough (model, scan,
+  accelerators, prove_box, verify_optimality).
+- `docs/searches/sat/SAT_REGULAR.md` — degree-pinned feasibility scan
+  (smaller model, assumes Hajnal near-regularity).
+- `docs/searches/sat/SAT_OPTIMIZATION.md` — what sped the solver up, what
+  didn't, open ideas.
 
-## `SAT_old/` — reference implementations + historical infra
+## `reference/` — validation baselines
 
-Kept as a reference point, not as the active code path.
+Committed JSONs from the original CP-SAT scans, used to validate that
+`sat_exact` and `sat_regular` match or beat historical numbers. These
+go away once every `(n, α)` they cover is re-solved through the new
+pipeline and ingested into `graph_db`.
 
-- `regular_sat/` — reference near-regular (degree-pinned) CP-SAT solver.
-  Faster but assumes near-regularity; useful as a smaller model to port
-  onto the cluster and as a sanity reference.
-- `pareto_reference/` — committed `pareto_n{N}.json` from the original
-  unconstrained CP-SAT scanner. Ground-truth `min_c_log` that the new
-  solver validates against.
-- `claude.summary.md` — theoretical results (α-critical ⇒ near-regular;
-  minimise-c ⇔ minimise-|E|; Shearer β-parametrisation of the conjecture).
-- `ILP.sub`, `REGULAR_SAT.sub`, `interactive.sub`, `run_cluster.sh`,
-  `run_job.sh` — original HTCondor templates, kept for the upcoming
-  cluster pipeline.
+- `reference/pareto/` — `pareto_n{N}.json` from the unconstrained
+  CP-SAT scanner (n=11..35) plus `brute_force_n{3..10}` and
+  `ilp_pareto_n{11..15}`. Ground-truth `min_c_log` per n.
+- `reference/regular_sat/` — witness JSONs from the original
+  degree-pinned solver (n=8..35), now superseded by
+  `search/sat_regular.py`.
+
+## `cluster/` — HTCondor templates
+
+- `cluster/PROOF_PIPELINE.sub` + `cluster/run_job.sh` — submit file +
+  launcher for `scripts/run_proof_pipeline.py`. 32 CPUs / 200 GB
+  defaults, tuned for the lab server.
 
 ---
 
@@ -186,7 +196,7 @@ JSON batches consumed by `graph_db/`, one file per producing source:
 - `random.json` — random/greedy baselines.
 
 SAT/ILP results are not yet wired into `graphs/`; they currently live under
-`SAT_old/pareto_reference/` as raw Pareto JSON.
+`reference/pareto/` as raw Pareto JSON.
 
 ---
 
@@ -202,20 +212,20 @@ algorithms plug into, with `c_log` scoring and `save()` writing into the
 - `DESIGN.md` — the spec for the `Search` contract.
 - `ADDING_A_SEARCH.md` — playbook / checklist for writing a new search.
 
-Algorithm subclasses, each with its own notes file:
+Algorithm subclasses; per-search notes live under `docs/searches/`:
 
-| Module                   | Notes                       | What it does                                                             |
-|--------------------------|-----------------------------|--------------------------------------------------------------------------|
-| `brute_force.py`         | `BRUTE_FORCE.md`            | Exact enumeration via `nauty geng` (N ≤ 10).                             |
-| `circulant.py`           | `CIRCULANTS.md`             | Exhaustive circulant enumeration for N ≤ 35.                             |
-| `cayley.py`              | `CAYLEY.md`                 | Residue-class Cayley graphs `Cay(Z_p, R_k)`, k ∈ {2, 3, 6}.              |
-| `regularity.py`          | `REGULARITY.md`             | Regularity-partition-based construction.                                 |
-| `regularity_alpha.py`    | `REGULARITY_ALPHA.md`       | α-optimised regularity variant.                                          |
-| `mattheus_verstraete.py` | `MATTHEUS_VERSTRAETE.md`    | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
-| `random.py`              | `RANDOM.md`                 | Random + randomized-greedy baselines.                                    |
-
-The SAT search lives in `search/sat_exact.py`; see `SAT_EXACT.md` and
-`SAT_OPTIMIZATION.md` at the repo root for the pipeline walkthrough.
+| Module                   | Notes                                        | What it does                                                             |
+|--------------------------|----------------------------------------------|--------------------------------------------------------------------------|
+| `brute_force.py`         | `docs/searches/BRUTE_FORCE.md`               | Exact enumeration via `nauty geng` (N ≤ 10).                             |
+| `circulant.py`           | `docs/searches/circulant/CIRCULANTS.md`      | Exhaustive circulant enumeration for N ≤ 35.                             |
+| `circulant_fast.py`      | `docs/searches/circulant/CIRCULANT_FAST.md`  | Scalable K4-free circulant search (N up to ~100).                        |
+| `cayley.py`              | `docs/searches/CAYLEY.md`                    | Residue-class Cayley graphs `Cay(Z_p, R_k)`, k ∈ {2, 3, 6}.              |
+| `regularity.py`          | `docs/searches/regularity/REGULARITY.md`     | Regularity-partition-based construction.                                 |
+| `regularity_alpha.py`    | `docs/searches/regularity/REGULARITY_ALPHA.md` | α-optimised regularity variant.                                        |
+| `mattheus_verstraete.py` | `docs/searches/MATTHEUS_VERSTRAETE.md`       | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
+| `random.py`              | `docs/searches/RANDOM.md`                    | Random + randomized-greedy baselines.                                    |
+| `sat_exact.py`           | `docs/searches/sat/SAT_EXACT.md`, `docs/searches/sat/SAT_OPTIMIZATION.md` | Certified-optimal K4-free CP-SAT scan with hard-box proof. |
+| `sat_regular.py`         | `docs/searches/sat/SAT_REGULAR.md`           | Degree-pinned CP-SAT feasibility scan (min-edge, one α at a time).       |
 
 ## `scripts/` — Orchestration / helper CLIs
 

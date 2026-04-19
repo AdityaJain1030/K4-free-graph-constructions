@@ -34,6 +34,7 @@ dependencies:
   - pillow
   - psutil
   - tqdm
+  - numba        # JIT-compiled bitmask B&B in utils/graph_props.alpha_bb_numba
 
   # ── UI (tkinter backend for visualizer) ────────────────────────────────────
   - tk

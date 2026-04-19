@@ -224,7 +224,7 @@ All methods plateau **above 0.95**, all methods are **strictly worse than P(17) 
 
 ### SAT-optimal reference is unreliable for N ≥ 26
 
-The ILP Pareto frontier in `SAT_old/pareto_reference/pareto_n*.json` used time-limited solves (600s–1800s). Anomalies: N=25 gives c=0.72 (α=5, d=7) but N=26 gives c=0.93 (α=5, d=12); N=32+ gives c > 1.55 which is worse than random. Treat these as incomplete upper bounds, not proven optima.
+The ILP Pareto frontier in `reference/pareto/pareto_n*.json` used time-limited solves (600s–1800s). Anomalies: N=25 gives c=0.72 (α=5, d=7) but N=26 gives c=0.93 (α=5, d=12); N=32+ gives c > 1.55 which is worse than random. Treat these as incomplete upper bounds, not proven optima.
 
 ### Paley family sweep — P(17) is the ceiling
 

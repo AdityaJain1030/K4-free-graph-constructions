@@ -198,7 +198,7 @@ python scripts/db_cli.py query --source circulant \
 ```
 
 SAT/ILP results are **not yet wired into the DB** — they still live under
-`SAT_old/pareto_reference/`. Everything else is here; don't re-run a
+`reference/pareto/`. Everything else is here; don't re-run a
 sweep you can get as a `db.query(...)`.
 
 ### Export a frontier to CSV

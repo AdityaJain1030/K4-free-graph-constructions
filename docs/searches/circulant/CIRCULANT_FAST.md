@@ -72,16 +72,11 @@ For `n ≤ 20`, results match `CirculantSearch` exactly when `max_conn_size
   `|S| > 4`, but if one exists and sits just beyond `max_conn_size`, the
   search misses it silently. Widen and re-run as a check.
 - **Base class α recomputation.** `Search._wrap()` recomputes α on every
-  returned graph. `CirculantSearchFast` overrides `_alpha_of()` to route
-  through `alpha_auto(..., vertex_transitive=True)` when
-  `n > alpha_bb_cutoff` (default 50); without that override the
-  returned-graph eval would itself hang past `n ≈ 60`. Non-circulant
-  searches must not set `vertex_transitive=True` — the `x[0]=1` pin is
-  only sound when some MIS is guaranteed to contain vertex 0.
-- **CP-SAT timeout.** The solver has `alpha_time_limit=60 s` per graph.
-  On dense `|S| > 8` instances the solver can time out — returns `(0,
-  [])`, which gets folded into `c_log = 0`. If you see suspiciously
-  small α in results at large `|S|`, suspect timeout.
+  returned graph. It uses `utils.graph_props.alpha` (clique-cover B&B),
+  which scales to n ≈ 1000 on sparse K4-free graphs; no override is
+  needed here. Earlier versions of this code dispatched to
+  `alpha_cpsat(..., vertex_transitive=True)` at large n — the
+  clique-cover bound makes that obsolete.
 
 ## Open questions
 

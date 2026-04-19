@@ -11,11 +11,13 @@ that creates a K4, deduplicates under the multiplier action of Z_n*
 greedy-α lower bound on c already exceeds the current top_k-th best.
 Designed to hit n up to ~100 with max_conn_size around 8.
 
-α dispatch is delegated to `utils.graph_props.alpha_auto` with
-`vertex_transitive=True` — circulants are vertex-transitive, so the
-x[0]=1 pin inside CP-SAT is sound and gives a roughly N-fold speedup.
-Pure-Python bitmask B&B stays in charge below `alpha_bb_cutoff`
-(default 50) because it's faster than CP-SAT's startup cost on small n.
+Exact α via `utils.graph_props.alpha_cpsat(..., vertex_transitive=True)`.
+The x[0]=1 pin is sound because circulants are vertex-transitive, and it
+collapses the MIS search by n — on low-|S| circulants (cycles, |S|=2)
+the generic clique-cover B&B takes seconds per graph while CP-SAT stays
+in the 10–100 ms range. The greedy pre-filter is essential: CP-SAT
+carries ~100 ms of solver-init overhead per call, so we can't afford to
+run it on every DFS survivor.
 
 Not exhaustive over the full circulant lattice — "the best K4-free
 circulant with |S| ≤ max_conn_size, up to multiplier isomorphism".
@@ -32,7 +34,7 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.graph_props import alpha_approx, alpha_auto, c_log_value
+from utils.graph_props import alpha_approx, alpha_cpsat, c_log_value
 
 from .base import Search
 
@@ -127,14 +129,6 @@ class CirculantSearchFast(Search):
         Hard. Upper bound on |S|. Default 8.
     min_conn_size : int
         Hard. Lower bound on |S|. Default 1.
-    greedy_restarts : int
-        Soft. Random-greedy α restart count for the pre-filter.
-        Default 40.
-    alpha_time_limit : float
-        Soft. CP-SAT α solver timeout per graph. Default 60.
-    alpha_bb_cutoff : int
-        Soft. Use pure-Python bitmask B&B when n ≤ cutoff; else CP-SAT
-        with x[0]=1 vertex-transitivity symmetry break. Default 50.
     """
 
     name = "circulant_fast"
@@ -148,9 +142,6 @@ class CirculantSearchFast(Search):
         parent_logger=None,
         max_conn_size: int = 8,
         min_conn_size: int = 1,
-        greedy_restarts: int = 40,
-        alpha_time_limit: float = 60.0,
-        alpha_bb_cutoff: int = 50,
         **kwargs,
     ):
         super().__init__(
@@ -160,30 +151,15 @@ class CirculantSearchFast(Search):
             parent_logger=parent_logger,
             max_conn_size=max_conn_size,
             min_conn_size=min_conn_size,
-            greedy_restarts=greedy_restarts,
-            alpha_time_limit=alpha_time_limit,
-            alpha_bb_cutoff=alpha_bb_cutoff,
             **kwargs,
         )
 
     def _alpha_of(self, G: nx.Graph) -> tuple[int, list[int]]:
-        """Override: CP-SAT past alpha_bb_cutoff with vertex-transitivity pin."""
+        # Circulants are vertex-transitive, so CP-SAT with x[0]=1 stays
+        # sound and is much faster than clique-cover B&B on sparse
+        # connection sets (|S|≤2) at moderate n.
         adj = np.array(nx.to_numpy_array(G, dtype=np.uint8))
-        return alpha_auto(
-            adj,
-            cutoff=self.alpha_bb_cutoff,
-            time_limit=self.alpha_time_limit,
-            vertex_transitive=True,
-        )
-
-    def _alpha_exact_adj(self, adj: np.ndarray) -> tuple[int, list[int]]:
-        """Same choice but given an adjacency matrix directly."""
-        return alpha_auto(
-            adj,
-            cutoff=self.alpha_bb_cutoff,
-            time_limit=self.alpha_time_limit,
-            vertex_transitive=True,
-        )
+        return alpha_cpsat(adj, vertex_transitive=True)
 
     def _run(self) -> list[nx.Graph]:
         n = self.n
@@ -192,8 +168,23 @@ class CirculantSearchFast(Search):
         half = n // 2
         units = [u for u in range(1, n) if gcd(u, n) == 1]
 
-        # ── pass 1: DFS enumerate K4-free canonical S and their greedy α
-        candidates: list[tuple[float, tuple[int, ...], frozenset[int], int]] = []
+        # Pass 1: DFS enumerates canonical K4-free connection sets and
+        # tags each with a greedy α lower bound (cheap) to rank them by
+        # an optimistic c. Pass 2: sorted ascending c_lo, run exact α
+        # via CP-SAT with vertex-transitive pin (x[0]=1, sound for
+        # circulants) until c_lo crosses the running top-k cutoff.
+        #
+        # Why CP-SAT not clique-cover B&B: on low-|S| circulants (|S|≤2
+        # at n=80) the clique-cover upper bound leaves a huge search
+        # tree and solves take seconds; CP-SAT stays in 10–100 ms with
+        # the VT pin.
+        #
+        # Why the greedy pre-filter: CP-SAT costs ~100 ms per call even
+        # on tiny instances (solver init), so we cannot afford to run
+        # it on every DFS survivor — there are thousands at n≥80. Even
+        # a few random restarts of greedy MIS give a lower bound tight
+        # enough to prune almost all of them before pass 2.
+        candidates: list[tuple[float, tuple[int, ...], frozenset[int]]] = []
         n_nodes = 0
         n_k4_skipped = 0
         n_noncanonical = 0
@@ -209,10 +200,10 @@ class CirculantSearchFast(Search):
                     d = _d_max(S_half, n)
                     if d >= 2:
                         adj = _circulant_adj(n, S_full)
-                        alpha_lo = alpha_approx(adj, restarts=self.greedy_restarts)
+                        alpha_lo = alpha_approx(adj, restarts=10)
                         c_lo = c_log_value(alpha_lo, n, d)
                         if c_lo is not None:
-                            candidates.append((c_lo, S_half, S_full, alpha_lo))
+                            candidates.append((c_lo, S_half, S_full))
 
             if k >= self.max_conn_size:
                 return
@@ -226,7 +217,6 @@ class CirculantSearchFast(Search):
 
         dfs((), frozenset(), 1)
 
-        # ── pass 2: exact α in ascending-c_lo order with top-k cutoff
         candidates.sort(key=lambda t: t[0])
 
         collected_c: list[float] = []
@@ -238,13 +228,11 @@ class CirculantSearchFast(Search):
 
         results: list[nx.Graph] = []
         n_evaluated = 0
-        n_pruned = 0
-        for c_lo, S_half, S_full, _alpha_lo in candidates:
+        for c_lo, S_half, S_full in candidates:
             if c_lo >= kth_cutoff():
-                n_pruned = len(candidates) - n_evaluated - n_pruned
                 break
             adj = _circulant_adj(n, S_full)
-            alpha_true, _ = self._alpha_exact_adj(adj)
+            alpha_true, _ = alpha_cpsat(adj, vertex_transitive=True)
             d = _d_max(S_half, n)
             c_true = c_log_value(alpha_true, n, d)
             n_evaluated += 1
@@ -267,7 +255,6 @@ class CirculantSearchFast(Search):
             n_noncanonical=n_noncanonical,
             n_candidates=len(candidates),
             n_evaluated=n_evaluated,
-            n_pruned=max(n_pruned, 0),
             n_multiplier_units=len(units),
         )
         return results

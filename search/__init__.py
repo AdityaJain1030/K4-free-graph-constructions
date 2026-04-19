@@ -9,6 +9,7 @@ from .regularity import RegularitySearch
 from .regularity_alpha import RegularityAlphaSearch
 from .mattheus_verstraete import MattheusVerstraeteSearch
 from .sat_exact import SATExact
+from .sat_regular import SATRegular
 
 __all__ = [
     "Search",
@@ -24,4 +25,5 @@ __all__ = [
     "RegularityAlphaSearch",
     "MattheusVerstraeteSearch",
     "SATExact",
+    "SATRegular",
 ]

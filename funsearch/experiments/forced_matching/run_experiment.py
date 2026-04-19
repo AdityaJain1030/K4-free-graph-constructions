@@ -63,7 +63,7 @@ adj_to_graph6 = _bd.adj_to_graph6
 
 LIBRARY_PATH = os.path.join(_HERE, "..", "block_decomposition", "library.json")
 PARETO_DIR = os.path.normpath(
-    os.path.join(_HERE, "..", "..", "..", "SAT_old", "pareto_reference")
+    os.path.join(_HERE, "..", "..", "..", "reference", "pareto")
 )
 OUTDIR = _HERE
 

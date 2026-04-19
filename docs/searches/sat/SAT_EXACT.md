@@ -7,7 +7,11 @@ certified-optimal verifier. This document is a walkthrough of the pipeline as
 it exists now, and what each piece is for.
 
 For the "why each optimization" ablation numbers, see `SAT_OPTIMIZATION.md`
-and `logs/sat_exact_ablation.json`.
+and `logs/sat_exact_ablation.json`. For the theoretical justification of the
+encoding (α-critical ⇒ near-regular, min `c` ⇔ min `|E|`, β parametrisation
+of the conjecture), see `SAT.md`. For the simpler degree-pinned solver that
+*assumes* Hajnal and solves per-`(n, α)` feasibility rather than the Pareto
+scan, see `SAT_REGULAR.md`.
 
 ---
 
@@ -127,20 +131,17 @@ Two prune forms:
 On every n from 10 upwards this is the prune that collapses the high-α
 tracks to zero SAT calls.
 
-### (e) Circulant seeding (`seed_from_catalog=True`, `seed_from_circulant_search=True`)
+### (e) Circulant seeding (`seed_from_circulant=True`)
 
 Before the scan starts, seed `c*` and emit the witness as the first result.
-Two sources tried in order:
+Runs `CirculantSearchFast(n, top_k=1)` to produce the best K4-free circulant
+for this `n` — a DFS over connection sets `S ⊆ {1..n//2}` with K4-pruning
+during extension, multiplier-action dedup (`C(n, S) ≅ C(n, u·S)` for `u`
+coprime to `n`), and a greedy-α lower-bound filter before exact α. Sub-minute
+at any `n` in the practical range (up to ~100).
 
-1. `seed_from_catalog`: read the best K4-free circulant for this `n` from
-   `graphs/circulant.json`. Verified K4-free before use.
-2. `seed_from_circulant_search`: if the catalog has no entry for this `n`,
-   run `search.CirculantSearch` live — enumerate K4-free `C(n, S)` for
-   `S ⊆ {1..n//2}` via a bitmask K4 check. `O(2^(n/2))` subsets, seconds up
-   to n≈40.
-
-Both are valid K4-free witnesses, so their c_log is achievable. Emitting the
-witness as a result is what lets us:
+The witness is a valid K4-free graph, so its c_log is achievable. Emitting it
+as a result is what lets us:
 
 - Seed `c_log_prune` — the very first α-track can skip most of its boxes
   before any SAT call.
@@ -260,9 +261,10 @@ Current status (from the last run):
 
 ## 7. End-to-end flow at `n = 20` (worked example)
 
-1. Seed `c*` from `graphs/circulant.json`: the 8-regular circulant on 20
-   vertices is K4-free with α = 4, giving `c_log = 4·8/(20·ln 8) = 0.7694`.
-   Emit it as the first result with metadata `source=circulant_seed`.
+1. Seed `c*` from `CirculantSearchFast(n=20)`: the best K4-free circulant on
+   20 vertices comes back with α = 4 and d = 8, giving
+   `c_log = 4·8/(20·ln 8) = 0.7694`. Emit it as the first result with
+   metadata `source=circulant_seed`.
 2. α-track loop:
    - α = 1, 2, 3: Ramsey-infeasible → skip.
    - α = 4: scan d from the Ramsey floor upward.
@@ -285,7 +287,7 @@ Current status (from the last run):
 ```
 search/sat_exact.py            — the pipeline above
 search/base.py                 — base class with logging / verification
-search/circulant.py            — live circulant search for seed fallback
+search/circulant_fast.py       — K4-free circulant search used for the seed
 scripts/ablate_sat_exact.py    — ablation harness (each accelerator's effect)
 scripts/prove_box.py           — hard-box driver with aggressive CP-SAT params
 scripts/verify_optimality.py   — per-n certified-optimal check
@@ -293,6 +295,5 @@ scripts/proof_report.py        — range-wide summary
 logs/search/                   — per-n scan logs
 logs/sat_exact_ablation.json   — raw ablation numbers
 logs/optimality_proofs.json    — hard-box verdicts
-graphs/circulant.json          — committed circulant catalog
 SAT_OPTIMIZATION.md            — deeper derivation of c_log_prune + seeding
 ```

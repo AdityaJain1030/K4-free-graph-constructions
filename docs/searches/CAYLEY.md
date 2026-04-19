@@ -32,7 +32,7 @@ existing ones with algebraic metadata (`prime`, `residue_index`,
 `connection_set`) useful for the visualizer.
 
 For `n ≥ 40`, exhaustive circulant enumeration is infeasible (see
-`CIRCULANTS.md` caveat 1 and open question 3). Residue families give
+`circulant/CIRCULANTS.md` caveat 1 and open question 3). Residue families give
 a principled, O(1)-per-prime way to produce candidates at larger `n`,
 without falling into the random-sampling trap.
 
@@ -79,9 +79,10 @@ where `CirculantSearch` can't run.
 
 ### 2. Overlap with Paley enumeration
 
-`k = 2` reproduces what `SAT_old/paley_enumeration/circulant_explorer.py`
-already generated, just wired into the current `Search` framework
-instead of an ad-hoc CSV. The `graph_db` dedup key is `(graph_id,
+`k = 2` reproduces the Paley-graph family already covered by
+`CirculantSearch` at small primes, just wired up with explicit
+algebraic labelling (`prime`, `residue_index`, `connection_set`)
+instead of raw connection sets. The `graph_db` dedup key is `(graph_id,
 source)`, so the same graph appears under both `source='circulant'` /
 `'cayley'` as expected — not a bug.
 

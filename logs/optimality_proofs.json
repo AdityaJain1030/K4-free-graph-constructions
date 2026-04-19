@@ -50,5 +50,18 @@
     "random_seed": null,
     "witness": null,
     "timestamp": "2026-04-19 13:29:29"
+  },
+  {
+    "n": 21,
+    "alpha": 4,
+    "d_max": 7,
+    "status": "TIMEOUT",
+    "wall_s": 3398.05,
+    "timeout_s": 3600.0,
+    "workers": 4,
+    "symmetry_mode": "chain",
+    "random_seed": null,
+    "witness": null,
+    "timestamp": "2026-04-19 14:30:06"
   }
 ]

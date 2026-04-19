@@ -29,14 +29,12 @@ Two run modes, chosen by kwargs:
                                     at the smallest feasible d_max).
 """
 
-import json
 import math
 import os
 import sys
 from itertools import combinations
 
 import networkx as nx
-import numpy as np
 from ortools.sat.python import cp_model
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,42 +44,29 @@ from utils.ramsey import degree_bounds as _ramsey_degree_bounds
 from .base import Search
 
 
-_CIRCULANT_CATALOG_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "graphs", "circulant.json",
-)
+_BEST_CIRCULANT_CACHE: dict[int, "nx.Graph | None"] = {}
 
 
-def _load_circulant_by_n() -> dict[int, "nx.Graph"]:
-    """Cache: n → circulant graph from graphs/circulant.json.
+def _best_circulant_for(n: int) -> "nx.Graph | None":
+    """Best K4-free circulant on n vertices, cached per-n.
 
-    Used only when `circulant_hints=True`. Imports the decoder lazily so
-    the import graph of `sat_exact.py` doesn't grow for callers who
-    never enable hints.
+    Runs `CirculantSearchFast` once per n and memoizes the result.
+    Empirically well under a minute even at n ≈ 50 because the DFS
+    prunes K4 extensions and dedupes by the multiplier action of Z_n*.
+    Returns None if the search produces no graph (shouldn't happen for
+    n ≥ 3, but we guard for it).
     """
+    if n in _BEST_CIRCULANT_CACHE:
+        return _BEST_CIRCULANT_CACHE[n]
+    from search.circulant_fast import CirculantSearchFast
     try:
-        from graph_db.encoding import sparse6_to_nx
-    except ImportError:
-        return {}
-    if not os.path.exists(_CIRCULANT_CATALOG_PATH):
-        return {}
-    out: dict[int, nx.Graph] = {}
-    with open(_CIRCULANT_CATALOG_PATH) as f:
-        data = json.load(f)
-    for rec in data:
-        G = sparse6_to_nx(rec["sparse6"])
-        out[G.number_of_nodes()] = G
-    return out
-
-
-_CIRCULANT_BY_N: dict[int, "nx.Graph"] | None = None
-
-
-def _circulant_for(n: int) -> "nx.Graph | None":
-    global _CIRCULANT_BY_N
-    if _CIRCULANT_BY_N is None:
-        _CIRCULANT_BY_N = _load_circulant_by_n()
-    return _CIRCULANT_BY_N.get(n)
+        results = CirculantSearchFast(n=n, top_k=1, verbosity=0).run()
+    except Exception:
+        _BEST_CIRCULANT_CACHE[n] = None
+        return None
+    G = results[0].G if results else None
+    _BEST_CIRCULANT_CACHE[n] = G
+    return G
 
 
 _STATUS_NAME = {
@@ -125,8 +110,8 @@ class SATExact(Search):
                     Ramsey bounds. Default True.
     scan_from_ramsey_floor : bool. In scan mode, start d at the
                              Ramsey-derived d_min. Default True.
-    circulant_hints : bool. Pass the matching circulant from
-                      `graphs/circulant.json` as a CP-SAT hint.
+    circulant_hints : bool. Pass the best K4-free circulant for this n
+                      (from `CirculantSearchFast`) as a CP-SAT hint.
                       Relabelled cyclically so row-0 is lex-largest,
                       which is the best chance the hint survives the
                       edge_lex break. Default False.
@@ -150,18 +135,12 @@ class SATExact(Search):
                     cannot improve the result. Eliminates the stubborn
                     INFEASIBLE-proof boxes at the feasibility boundary
                     entirely. Default True.
-    seed_from_catalog : bool. Seed c* from the best circulant for this
-                    n in graphs/circulant.json before the scan starts.
-                    Pure win: the stored graph is K4-verified, its
+    seed_from_circulant : bool. Seed c* from the best K4-free circulant
+                    for this n via CirculantSearchFast before the scan
+                    starts. Pure win: the witness is K4-verified, its
                     c_log is achievable, and every box with worse
-                    c-bound prunes without a solver call. Default True.
-    seed_from_circulant_search : bool. If the catalog has no entry for
-                    this n, enumerate K4-free circulants live via
-                    search.CirculantSearch and seed c* from the best.
-                    For n ≤ 40 this is seconds at worst (≤ 2^(n/2)
-                    subsets filtered by a bitmask K4 check). Default
-                    True — it is the only way to keep the scan fast
-                    on n values the committed catalog does not cover.
+                    c-bound prunes without a solver call. Fast for any
+                    n up to ~100 (sub-minute wall time). Default True.
 
     Run-mode kwargs
     ---------------
@@ -192,8 +171,7 @@ class SATExact(Search):
         parallel_alpha_tracks: int = 0,
         branch_on_v0: bool = False,
         c_log_prune: bool = True,
-        seed_from_catalog: bool = True,
-        seed_from_circulant_search: bool = True,
+        seed_from_circulant: bool = True,
         hard_box_params: bool = False,
         solver_log: bool = False,
         random_seed: int | None = None,
@@ -220,8 +198,7 @@ class SATExact(Search):
             parallel_alpha_tracks=parallel_alpha_tracks,
             branch_on_v0=branch_on_v0,
             c_log_prune=c_log_prune,
-            seed_from_catalog=seed_from_catalog,
-            seed_from_circulant_search=seed_from_circulant_search,
+            seed_from_circulant=seed_from_circulant,
             hard_box_params=hard_box_params,
             solver_log=solver_log,
             random_seed=random_seed,
@@ -269,49 +246,26 @@ class SATExact(Search):
         return self._c_bound(alpha_cap, d_lo)
 
     def _seed_c_star(self) -> tuple[float, "nx.Graph | None"]:
-        """Seed (c*, witness) from the best circulant for this n. Tries
-        the committed catalog first (O(1) JSON read); if no catalog entry
-        exists, falls back to a live CirculantSearch (O(2^(n/2)) bitmask
-        checks). Returns (+inf, None) if every source fails.
+        """Seed (c*, witness) from the best K4-free circulant for this n
+        via CirculantSearchFast. Returns (+inf, None) if the search
+        produces nothing.
 
         The witness is returned so the caller can emit it directly as a
         result — this avoids a redundant SAT re-solve of a box whose
         answer we already hold (and which, empirically, CP-SAT can
         still take minutes to reproduce at n ≥ 19 boundary)."""
-        try:
-            from utils.graph_props import alpha_exact_nx, c_log_value, is_k4_free_nx
-        except ImportError:
+        from utils.graph_props import alpha_exact_nx, c_log_value, is_k4_free_nx
+
+        G = _best_circulant_for(self.n)
+        if G is None or not is_k4_free_nx(G):
             return float("inf"), None
-
-        best = float("inf")
-        best_G: "nx.Graph | None" = None
-
-        if self.seed_from_catalog:
-            G = _circulant_for(self.n)
-            if G is not None and is_k4_free_nx(G):
-                degs = dict(G.degree())
-                d_actual = max(degs.values()) if degs else 0
-                a_actual, _ = alpha_exact_nx(G)
-                c = c_log_value(a_actual, self.n, d_actual)
-                if c is not None and c < best:
-                    best = c
-                    best_G = G
-
-        if best == float("inf") and self.seed_from_circulant_search:
-            try:
-                from search.circulant import CirculantSearch
-            except ImportError:
-                return best, best_G
-            try:
-                live = CirculantSearch(
-                    n=self.n, top_k=1, verbosity=0,
-                ).run()
-            except Exception:
-                return best, best_G
-            if live and live[0].c_log is not None and live[0].c_log < best:
-                best = live[0].c_log
-                best_G = live[0].G
-        return best, best_G
+        degs = dict(G.degree())
+        d_actual = max(degs.values()) if degs else 0
+        a_actual, _ = alpha_exact_nx(G)
+        c = c_log_value(a_actual, self.n, d_actual)
+        if c is None:
+            return float("inf"), None
+        return c, G
 
     # ── model ────────────────────────────────────────────────────────────────
 
@@ -426,7 +380,7 @@ class SATExact(Search):
 
     def _maybe_hint_circulant(self, model, x, alpha_cap, d_cap):
         n = self.n
-        G = _circulant_for(n)
+        G = _best_circulant_for(n)
         if G is None:
             return
         degs = dict(G.degree())
@@ -606,7 +560,7 @@ class SATExact(Search):
         # answers (which at the n≥19 feasibility boundary is often the
         # single slowest box in the scan).
         out: list[nx.Graph] = []
-        if self.c_log_prune and self.alpha is None:
+        if self.c_log_prune and self.alpha is None and self.seed_from_circulant:
             c_star, seed_G = self._seed_c_star()
         else:
             c_star, seed_G = float("inf"), None
@@ -620,7 +574,7 @@ class SATExact(Search):
             out.append(seed_G)
             self._log(
                 "seed_c_star", level=0,
-                c_star=round(c_star, 4), source="circulant_catalog",
+                c_star=round(c_star, 4), source="circulant_fast",
             )
             # Emit a synthetic ATTEMPT entry for the seed's exact (α, d)
             # box so optimality verifiers parsing the scan log see the
@@ -680,9 +634,8 @@ class SATExact(Search):
             "ramsey_prune":           self.ramsey_prune,
             "scan_from_ramsey_floor": self.scan_from_ramsey_floor,
             "circulant_hints":        self.circulant_hints,
-            "c_log_prune":               self.c_log_prune,
-            "seed_from_catalog":         self.seed_from_catalog,
-            "seed_from_circulant_search": self.seed_from_circulant_search,
+            "c_log_prune":            self.c_log_prune,
+            "seed_from_circulant":    self.seed_from_circulant,
             # d_max propagates so "fixed d, scan α" stays available.
             "d_max":                     self.d_max,
         }

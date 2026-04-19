@@ -81,10 +81,11 @@ Go through this before calling it done:
     the search under an `AggregateLogger`, runs it, prints a small
     summary table, and calls `search.save(results)` if you want the
     results persisted. Model it on `scripts/run_random.py`.
-13. **Write a short markdown doc next to your class**
-    (`search/<NAME>.md`, upper-case). Explain: the intuition, when
-    to use it, when not to, the non-obvious failure modes. Don't
-    duplicate `DESIGN.md`.
+13. **Write a short markdown doc under `docs/searches/<name>.md`**
+    (upper-case filename; if your search has variants, group them
+    under `docs/searches/<family>/`, e.g. `docs/searches/circulant/`).
+    Explain: the intuition, when to use it, when not to, the
+    non-obvious failure modes. Don't duplicate `search/DESIGN.md`.
 
 ---
 
@@ -176,7 +177,7 @@ python scripts/db_cli.py query --n 17..22 --top 5   # overall frontier
 ```
 
 The SAT/ILP results aren't in `graph_db` yet (they still live under
-`SAT_old/pareto_reference/`), so those are the only benchmarks that
+`reference/pareto/`), so those are the only benchmarks that
 still require reading from disk directly.
 
 See `graph_db/USAGE.md` for the full query surface.

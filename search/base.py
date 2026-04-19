@@ -36,7 +36,7 @@ import networkx as nx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from graph_db import GraphStore, DEFAULT_GRAPHS
-from utils.graph_props import alpha_exact_nx, is_k4_free_nx, c_log_value
+from utils.graph_props import alpha_nx, is_k4_free_nx, c_log_value
 from search.logger import SearchLogger, AggregateLogger
 
 
@@ -179,10 +179,10 @@ class Search(ABC):
     def _alpha_of(self, G: nx.Graph) -> tuple[int, list[int]]:
         """
         Override hook: exact α(G) for graphs this search returns. Default
-        uses the pure-Python bitmask B&B in utils.graph_props. Searches
-        that ship graphs too large for B&B (e.g. n ≥ 60) should override.
+        is `alpha_nx` (clique-cover B&B), which scales to n≈1000 on sparse
+        K4-free graphs — subclasses rarely need to override.
         """
-        return alpha_exact_nx(G)
+        return alpha_nx(G)
 
     def _wrap(self, G: nx.Graph) -> SearchResult:
         """Compute every SearchResult field for one candidate graph."""

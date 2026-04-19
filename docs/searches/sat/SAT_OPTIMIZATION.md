@@ -1,8 +1,8 @@
 # SAT Optimization — K4-free Certified Search
 
 Record of what made `search/sat_exact.py` fast, what hurt it, and what's
-still open. Everything here comes from runs against the SAT_old Pareto
-references (n=12 → c_log 0.7767; n=15 → c_log 0.7195) and the per-box
+still open. Everything here comes from runs against the Pareto reference
+baselines (n=12 → c_log 0.7767; n=15 → c_log 0.7195) and the per-box
 diagnostic in `scripts/diag_sat_exact.py`.
 
 ---
@@ -82,11 +82,11 @@ for the smallest feasible d per α has α(G)=α and d_max(G)=d exactly
 `α·d / (n · ln d)`. Any box whose target bound is ≥ the current best
 c_log cannot improve c_log — we can skip it without a SAT call.
 
-The bound is almost free to compute and the seed graph comes from the
-committed `graphs/circulant.json` catalog. The catalog is already at
-or below the SAT_old references for every n in 12..23, so the scan
-starts with a tight c*. The c_log prune then falls out of every
-dominated box at zero cost.
+The bound is almost free to compute and the seed graph comes from a
+live `CirculantSearchFast(n, top_k=1)` call. This DFS is sub-minute at
+any `n` in the practical range (we've found it well under a minute
+even for `n ≈ 50`), so the scan always starts with a tight `c*`. The
+c_log prune then falls out of every dominated box at zero cost.
 
 Correctness — witness is Pareto-tight:
 * at the smallest feasible d for α, `α(G) = α`: otherwise
@@ -111,26 +111,19 @@ Full ablation at N=10..23 (laptop, timeout_s=60, workers=4):
 | 22 | — | 67.90 s |
 | 23 | — | 333.55 s |
 
-Every reported c_log matches or beats the SAT_old pareto reference
-(`SAT_old/pareto_reference/pareto_n*.json` → `min_c_log`). For n=22
+Every reported c_log matches or beats the pareto reference baselines
+(`reference/pareto/pareto_n*.json` → `min_c_log`). For n=22
 the circulant seed (c=0.6995, α=4 d=8) is strictly better than the
 old reference (0.7447); the scan emits the seed and prunes the rest.
 
-For n ∉ the committed catalog, `seed_from_circulant_search=True`
-falls back to a live `CirculantSearch` enumeration. It is fast
-(2^(n/2) subsets with a bitmask K4 check) and means the scan is
-never left without a seed.
-
 Flags controlling this (all default True, ablate cleanly):
 * `c_log_prune` — skip (α, d) boxes with bound ≥ c*
-* `seed_from_catalog` — read the committed circulant for this n
-* `seed_from_circulant_search` — enumerate circulants live if the
-  catalog has no entry
+* `seed_from_circulant` — seed c* from `CirculantSearchFast(n)`
 
 The seed is also emitted as a first-class result so SAT's job is only
 to *improve* on it. This matters at n=19: the actual optimal box
 (α=4, d=6) times out past 30 s under SAT alone even though the
-circulant catalog already has a witness for it — returning the seed
+circulant search already has a witness for it — returning the seed
 directly bypasses the redundant re-solve entirely.
 
 ### 2.6 Rows 0..3 edge_lex via exponential weights (big, cheap)
@@ -138,7 +131,7 @@ directly bypasses the redundant re-solve entirely.
 Extending the idea to rows 2 and 3 is valuable but needs care — the
 obvious prefix-sum generalisation **over-constrains** (it implies
 strictly more than lex and rules out valid graphs). Counter-example
-at n=17 α=3 d=8: SAT_old has a witness with c_log=0.6789, but the
+at n=17 α=3 d=8: the reference baseline has a witness with c_log=0.6789, but the
 prefix-sum form reports INFEASIBLE in 0.04 s.
 
 The correct single-linear form uses powers of two for weights, making
@@ -262,16 +255,15 @@ SATExact(
     ramsey_prune=True,                   # degree bounds from known R(s,t)
     scan_from_ramsey_floor=True,         # start d at Ramsey d_min
     c_log_prune=True,                    # skip (α, d) with bound ≥ c*
-    seed_from_catalog=True,              # seed c* from graphs/circulant.json
-    seed_from_circulant_search=True,     # live CirculantSearch fallback
+    seed_from_circulant=True,            # seed c* from CirculantSearchFast(n)
     # K4 and independence are encoded as add_bool_or clauses by default
 )
 ```
 
 Opt-in flags (off by default; kept around for the server or ablations):
 
-- `circulant_hints=True` — seed CP-SAT with the circulant for n from
-  `graphs/circulant.json`, cyclically rotated so row 0 is
+- `circulant_hints=True` — seed CP-SAT with the best K4-free circulant
+  for n (from `CirculantSearchFast`), cyclically rotated so row 0 is
   lex-largest. Neutral at n=17 (66 s with, 66 s without) on the
   laptop; left in for large-N FEASIBLE boxes where warm-start can
   matter.
@@ -343,4 +335,4 @@ can't reach them.
    doesn't need.
 5. **Correctness is cheap; speed is earned one constraint at a
    time.** Every accelerator in `sat_exact.py` paid rent against the
-   SAT_old Pareto references before being kept.
+   Pareto reference baselines before being kept.

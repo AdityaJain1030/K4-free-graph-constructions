@@ -14,6 +14,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from itertools import combinations
 
@@ -47,25 +48,48 @@ def _to_int_graph(G) -> nx.Graph:
 
 
 def _canonical_sparse6_pynauty(G: nx.Graph) -> str:
-    """Canonical sparse6 via pynauty's canonical labeling. Caller must ensure pynauty importable."""
+    """Canonical sparse6 via pynauty's canonical labeling. Caller must ensure pynauty importable.
+
+    Decodes pynauty's `certificate()` directly rather than going through
+    `pynauty.canon_graph` — upstream's decoder (`pynauty/graph.py::canon_graph`)
+    and the earlier replica here both read the byte row with
+    `row[-1 - v//8]`, which is only correct while n ≤ 64 (a single 64-bit
+    setword per row). At n ≥ 65 the row spans multiple setwords and reading
+    from the end inverts the word order, producing a graph isomorphic only
+    to the input restricted to vertices 0..63.
+    """
     import pynauty
     n = G.number_of_nodes()
     adj = {v: list(G.neighbors(v)) for v in range(n)}
     g = pynauty.Graph(n, adjacency_dict=adj)
-    # pynauty.canon_graph iterates bit positions to set_length*8 and can emit
-    # phantom neighbors ≥ n from the row padding; replicate its logic but
-    # clip to range(n).
     c = pynauty.certificate(g)
     set_length = len(c) // n
-    sets = [c[set_length * k : set_length * (k + 1)] for k in range(n)]
+
+    WORDSIZE = 64
+    word_bytes = WORDSIZE // 8
+    if set_length % word_bytes:
+        raise RuntimeError(
+            f"pynauty certificate row length {set_length} not a multiple of "
+            f"{word_bytes} — WORDSIZE assumption violated"
+        )
+    m = set_length // word_bytes
     H = nx.Graph()
     H.add_nodes_from(range(n))
     for u in range(n):
-        row = sets[u]
-        for v in range(n):
-            if row[-1 - v // 8] & (1 << (7 - v % 8)):
-                if u < v:
-                    H.add_edge(u, v)
+        row = c[set_length * u : set_length * (u + 1)]
+        for w in range(m):
+            word = int.from_bytes(
+                row[w * word_bytes : (w + 1) * word_bytes], sys.byteorder
+            )
+            if not word:
+                continue
+            for bit in range(WORDSIZE):
+                v = w * WORDSIZE + bit
+                if v >= n:
+                    break
+                if word & (1 << (WORDSIZE - 1 - bit)):
+                    if u < v:
+                        H.add_edge(u, v)
     return nx.to_sparse6_bytes(H, header=False).decode("ascii").strip()
 
 

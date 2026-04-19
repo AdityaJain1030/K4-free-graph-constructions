@@ -61,8 +61,7 @@ def prove_one(
         ramsey_prune=True,
         scan_from_ramsey_floor=False,  # caller fixes d explicitly
         c_log_prune=False,              # single-box: no scan pruning
-        seed_from_catalog=False,
-        seed_from_circulant_search=False,
+        seed_from_circulant=False,
         hard_box_params=True,
         solver_log=solver_log,
         random_seed=random_seed,

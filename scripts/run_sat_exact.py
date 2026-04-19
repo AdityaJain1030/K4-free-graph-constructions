@@ -93,11 +93,11 @@ def main() -> int:
                     help="Worker count for --parallel-alpha. "
                          "0 → one track per α.")
     ap.add_argument("--circulant-hints", action="store_true",
-                    help="Pass the matching circulant from "
-                         "graphs/circulant.json as a CP-SAT warm-start "
-                         "hint. Neutral-to-negative on laptop benches; "
-                         "kept as opt-in for larger N where FEASIBLE "
-                         "boxes dominate.")
+                    help="Pass the best K4-free circulant for this n "
+                         "(from CirculantSearchFast) as a CP-SAT "
+                         "warm-start hint. Neutral-to-negative on "
+                         "laptop benches; kept as opt-in for larger N "
+                         "where FEASIBLE boxes dominate.")
     ap.add_argument("--branch-on-v0", action="store_true",
                     help="Add a FIXED_SEARCH decision strategy on the "
                          "vertex-0 row (CHOOSE_FIRST, SELECT_MAX_VALUE). "

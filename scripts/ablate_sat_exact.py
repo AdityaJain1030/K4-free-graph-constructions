@@ -10,7 +10,7 @@ Each optimization is a kwarg flag on SATExact; configs are combinations
 of those flags. Point of this file: answer, for each optimization,
 "did it actually help, and how much?" — individually and in combination.
 
-Reference c_log (from SAT_old/pareto_reference):
+Reference c_log (from reference/pareto):
     n=12 → 0.7767,  n=15 → 0.7195
 Runs that don't match these are reported with a ❌; runs that match with ✓.
 """
@@ -33,12 +33,11 @@ REFERENCE_C_LOG = {12: 0.7767, 15: 0.7195}
 
 # Each config is (label, kwargs). Kwargs must name SATExact kwargs exactly.
 # The default new-opt config below must explicitly disable c_log_prune and
-# seed_from_catalog where it is not wanted — both are True by default on
+# seed_from_circulant where it is not wanted — both are True by default on
 # SATExact. Without these kwargs every config would inherit the full set of
 # accelerators and the ablation table would read flat.
 _NO_CLOG = {"c_log_prune": False,
-            "seed_from_catalog": False,
-            "seed_from_circulant_search": False}
+            "seed_from_circulant": False}
 
 CONFIGS: list[tuple[str, dict]] = [
     # Baseline: no symmetry, no Ramsey, no c_log prune, no seed.
@@ -77,21 +76,18 @@ CONFIGS: list[tuple[str, dict]] = [
      {"symmetry_mode": "none", "ramsey_prune": False,
       "scan_from_ramsey_floor": False,
       "c_log_prune": True,
-      "seed_from_catalog": False,
-      "seed_from_circulant_search": False}),
+      "seed_from_circulant": False}),
     ("clog_prune+seed",
      {"symmetry_mode": "none", "ramsey_prune": False,
       "scan_from_ramsey_floor": False,
       "c_log_prune": True,
-      "seed_from_catalog": True,
-      "seed_from_circulant_search": True}),
+      "seed_from_circulant": True}),
     # Full stack — current default.
     ("all_on",
      {"symmetry_mode": "edge_lex", "ramsey_prune": True,
       "scan_from_ramsey_floor": True,
       "c_log_prune": True,
-      "seed_from_catalog": True,
-      "seed_from_circulant_search": True}),
+      "seed_from_circulant": True}),
 ]
 
 
