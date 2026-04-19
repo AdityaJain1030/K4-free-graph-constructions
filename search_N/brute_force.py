@@ -1,15 +1,16 @@
 """
 search_N/brute_force.py
 =======================
-Exhaustive K4-free graph search via nauty geng.
+Exhaustive K4-free graph enumeration via nauty `geng`.
 
-Returns the top_k graphs by c_log across all non-isomorphic K4-free graphs
-on n vertices. Cap n to what geng can realistically enumerate.
+Streams every non-isomorphic K4-free graph on n vertices and hands them
+to the base class, which scores and keeps the top_k by c_log.
+
+Feasible roughly up to n=10; beyond that geng's output is too large.
 """
 
 import os
 import sys
-import time
 
 import networkx as nx
 
@@ -22,20 +23,13 @@ from .base import Search
 
 class BruteForce(Search):
     """
-    Enumerate every non-isomorphic K4-free graph on n vertices (via geng)
-    and return the top_k by c_log.
+    Enumerate every non-isomorphic K4-free graph on n vertices via geng.
 
-    Attributes
-    ----------
-    top_k : int   Number of results to return (default 1).
+    Constraints (all hard — enforced by the geng flag `-k`):
+        - K4-free (guaranteed by the enumerator).
     """
 
     name = "brute_force"
-    multi_result = True
-
-    def __init__(self, n: int, top_k: int = 1, **kwargs):
-        super().__init__(n, **kwargs)
-        self.top_k = top_k
 
     def _run(self) -> list[nx.Graph]:
         geng = find_geng()
@@ -43,26 +37,12 @@ class BruteForce(Search):
             self._log("error", exc="geng not found on PATH")
             return []
 
-        start = time.time()
-        found: list[tuple[float, float, nx.Graph]] = []   # (c_log, time_to_find, G)
+        out: list[nx.Graph] = []
         n_checked = 0
-        for G in graphs_via_geng(geng, self.n):
+        for G in graphs_via_geng(geng, self.n, flags="-k"):
             n_checked += 1
-            c = self.c_log(G)
-            if c is None:
-                continue
-            found.append((c, round(time.time() - start, 4), G))
+            self._stamp(G)
+            out.append(G)
 
-        self._log("attempt", n_checked=n_checked, n_valid=len(found))
-
-        found.sort(key=lambda r: r[0])
-        found = found[: self.top_k]
-
-        if found:
-            best_c, best_t, _ = found[0]
-            self._log("new_best", c_log=round(best_c, 6), time_to_find=best_t)
-
-        for _, t, G in found:
-            G.graph["time_to_find"] = t
-
-        return [G for _, _, G in found]
+        self._log("attempt", level=1, n_checked=n_checked)
+        return out

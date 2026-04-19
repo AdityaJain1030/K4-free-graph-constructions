@@ -3,20 +3,14 @@ search_N/logger.py
 ==================
 Human-readable structured logger for search runs.
 
-One file per run: logs/<algo>_n<N>_<YYYYMMDD_HHMMSS>.log
+Per-run file: logs/search_N/<algo>_n<N>_<YYYYMMDD_HHMMSS>.log
+Aggregate file (opt-in): logs/search_N/<name>_<YYYYMMDD_HHMMSS>.agg.log
 
-Line format:
-    [HH:MM:SS.mmm] EVENT_NAME  key=value  key=value  ...
+Line format (per-run):
+    [HH:MM:SS.mmm] EVENT_NAME   key=value  key=value  ...
 
-Standard events (used by Search base class and concrete algorithms)
---------------------------------------------------------------------
-search_start   Start of run. Includes algo config/params.
-search_end     End of run. Includes status, n_results, best_c_log, elapsed_s.
-new_best       A better c_log was found. Includes c_log, alpha, d_max, elapsed_s.
-attempt        One solver call / one (D, alpha) pair tried. SAT/ILP specific.
-infeasible     Solver *proved* no solution exists for given params.
-timeout        Time limit reached without a solution.
-error          Unexpected exception. Includes exc (str).
+Line format (aggregate, with child tag):
+    [HH:MM:SS.mmm] EVENT_NAME   [<algo>_n<N>]   key=value  ...
 """
 
 import os
@@ -27,39 +21,116 @@ _LOGS_DIR = os.path.join(
     "logs",
     "search_N",
 )
-_EVENT_WIDTH = 12  # column width for the event name
+_EVENT_WIDTH = 12
 
 
-class SearchLogger:
+def _now_ts() -> str:
+    now = datetime.now()
+    return now.strftime("%H:%M:%S.") + f"{now.microsecond // 1000:03d}"
+
+
+def _fmt_kv(data: dict) -> str:
+    return "  ".join(f"{k}={v}" for k, v in data.items())
+
+
+class AggregateLogger:
     """
-    Writes human-readable log lines for one search run.
-    The file is opened lazily on first write and closed via .close().
+    Tees log lines from every child SearchLogger into one aggregate file.
+
+    Nesting is flat: an AggregateLogger can itself have a parent_logger,
+    and every line teed into it is also teed up the chain. Child runs
+    stamp the `[<algo>_n<N>]` tag onto their writes so aggregate files
+    interleave cleanly.
+
+    Usage::
+
+        with AggregateLogger(name="sweep") as agg:
+            for n in range(6, 11):
+                BruteForce(n=n, parent_logger=agg).run()
     """
 
-    def __init__(self, algo: str, n: int):
-        self.algo  = algo
-        self.n     = n
+    def __init__(self, name: str, parent_logger: "AggregateLogger | None" = None):
+        self.name = name
+        self.parent_logger = parent_logger
         self._file = None
-        self.path  = None
+        self.path = None
 
     def _ensure_open(self):
         if self._file is None:
             os.makedirs(_LOGS_DIR, exist_ok=True)
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.path  = os.path.join(_LOGS_DIR, f"{self.algo}_n{self.n}_{ts}.log")
+            self.path = os.path.join(_LOGS_DIR, f"{self.name}_{ts}.agg.log")
+            self._file = open(self.path, "a")
+
+    def tee(self, ts: str, event: str, child_tag: str, kv_str: str):
+        """Called by SearchLogger (or a nested AggregateLogger) on every write."""
+        self._ensure_open()
+        label = event.upper().ljust(_EVENT_WIDTH)
+        tag = f"[{child_tag}]"
+        line = (
+            f"[{ts}] {label}  {tag}   {kv_str}\n"
+            if kv_str
+            else f"[{ts}] {label}  {tag}\n"
+        )
+        self._file.write(line)
+        self._file.flush()
+        if self.parent_logger is not None:
+            self.parent_logger.tee(ts, event, child_tag, kv_str)
+
+    def close(self):
+        if self._file is not None:
+            self._file.close()
+            self._file = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
+
+
+class SearchLogger:
+    """
+    Writes per-run log lines. Opens lazily on first write.
+
+    If `parent_logger` is given, every line is also teed into that
+    aggregate logger, prefixed with `[<algo>_n<N>]` so the aggregate
+    output remains readable across many concurrent child runs.
+    """
+
+    def __init__(
+        self,
+        algo: str,
+        n: int,
+        parent_logger: "AggregateLogger | None" = None,
+    ):
+        self.algo = algo
+        self.n = n
+        self.parent_logger = parent_logger
+        self._file = None
+        self.path = None
+
+    def _ensure_open(self):
+        if self._file is None:
+            os.makedirs(_LOGS_DIR, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.path = os.path.join(_LOGS_DIR, f"{self.algo}_n{self.n}_{ts}.log")
             self._file = open(self.path, "a")
 
     def write(self, event: str, **data):
         self._ensure_open()
-        now = datetime.now()
-        ts  = now.strftime("%H:%M:%S.") + f"{now.microsecond // 1000:03d}"
+        ts = _now_ts()
         label = event.upper().ljust(_EVENT_WIDTH)
-        kv    = "  ".join(f"{k}={v}" for k, v in data.items())
-        line  = f"[{ts}] {label}  {kv}\n" if kv else f"[{ts}] {label}\n"
+        kv = _fmt_kv(data)
+        line = f"[{ts}] {label}  {kv}\n" if kv else f"[{ts}] {label}\n"
         self._file.write(line)
         self._file.flush()
 
+        if self.parent_logger is not None:
+            self.parent_logger.tee(ts, event, f"{self.algo}_n{self.n}", kv)
+
     def close(self):
-        if self._file:
+        if self._file is not None:
             self._file.close()
             self._file = None
