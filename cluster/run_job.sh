@@ -15,7 +15,7 @@ eval "$(micromamba shell hook -s bash)"
 REPO="/home/adityaj8/k4free"
 ENV="k4free"
 N_MIN=20
-N_MAX=40
+N_MAX=30
 
 micromamba activate "$ENV"
 cd "$REPO"
