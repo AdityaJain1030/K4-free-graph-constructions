@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS cache (
     c_log                   REAL,
     beta                    REAL,
     turan_density           REAL    NOT NULL,
+    codegree_avg            REAL,
+    codegree_max            INTEGER,
     mis_vertices            TEXT    NOT NULL,
     triangle_edges          TEXT    NOT NULL,
     triangle_vertices       TEXT    NOT NULL,
@@ -49,3 +51,4 @@ CREATE INDEX IF NOT EXISTS idx_alpha    ON cache(alpha);
 CREATE INDEX IF NOT EXISTS idx_d_max    ON cache(d_max);
 CREATE INDEX IF NOT EXISTS idx_is_k4    ON cache(is_k4_free);
 CREATE INDEX IF NOT EXISTS idx_regular  ON cache(is_regular);
+CREATE INDEX IF NOT EXISTS idx_codeg_max ON cache(codegree_max);

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "607ce364e29b3ffc",
+    "sparse6": ":FkHMbQ@J",
+    "source": "polarity",
+    "metadata": {
+      "q": 2,
+      "construction": "erdos_renyi_polarity"
+    }
+  },
+  {
+    "id": "68a3f1fa8b1d6a89",
+    "sparse6": ":LiQ`W@HGXBoCUGqhaGs@eV",
+    "source": "polarity",
+    "metadata": {
+      "q": 3,
+      "construction": "erdos_renyi_polarity"
+    }
+  },
+  {
+    "id": "36e2e51a50d1aae7",
+    "sparse6": ":^fEiGheGJeHIfGHfIJ_@EFaCHJObDGIOPcDFNaDELaBFMbCEK_AGKR`BHLRV_CILT`DJKTX`AINU`CGMS_BJNS[_DHMUZ",
+    "source": "polarity",
+    "metadata": {
+      "q": 5,
+      "construction": "erdos_renyi_polarity"
+    }
+  },
+  {
+    "id": "16bbdc617cc1210e",
+    "sparse6": ":xeAxc{UMebhKeSQdCX@ChGHCx?w_UdBQ@QQMFcXOk]RcAp`UQKEcg?COHDO__gWMMooo_YNMpOwcUOMp?wsaRNp_wwcTNO_X?eTOO_g{cSNp?okgUOOogoaUNPOogm[a@P@_rABaBPpPBAAQxiCECeBYiEFDERY]?ADcQyDN@@aqP`CgUo?ooeXPiGG[WSJhDQ}?DEdRQHT@@BQpdIkWoOp?aYRIW?[]UKHd[?EMIFCieADFCrYDUt_`@xSwbRlG?O_QLhDbN",
+    "source": "polarity",
+    "metadata": {
+      "q": 7,
+      "construction": "erdos_renyi_polarity"
+    }
+  }
+]

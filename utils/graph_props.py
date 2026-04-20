@@ -642,6 +642,33 @@ def alpha_approx(adj: np.ndarray, restarts: int = 400) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Co-degree (edge-wise common neighbourhood size)
+# ---------------------------------------------------------------------------
+
+def codegree_stats(G: nx.Graph) -> tuple[float | None, int | None]:
+    """
+    Return (avg, max) of |N(u) ∩ N(v)| over edges uv ∈ E(G).
+
+    For a K4-free graph the co-degree of an edge is the size of the edge's
+    shared neighbourhood and a key pseudorandomness quantity: the Jensen /
+    switching-lemma argument compares μ_max vs d²/N. Returns (None, None)
+    on edgeless graphs.
+    """
+    m = G.number_of_edges()
+    if m == 0:
+        return None, None
+    adj = {v: set(G.neighbors(v)) for v in G.nodes()}
+    total = 0
+    cmax = 0
+    for u, v in G.edges():
+        c = len(adj[u] & adj[v])
+        total += c
+        if c > cmax:
+            cmax = c
+    return round(total / m, 6), int(cmax)
+
+
+# ---------------------------------------------------------------------------
 # Extremal metric
 # ---------------------------------------------------------------------------
 

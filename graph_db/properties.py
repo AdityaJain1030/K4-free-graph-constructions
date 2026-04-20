@@ -17,6 +17,7 @@ from utils.graph_props import (
     girth,
     triangle_sets,
     c_log_value,
+    codegree_stats,
     high_degree_verts,
 )
 
@@ -143,6 +144,11 @@ def compute_properties(G: nx.Graph) -> dict:
 
     # --- Turán ---
     p["turan_density"] = _turan_density(n, m)
+
+    # --- Co-degree (pseudorandomness probe — μ_max vs d²/N) ---
+    cavg, cmax = codegree_stats(G)
+    p["codegree_avg"] = cavg
+    p["codegree_max"] = cmax
 
     # --- Highlight sets ---
     tri_edges, tri_verts = triangle_sets(G)

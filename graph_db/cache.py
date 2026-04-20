@@ -13,6 +13,17 @@ import sqlite3
 
 _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
+# Bootstrap DDL run before schema.sql so new nullable columns can be
+# ALTER-added by _migrate_add_missing_columns ahead of the CREATE
+# INDEX statements in the full schema.
+_BASE_TABLE_DDL = """
+CREATE TABLE IF NOT EXISTS cache (
+    graph_id    TEXT NOT NULL,
+    source      TEXT NOT NULL,
+    PRIMARY KEY (graph_id, source)
+);
+"""
+
 # Order must match the column order of the INSERT below.
 _INSERT_COLUMNS = (
     "graph_id",  "source",
@@ -26,6 +37,7 @@ _INSERT_COLUMNS = (
     "eigenvalues_adj", "spectral_radius", "spectral_gap", "n_distinct_eigenvalues",
     "eigenvalues_lap", "algebraic_connectivity",
     "alpha", "c_log", "beta", "turan_density",
+    "codegree_avg", "codegree_max",
     "mis_vertices", "triangle_edges", "triangle_vertices", "high_degree_vertices",
     "metadata",
 )
@@ -50,6 +62,12 @@ class PropertyCache:
         self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._migrate_legacy()
+        # Ensure a base table exists (no-op if present).
+        self._conn.execute(_BASE_TABLE_DDL)
+        # Add any missing nullable columns before running the full schema
+        # script — otherwise CREATE INDEX on a new column would fail on
+        # older databases that never had the column.
+        self._migrate_add_missing_columns()
         self._conn.executescript(_load_schema())
         self._conn.commit()
 
@@ -72,6 +90,22 @@ class PropertyCache:
         if row and "PRIMARY KEY (graph_id, source)" not in row[0]:
             self._conn.execute("DROP TABLE cache")
             self._conn.commit()
+
+    # Nullable columns that may be missing on older cache.db files. Any
+    # time a new property is added to schema.sql with a nullable type,
+    # list it here with its SQL type so existing caches ALTER-in the
+    # column silently on next open. Values are NULL until a recompute
+    # fills them in.
+    _AUTO_ADD_COLUMNS = (
+        ("codegree_avg", "REAL"),
+        ("codegree_max", "INTEGER"),
+    )
+
+    def _migrate_add_missing_columns(self):
+        cols = {r[1] for r in self._conn.execute("PRAGMA table_info(cache)")}
+        for name, sql_type in self._AUTO_ADD_COLUMNS:
+            if name not in cols:
+                self._conn.execute(f"ALTER TABLE cache ADD COLUMN {name} {sql_type}")
 
     # ── reads ─────────────────────────────────────────────────────────────────
 
@@ -139,6 +173,7 @@ class PropertyCache:
             j(props["eigenvalues_lap"]), props["algebraic_connectivity"],
             props["alpha"], props["c_log"], props["beta"],
             props["turan_density"],
+            props["codegree_avg"], props["codegree_max"],
             j(props["mis_vertices"]), j(props["triangle_edges"]),
             j(props["triangle_vertices"]), j(props["high_degree_vertices"]),
             j(metadata),
@@ -205,4 +240,5 @@ class PropertyCache:
             "spectral_radius", "spectral_gap", "n_distinct_eigenvalues",
             "algebraic_connectivity",
             "alpha", "c_log", "beta", "turan_density",
+            "codegree_avg", "codegree_max",
         }
