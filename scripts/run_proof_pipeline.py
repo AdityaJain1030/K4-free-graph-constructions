@@ -53,10 +53,16 @@ Usage
 from __future__ import annotations
 
 import argparse
+import faulthandler
 import json
 import os
+import signal
 import sys
 import time
+
+faulthandler.enable()
+for _sig in (signal.SIGILL, signal.SIGSEGV, signal.SIGABRT, signal.SIGBUS, signal.SIGFPE):
+    faulthandler.register(_sig, chain=False)
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
