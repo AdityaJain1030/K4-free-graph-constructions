@@ -56,13 +56,12 @@ import argparse
 import faulthandler
 import json
 import os
-import signal
 import sys
 import time
 
+# enable() already handles SIGILL/SEGV/FPE/ABRT/BUS — that's its whole point.
+# Writes a Python + C stack to stderr (logs/pipeline/job_*.err) on crash.
 faulthandler.enable()
-for _sig in (signal.SIGILL, signal.SIGSEGV, signal.SIGABRT, signal.SIGBUS, signal.SIGFPE):
-    faulthandler.register(_sig, chain=False)
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
