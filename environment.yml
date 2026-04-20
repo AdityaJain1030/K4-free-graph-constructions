@@ -46,6 +46,10 @@ dependencies:
     - ortools==9.15.6755
     - python-sat==1.9.dev2
 
+    # Exact maximum independent set (C-implemented Bron-Kerbosch).
+    # Used as a fast alternative α solver in utils.graph_props.
+    - igraph==1.0.0
+
     # NOTE: pynauty is NOT listed here.
     # It is installed by scripts/setup_nauty.sh after nauty itself builds,
     # so the C compiler chain is known to work and SDKROOT is set on macOS.

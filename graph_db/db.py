@@ -16,6 +16,8 @@ Typical usage:
 """
 
 import os
+import signal
+import traceback
 from typing import Any, Iterable
 
 import numpy as np
@@ -28,6 +30,46 @@ from graph_db.store import GraphStore
 REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_GRAPHS = os.path.join(REPO_ROOT, "graphs")
 DEFAULT_CACHE  = os.path.join(REPO_ROOT, "cache.db")
+
+
+# Module-level worker so multiprocessing can pickle it. Returns a tuple of
+# (graph_id, source, metadata, props_or_None, error_or_None). Workers handle
+# their own timeout via SIGALRM so a single pathological graph can't block
+# the pool forever.
+def _sync_worker(args):
+    graph_id, source, sparse6, metadata, timeout_s = args
+    try:
+        if timeout_s and timeout_s > 0:
+            class _Timeout(Exception):
+                pass
+            def _handler(signum, frame):
+                raise _Timeout()
+            signal.signal(signal.SIGALRM, _handler)
+            signal.alarm(int(timeout_s))
+        from graph_db.properties import compute_properties
+        G = sparse6_to_nx(sparse6)
+        props = compute_properties(G)
+        if timeout_s and timeout_s > 0:
+            signal.alarm(0)
+        return (graph_id, source, metadata, props, None)
+    except KeyboardInterrupt:
+        # Let Ctrl+C propagate so the sync actually stops. In pool mode this
+        # path is unreachable (the parent handles SIGINT and terminates the
+        # pool); in serial mode we want the interrupt to bubble up.
+        if timeout_s and timeout_s > 0:
+            try:
+                signal.alarm(0)
+            except Exception:
+                pass
+        raise
+    except BaseException as exc:  # catches our _Timeout + anything else
+        if timeout_s and timeout_s > 0:
+            try:
+                signal.alarm(0)
+            except Exception:
+                pass
+        tag = "timeout" if exc.__class__.__name__ == "_Timeout" else type(exc).__name__
+        return (graph_id, source, metadata, None, f"{tag}: {exc}")
 
 
 class DB:
@@ -315,6 +357,8 @@ class DB:
         recompute: bool = False,
         dry_run: bool = False,
         verbose: bool = True,
+        workers: int = 1,
+        per_record_timeout_s: float | None = None,
     ) -> dict:
         """
         Bring the cache in line with the store.
@@ -324,11 +368,15 @@ class DB:
                     already exist in the cache (use after properties.py
                     gains a new column, or to force a refresh).
         dry_run   — report what would be done, don't write.
+        workers   — number of worker processes for property computation.
+                    1 = run serially in-process (old behaviour).
+        per_record_timeout_s — if set, a worker that exceeds this wall-clock
+                    limit on a single graph raises SIGALRM inside itself,
+                    returns a timeout marker, and sync moves on. No single
+                    pathological graph can block the pool.
 
-        Returns summary dict: {added, updated, skipped, source}.
+        Returns summary dict: {added, updated, skipped, errors, source}.
         """
-        from graph_db.properties import compute_properties
-
         store_recs = self.store.all_records()
         if source is not None:
             store_recs = [r for r in store_recs if r["source"] == source]
@@ -346,6 +394,7 @@ class DB:
             "added":   sum(1 for _, upd in work if not upd),
             "updated": sum(1 for _, upd in work if upd),
             "skipped": len(store_recs) - len(work),
+            "errors":  0,
             "source":  source,
         }
 
@@ -359,29 +408,57 @@ class DB:
                 f"sync: {summary['added']} new, {summary['updated']} to update, "
                 f"{summary['skipped']} already cached"
                 + (f" (source={source})" if source else "")
+                + (f" [workers={workers}]" if workers > 1 else "")
+                + (f" [timeout={per_record_timeout_s}s]" if per_record_timeout_s else "")
                 + (" [dry-run]" if dry_run else "")
             )
 
         if dry_run:
             return summary
 
-        for i, (rec, _upd) in enumerate(work, 1):
-            G = sparse6_to_nx(rec["sparse6"])
-            props = compute_properties(G)
+        total = len(work)
+        tasks = [
+            (rec["id"], rec["source"], rec["sparse6"],
+             rec.get("metadata", {}), per_record_timeout_s)
+            for rec, _ in work
+        ]
+
+        def _ingest(result, idx):
+            gid, src, meta, props, err = result
+            if err is not None:
+                summary["errors"] += 1
+                if verbose:
+                    print(f"  [{idx}/{total}] id={gid} source={src} "
+                          f"SKIP ({err})")
+                return
             self.cache.insert(
-                graph_id=rec["id"],
-                source=rec["source"],
-                props=props,
-                metadata=rec.get("metadata", {}),
+                graph_id=gid, source=src, props=props, metadata=meta,
             )
             if verbose:
                 c = props.get("c_log")
                 c_str = f"{c:.4f}" if c is not None else "  —  "
-                print(f"  [{i}/{len(work)}] id={rec['id']} "
-                      f"source={rec['source']} n={props['n']} c_log={c_str}")
+                print(f"  [{idx}/{total}] id={gid} source={src} "
+                      f"n={props['n']} c_log={c_str}")
+
+        if workers <= 1 or total == 1:
+            for i, task in enumerate(tasks, 1):
+                _ingest(_sync_worker(task), i)
+        else:
+            # Pool processes tasks in any order; we count completions for
+            # progress display. chunksize=1 because per-task runtime varies
+            # by orders of magnitude on this workload.
+            import multiprocessing as mp
+            ctx = mp.get_context("spawn")  # clean slate per worker, avoids
+                                           # inheriting tk/SAT/numba state
+            with ctx.Pool(processes=workers) as pool:
+                done = 0
+                for result in pool.imap_unordered(_sync_worker, tasks, chunksize=1):
+                    done += 1
+                    _ingest(result, done)
 
         if verbose:
-            print(f"Done. Cache now has {self.cache.count()} entries.")
+            print(f"Done. Cache now has {self.cache.count()} entries "
+                  f"(errors: {summary['errors']}).")
         return summary
 
     def recompute(

@@ -5,13 +5,14 @@ Compute every property that goes into the cache for a given graph.
 All values are plain Python types (int, float, list, bool, None).
 """
 
+import warnings
 from math import log
 
 import networkx as nx
 import numpy as np
 
 from utils.graph_props import (
-    alpha,
+    alpha_cpsat,
     is_k4_free,
     girth,
     triangle_sets,
@@ -79,8 +80,15 @@ def compute_properties(G: nx.Graph) -> dict:
     p["girth"]          = girth(G)
     p["n_triangles"]    = sum(nx.triangles(G).values()) // 3
     p["avg_clustering"] = round(nx.average_clustering(G), 6)
+    # Regular graphs have zero degree variance → the Pearson correlation is
+    # 0/0 = NaN and networkx raises a RuntimeWarning. The NaN branch below
+    # already handles the value correctly; silence the warning so sync
+    # output stays readable across hundreds of regular (circulant, cayley)
+    # graphs.
     try:
-        a = nx.degree_assortativity_coefficient(G)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            a = nx.degree_assortativity_coefficient(G)
         p["assortativity"] = round(float(a), 6) if np.isfinite(a) else None
     except Exception:
         p["assortativity"] = None
@@ -109,9 +117,12 @@ def compute_properties(G: nx.Graph) -> dict:
     )
 
     # --- Independence / extremal ---
-    # `alpha` is the project default (clique-cover B&B). The db boundary
-    # owns this choice — see memory/feedback_alpha_solver_api.md.
-    alpha_val, mis_verts = alpha(adj)
+    # The db boundary owns the α-solver choice — see
+    # memory/feedback_alpha_solver_api.md. CP-SAT is used here because the
+    # pure-Python clique-cover B&B times out past n ≈ 80 on sparse
+    # K4-free graphs (minutes → hours); CP-SAT proves the same values in
+    # under a second. No VT hint: soundness across every source.
+    alpha_val, mis_verts = alpha_cpsat(adj, time_limit=60.0)
     p["alpha"]        = alpha_val
     p["mis_vertices"] = sorted(int(v) for v in mis_verts)
 

@@ -27,26 +27,65 @@ Four compounding steps:
    the exact solve.
 4. **Exact α via CP-SAT with vertex-transitivity break.** Circulants are
    vertex-transitive, so pinning `x[0]=1` is sound and collapses the MIS
-   search by roughly `N`. Pure-Python bitmask B&B gets stuck past
-   `n ≈ 60` on sparse K4-free circulants (observed > 45 s per graph at
-   `n=80`, `|S|=4`); CP-SAT solves the same instances in 10–100 ms.
-   The solver lives in `utils.graph_props.alpha_cpsat`; dispatch is via
-   `alpha_auto(..., vertex_transitive=True)`.
+   search by roughly `n`. CP-SAT solves most instances in 10–100 ms even
+   past `n = 200`. The generic clique-cover B&B (`alpha_bb_clique_cover`)
+   was tried and rejected: on sparse connection sets (`|S| ≤ 2`) at
+   `n = 80` it takes 0.8 s per call on average, up to 12 s in the tail,
+   because the clique-cover upper bound is loose on low-density graphs.
+   The solver lives in `utils.graph_props.alpha_cpsat`; `_alpha_of` in
+   this class calls it with `vertex_transitive=True` so the base class
+   doesn't fall back to clique-cover when re-scoring the returned graph.
 
 ## Observed performance (`top_k=1`, `max_conn_size=4`)
 
-| `n`  | best c | `|S|` | `S`                   | wall |
-|------|--------|-------|-----------------------|------|
-| 17   | 0.679  | 4     | (1, 2, 4, 8)          | <0.1 s |
-| 34   | 0.679  | 4     | (2, 4, 8, 16)         | 0.4 s |
-| 47   | 0.822  | ≤6    | (1, 2, 9, 10, 14, 15) | 4.6 s |
-| 49   | 0.788  | ≤6    | (1, 3, 4, 17, 19, 20) | 5.9 s |
-| 60   | 0.769  | 4     | (2, 16, 18, 28)       | 2.1 s |
-| 80   | 0.721  | 2     | (10, 20)              | 5.6 s |
-| 100  | 0.769  | 4     | (5, 10, 20, 45)       | 15.1 s |
+Measured on `2026-04-19` after switching back to CP-SAT for exact α (see
+section 4 above). All runs on the local WSL box (single core, no
+parallelism).
+
+| `n` | best c | `|S_half|` | `d` | wall |
+|-----|--------|------------|-----|------|
+| 17  | 0.679  | 4          | 8   | 0.02 s |
+| 23  | 0.836  | 4          | 8   | 0.03 s |
+| 34  | 0.679  | 4          | 8   | 0.19 s |
+| 47  | 0.855  | 3          | 6   | 0.60 s |
+| 50  | 0.804  | 3          | 6   | 0.53 s |
+| 80  | 0.721  | 2          | 4   | 8.6 s  |
+| 100 | 0.769  | 4          | 8   | 18.0 s |
+| 118 | 0.908  | 3          | 6   | 263 s  |
+| 130 | 0.773  | 3          | 6   | 58 s   |
+| 150 | 0.769  | 4          | 8   | 104 s  |
+| 160 | 0.721  | 2          | 4   | 185 s  |
+| 200 | 0.721  | 2          | 4   | 339 s  |
+
+Note: `n = 47` reports `c = 0.855 (|S|=3, d=6)` because `max_conn_size=4`
+caps |S_half|. The known `c = 0.822` at `n = 47` needs `|S_half| = 6`
+(`(1, 2, 9, 10, 14, 15)`) and will not be found here. Widen the cap if
+that regime matters.
+
+Wall time is dominated by pass 2 CP-SAT calls, not the DFS or the
+greedy pre-filter. Per-call CP-SAT cost is dominated by ~100 ms of
+OR-Tools solver init — so wall time scales with the number of
+candidates that survive the greedy filter, which in turn depends on
+how tight the greedy lower bound is. When the best `|S|` is small
+(`d = 4` at `n = 80, 160, 200`) the greedy bound is loose and many
+candidates survive; when the best `|S|` hits `d = 8` (e.g. `n = 100,
+150`) pruning is much more effective. That's why `n = 118` is slower
+than `n = 130` despite being smaller — the best circulant at 118 has
+`c = 0.908`, a loose cutoff that keeps many d=4 candidates alive.
 
 For `n ≤ 20`, results match `CirculantSearch` exactly when `max_conn_size
 = n // 2` (sanity checked in `scripts/run_circulant_fast.py`).
+
+### Implications for SAT warm-starts
+
+- `n ≤ 100` returns in **under 30 s** — cheap enough to run per-SAT
+  invocation as a baseline to beat.
+- `n ∈ [100, 200]` is **1–6 min** per n, dominated by CP-SAT overhead.
+  Generate once, cache to `graphs/circulant_fast.json`, and reuse.
+- `n ∈ [200, 300]` extrapolates to **5–15 min** per n. Do these on the
+  server, not the laptop, and in a one-shot batch — the per-n cost is
+  dominated by a few hundred CP-SAT startup overheads, not solve time,
+  so spreading across cores (one n per core) is the right partition.
 
 ## When to reach for it
 
@@ -72,11 +111,11 @@ For `n ≤ 20`, results match `CirculantSearch` exactly when `max_conn_size
   `|S| > 4`, but if one exists and sits just beyond `max_conn_size`, the
   search misses it silently. Widen and re-run as a check.
 - **Base class α recomputation.** `Search._wrap()` recomputes α on every
-  returned graph. It uses `utils.graph_props.alpha` (clique-cover B&B),
-  which scales to n ≈ 1000 on sparse K4-free graphs; no override is
-  needed here. Earlier versions of this code dispatched to
-  `alpha_cpsat(..., vertex_transitive=True)` at large n — the
-  clique-cover bound makes that obsolete.
+  returned graph. The default `_alpha_of` uses clique-cover B&B, which
+  hangs for seconds on low-density circulants (|S|≤2). We override
+  `_alpha_of` here to call `alpha_cpsat(..., vertex_transitive=True)`
+  directly; don't remove that override without reconfirming the wall
+  times in the table above.
 
 ## Open questions
 
