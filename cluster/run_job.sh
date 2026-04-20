@@ -21,9 +21,10 @@ micromamba activate "$ENV"
 cd "$REPO"
 mkdir -p logs/pipeline logs/search logs/cores
 
-# Enable core dumps so native crashes (SIGILL/SIGSEGV) leave a file we can gdb.
-# HTCondor defaults ulimit -c to 0. Writes cores to logs/cores/ next to the job logs.
-ulimit -c unlimited
+# Try to enable native core dumps; HTCondor may pin the hard limit at 0, in
+# which case we fall through silently and rely on Python's faulthandler (which
+# run_proof_pipeline.py registers for SIGILL/SEGV/ABRT/BUS/FPE) for the trace.
+ulimit -c unlimited 2>/dev/null || echo "[run_job] could not raise core limit (hard-capped by condor_starter); faulthandler will still catch traps"
 export PYTHONFAULTHANDLER=1
 
 # Phase-1 (easy scan)  : 2 α-tracks × 4 threads = 8 CPUs (memory-limited at large N)
