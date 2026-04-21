@@ -3,9 +3,8 @@ graph_db/encoding.py
 ====================
 sparse6 / networkx / edge-list conversion utilities.
 
-Canonical ids live in `utils.pynauty.canonical_id` — re-exported here for
-backward compatibility with callers doing `from graph_db.encoding import
-canonical_id`.
+Canonical ids live in `utils.nauty.canonical_id` — re-exported here for
+callers doing `from graph_db.encoding import canonical_id`.
 """
 
 import warnings
@@ -13,7 +12,7 @@ import warnings
 import networkx as nx
 warnings.filterwarnings("ignore", category=UserWarning, module="networkx")
 
-from utils.pynauty import canonical_id, _to_int_graph  # re-exported
+from utils.nauty import canonical_id, canonical_ids, _to_int_graph  # re-exported
 
 
 def graph_to_sparse6(G) -> str:

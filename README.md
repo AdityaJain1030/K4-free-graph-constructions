@@ -60,7 +60,7 @@ plotly / networkx), the SAT stack (ortools, python-sat), LLM API clients
 in `environment.yml` for the full list. Takes a few minutes on a fresh
 machine.
 
-### 3. Build `nauty` + install `pynauty`
+### 3. Build `nauty`
 
 ```bash
 micromamba activate k4free
@@ -68,12 +68,13 @@ bash scripts/setup_nauty.sh
 ```
 
 This downloads `nauty 2.9.3`, builds it inside the env
-(`$CONDA_PREFIX/src`), wires the binaries onto `PATH` via a conda
-activation hook, and then `pip install`s `pynauty` against the
-just-built library. On macOS it also sets `SDKROOT` to the Xcode SDK
-path; if Xcode CLT is missing the script warns and exits cleanly.
-`pynauty` is required — `graph_db` uses its canonical sparse6 as the
-isomorphism-class id and refuses to run without it.
+(`$CONDA_PREFIX/src`), and wires the binaries onto `PATH` via a conda
+activation hook. `geng` drives brute-force enumeration
+(`search/brute_force.py`) and `labelg` backs canonical-id computation
+(`utils/nauty.canonical_id`) — the pipeline has no Python-extension
+dependency, only those two binaries. Nauty is required;
+`graph_db` uses labelg's canonical sparse6 as the isomorphism-class
+id and refuses to run without it.
 
 ### 4. Smoke test
 
@@ -182,7 +183,7 @@ Files:
 - `store.py` — `GraphStore`: JSON batch reader/writer.
 - `cache.py`, `schema.sql` — SQLite cache layer + typed column schema.
 - `properties.py` — `compute_properties(G, hint)` → full row.
-- `encoding.py` — canonical sparse6 + `canonical_id` (SHA-256[:16] of canonical form, via pynauty).
+- `encoding.py` — canonical sparse6 + `canonical_id` (SHA-256[:16] of canonical form, via nauty's `labelg`).
 - `clean.py` — cache rebuild / pruning utilities.
 
 ## `graphs/` — The canonical graph store (committed)
@@ -234,14 +235,14 @@ Algorithm subclasses; per-search notes live under `docs/searches/`:
 - `test_search.py` — smoke test for the `Search` framework.
 - `db_cli.py` — query / inspect `graph_db` from the shell.
 - `open_visualizer.py` — launch the tkinter visualizer.
-- `setup_nauty.sh` — build `nauty`/`geng` and install `pynauty`.
+- `setup_nauty.sh` — build `nauty` (`geng`, `labelg`, …) inside the env.
 - `run_random.py`, `run_cayley.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py`, `run_random_regular_switch.py`, `run_alpha_targeted.py` — per-algorithm sweep drivers.
 - `run_sweep_10_40.py` — unified driver that runs every non-SAT search across N=10..40.
 
 ## `utils/` — Shared primitives
 
 - `graph_props.py` — computes the typed properties that populate `cache.db`.
-- `pynauty.py` — pynauty availability check + `canonical_id` + `geng` helpers (`find_geng`, `graphs_via_geng`). Mirrors the canonical-id logic in `graph_db/encoding.py`.
+- `nauty.py` — `canonical_id` / `canonical_ids` / `canonical_graph` via nauty's `labelg` subprocess, plus `geng` helpers (`find_geng`, `graphs_via_geng`). Mirrors the canonical-id logic re-exported from `graph_db/encoding.py`.
 - `ramsey.py` — hardcoded Ramsey numbers `R(3,k)`, `R(4,k)` used for pre-solve pruning in the SAT solver.
 
 ## `visualizer/` — Interactive explorer

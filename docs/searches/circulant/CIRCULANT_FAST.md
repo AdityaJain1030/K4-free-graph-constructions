@@ -126,5 +126,6 @@ For `n ≤ 20`, results match `CirculantSearch` exactly when `max_conn_size
    find local basins faster than the current lex-order DFS. Untested.
 3. The multiplier-canonicalization is sufficient but not tight: at
    composite `n`, there can be isomorphic pairs outside the `Z_n*`
-   orbit. pynauty canonicalization would close the gap but costs more.
+   orbit. Running every survivor through `utils.nauty.canonical_id`
+   (nauty `labelg`) would close the gap but costs more.
    Worth measuring the duplicate rate.

@@ -29,8 +29,14 @@ from collections import defaultdict
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
-import pynauty
+
+# Project root on sys.path so we can import utils.nauty.
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from utils.nauty import canonical_graph  # noqa: E402
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -766,35 +772,12 @@ def _save_all_csv(all_rows, best_per_method_N):
 # Structural comparison
 # =============================================================================
 
-def adj_to_pynauty(adj):
-    n = adj.shape[0]
-    g = pynauty.Graph(n)
-    for i in range(n):
-        nbrs = [int(j) for j in range(n) if j != i and adj[i, j]]
-        if nbrs:
-            g.connect_vertex(i, nbrs)
-    return g
-
-
 def canonical_edges(adj):
-    """Apply pynauty canon_label to get canonical edge set (frozenset)."""
-    n = adj.shape[0]
-    g = adj_to_pynauty(adj)
-    # canon_label returns a permutation mapping original -> canonical position
-    try:
-        perm = pynauty.canon_label(g)  # list of length n
-    except Exception:
-        # fallback: use certificate bytes as identity
-        return frozenset((i, j) for i in range(n) for j in range(i+1, n) if adj[i, j])
-    # perm[old] = new; relabel edges
-    edges = set()
-    for i in range(n):
-        for j in range(i+1, n):
-            if adj[i, j]:
-                a, b = perm[i], perm[j]
-                if a > b: a, b = b, a
-                edges.add((a, b))
-    return frozenset(edges)
+    """Canonical edge set (frozenset) via nauty labelg — isomorphic graphs
+    produce identical edge frozensets."""
+    G = nx.from_numpy_array(np.asarray(adj, dtype=np.uint8))
+    H = canonical_graph(G)
+    return frozenset(tuple(sorted(e)) for e in H.edges())
 
 
 def jaccard(s1, s2):
@@ -1044,7 +1027,7 @@ def write_comparison(rows, pair_jaccard, convergence, out_path):
     iso_matches = [r for r in rows if r.get("isomorphic") == 1]
     lines += [
         "",
-        f"## Isomorphism matches (up to pynauty canonical certificate)",
+        f"## Isomorphism matches (up to nauty canonical labelling)",
         "",
         f"Total matches: **{len(iso_matches)}** (of {len(rows)} comparisons)",
         "",

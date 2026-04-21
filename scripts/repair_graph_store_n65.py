@@ -3,7 +3,8 @@
 scripts/repair_graph_store_n65.py
 =================================
 One-off repair for graphs/*.json records written with the pre-fix broken
-pynauty certificate decoder (`utils/pynauty._canonical_sparse6_pynauty`).
+pynauty certificate decoder (historical; canonical_id now goes through
+nauty's labelg — see utils/nauty.py).
 
 The broken decoder read the certificate byte row with `row[-1 - v // 8]`,
 which only produces the correct adjacency for n ≤ 64 (one 64-bit setword
@@ -40,7 +41,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
 from graph_db.encoding import sparse6_to_nx  # noqa: E402
-from utils.pynauty import canonical_id  # noqa: E402
+from utils.nauty import canonical_id  # noqa: E402
 
 GRAPHS_DIR = os.path.join(REPO, "graphs")
 

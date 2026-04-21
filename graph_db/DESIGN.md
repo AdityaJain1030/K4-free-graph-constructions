@@ -189,9 +189,10 @@ This is the one non-obvious design call and it's deliberate.
 
 `graph_id` is the first 16 hex chars of `SHA-256(canonical_sparse6(G))`.
 Two isomorphic graphs have the same id regardless of the order in which
-their vertices happened to be labelled. Canonicalization uses
-`pynauty.canon_graph` (see `utils/pynauty.py`). pynauty is required —
-`canonical_id` raises `ImportError` if it is not installed.
+their vertices happened to be labelled. Canonicalization shells out to
+nauty's `labelg` binary (see `utils/nauty.py`). `labelg` is required —
+`canonical_id` raises `RuntimeError` if it is not on `PATH`
+(`scripts/setup_nauty.sh` installs it into the env activation hook).
 
 A `(graph_id, source)` composite key means the same graph discovered by
 two different methods produces two rows. This is intentional:
@@ -221,7 +222,7 @@ graph_db/
 ├── DESIGN.md          This file
 ├── schema.sql         CREATE TABLE + indexes, loaded by cache.py
 ├── encoding.py        sparse6 ↔ nx, edges_to_nx, graph_to_sparse6
-│                      (canonical_id lives in utils/pynauty.py, re-exported here)
+│                      (canonical_id lives in utils/nauty.py, re-exported here)
 ├── store.py           GraphStore — JSON folder I/O only (producer path)
 ├── cache.py           PropertyCache — SQLite only (internal, backs DB)
 ├── properties.py      compute_properties(G) — the one authoritative scorer
@@ -548,7 +549,7 @@ Same graph discovered by two tags → two rows. That's the point.
 | Same graph from two sources               | **Kept** — two cache rows, by design |
 | `compute_properties` gets a new column    | `ALTER TABLE ADD COLUMN`, then `db.sync(recompute=True)` |
 | Cache corruption                          | Delete `cache.db`, re-run `sync` |
-| pynauty missing                           | `canonical_id` raises `ImportError` — install pynauty (`pip install pynauty` or activate the k4free env) |
+| `labelg` missing from PATH                | `canonical_id` raises `RuntimeError` — activate the k4free env or rerun `bash scripts/setup_nauty.sh` |
 
 What the design does **not** guarantee:
 

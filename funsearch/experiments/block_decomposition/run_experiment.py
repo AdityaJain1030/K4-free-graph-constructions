@@ -43,8 +43,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
-import pynauty
 from tqdm import tqdm
+
+# Project root on sys.path so we can import utils.nauty.
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from utils.nauty import canonical_id  # noqa: E402
 
 from pysat.card import CardEnc, EncType
 from pysat.solvers import Glucose4
@@ -235,14 +240,9 @@ def adj_to_graph6(adj):
 
 
 def canonical_cert(adj):
-    """Canonical certificate via pynauty for deduplication."""
-    n = adj.shape[0]
-    g = pynauty.Graph(n)
-    for i in range(n):
-        nbrs = [int(j) for j in range(n) if j != i and adj[i, j]]
-        if nbrs:
-            g.connect_vertex(i, nbrs)
-    return pynauty.certificate(g)
+    """Canonical certificate via nauty labelg for deduplication."""
+    G = nx.from_numpy_array(np.asarray(adj, dtype=np.uint8))
+    return canonical_id(G)[0]
 
 
 def compute_c_value(alpha, n, d_max):

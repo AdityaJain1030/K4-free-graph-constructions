@@ -18,7 +18,7 @@ Micromamba environment `funsearch` with Python 3.11:
 
 ```bash
 micromamba create -n funsearch python=3.11 -c conda-forge -y
-micromamba run -n funsearch pip install python-sat networkx numpy scipy matplotlib pandas tqdm pynauty
+micromamba run -n funsearch pip install python-sat networkx numpy scipy matplotlib pandas tqdm
 micromamba run -n funsearch bash scripts/setup_nauty.sh
 ```
 

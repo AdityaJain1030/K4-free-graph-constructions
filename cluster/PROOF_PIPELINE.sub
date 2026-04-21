@@ -27,9 +27,10 @@ request_cpus   = 32
 request_memory = 200GB
 request_disk   = 10GB
 
-# Pin to the host where pynauty / nauty were built. pynauty bakes in
-# -march=native at install time (nauty's ./configure), so running on a
-# different CPU than the build host causes SIGILL inside nautywrap.
-Requirements = (Machine == "vision-c23.cs.illinois.edu")
+# Optional machine pin. The pipeline no longer uses pynauty (canonical
+# ids now shell out to nauty's `labelg` binary), so there's no baked-in
+# -march=native to worry about. Leave the Requirements line commented
+# unless you have a different reason to pin.
+# Requirements = (Machine == "vision-c23.cs.illinois.edu")
 
 queue

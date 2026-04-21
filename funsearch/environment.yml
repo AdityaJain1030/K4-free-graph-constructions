@@ -40,7 +40,6 @@ dependencies:
     - numpy==2.4.4
     - pandas==3.0.2
     - pillow==12.2.0
-    - pynauty==2.8.8.1
     - pyparsing==3.3.2
     - python-dateutil==2.9.0.post0
     - python-sat==1.9.dev2

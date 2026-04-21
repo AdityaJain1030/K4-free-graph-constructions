@@ -11,7 +11,7 @@
 | method3b | — (did not converge) | 1.0099 | — |
 | method4 | — (did not converge) | 1.0099 | — |
 
-## Isomorphism matches (up to pynauty canonical certificate)
+## Isomorphism matches (up to nauty canonical labelling)
 
 Total matches: **49** (of 225 comparisons)
 

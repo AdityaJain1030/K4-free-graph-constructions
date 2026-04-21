@@ -39,7 +39,7 @@ is why every other search in this folder exists.
 
 ## Prerequisites
 
-`geng` must be on `PATH` or findable by `utils.pynauty.find_geng`. If
+`geng` must be on `PATH` or findable by `utils.nauty.find_geng`. If
 it's not, the search logs an error event and returns `[]` — it will
 **not** crash the caller. Build it via `scripts/setup_nauty.sh` or use
 the micromamba `k4free` env (ships nauty).

@@ -125,14 +125,13 @@ reported 64. Investigation found the stored sparse6 decoded to a graph that
 was **not** the circulant its metadata claimed: correct α on a corrupted
 graph, not an α-solver disagreement.
 
-Root cause (fixed): `utils/pynauty._canonical_sparse6_pynauty` decoded
+Root cause (fixed): the old `utils/pynauty._canonical_sparse6_pynauty` decoded
 `pynauty.certificate()` with `row[-1 - v // 8]`, which is only correct when
 n ≤ 64 (a single 64-bit setword per row). At n ≥ 65 the row spans multiple
 setwords and reading from the end inverts the word order, so the resulting
 sparse6 described a graph isomorphic only to the input restricted to the
-first 64 vertices. Same bug exists upstream in `pynauty.canon_graph`; our
-copy added `if u < v` to avoid raising on phantom neighbors instead of
-fixing the indexing. Fix: decode setwords properly (see the function's
-docstring). `scripts/repair_graph_store_n65.py` rebuilt every affected
-record from its metadata (59 of them across `circulant_fast.json` and
-`cayley.json`) with the corrected encoder.
+first 64 vertices. Same bug existed upstream in `pynauty.canon_graph`.
+`scripts/repair_graph_store_n65.py` rebuilt every affected record from its
+metadata (59 of them across `circulant_fast.json` and `cayley.json`). Fully
+moot now that canonical_id shells out to nauty's `labelg` binary directly
+(see `utils/nauty.py`) instead of decoding pynauty's internal certificate.

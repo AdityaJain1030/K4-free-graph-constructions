@@ -16,7 +16,7 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.pynauty import find_geng, graphs_via_geng
+from utils.nauty import find_geng, graphs_via_geng
 
 from .base import Search
 

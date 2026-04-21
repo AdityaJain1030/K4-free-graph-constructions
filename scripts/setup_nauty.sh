@@ -35,7 +35,10 @@ fi
 make
 echo "nauty built at $NAUTY_DIR"
 
-# Register nauty binaries on environment activation
+# Register nauty binaries on environment activation. The `geng` and `labelg`
+# binaries from this build are the entire nauty dependency — `geng` drives
+# brute-force enumeration (search/brute_force.py), `labelg` produces canonical
+# labellings for graph_db ids (utils/nauty.canonical_id).
 ACTIVATE_DIR="$CONDA_PREFIX/etc/conda/activate.d"
 mkdir -p "$ACTIVATE_DIR"
 cat > "$ACTIVATE_DIR/nauty_path.sh" <<EOL
@@ -45,29 +48,7 @@ EOL
 chmod +x "$ACTIVATE_DIR/nauty_path.sh"
 export PATH="$NAUTY_DIR:$PATH"
 
-# ── Install pynauty ───────────────────────────────────────────────────────────
-# We install pynauty here rather than in environment.yml so we can guarantee
-# the C compiler chain is working (nauty just built successfully above) and
-# set the macOS SDK root before pip tries to compile C extensions.
-
-if [[ "$(uname)" == "Darwin" ]]; then
-    SDK=$(xcrun --show-sdk-path 2>/dev/null || true)
-    if [ -n "$SDK" ]; then
-        export SDKROOT="$SDK"
-        echo "macOS SDK: $SDKROOT"
-    else
-        echo "ERROR: xcrun not found — Xcode Command Line Tools are not installed."
-        echo "  pynauty requires them to compile on macOS. Run:"
-        echo "    xcode-select --install"
-        echo "  then re-run this script."
-        echo "  pynauty is required by graph_db (canonical-id); there is no fallback."
-        exit 1
-    fi
-fi
-
-echo "Installing pynauty..."
-pip install pynauty==2.8.8.1
-
 echo ""
-echo "Done. nauty binaries and pynauty are ready."
-echo "nauty PATH entry will activate automatically with the environment."
+echo "Done. nauty binaries (geng, labelg, …) are on PATH via the env"
+echo "activation hook. No Python extensions to build — canonical_id shells"
+echo "out to labelg directly."

@@ -3,7 +3,7 @@
 #
 # Create:   micromamba env create -f environment.yml
 # Activate:  micromamba activate k4free
-# Post-setup (builds nauty + installs pynauty):
+# Post-setup (builds nauty geng + labelg binaries):
 #            bash scripts/setup_nauty.sh
 #
 # Mac vs Linux notes — see bottom of this file.
@@ -50,9 +50,9 @@ dependencies:
     # Used as a fast alternative α solver in utils.graph_props.
     - igraph==1.0.0
 
-    # NOTE: pynauty is NOT listed here.
-    # It is installed by scripts/setup_nauty.sh after nauty itself builds,
-    # so the C compiler chain is known to work and SDKROOT is set on macOS.
+    # NOTE: no pynauty. Canonical ids are computed by shelling out to
+    # nauty's `labelg` binary (built by scripts/setup_nauty.sh), which
+    # avoids the C-extension portability issues of pynauty's wheel.
 
     # Google Gemini API (claude_search / funsearch)
     - google-genai==1.70.0
@@ -86,14 +86,6 @@ dependencies:
 #     once wget + make + c-compiler are in PATH via this env.
 #   - ortools, networkx, numpy, scipy: binary wheels available for all platforms.
 #   - anthropic, google-genai, xai-sdk: pure Python or binary wheels, fine everywhere.
-#
-# CAVEAT — pynauty on macOS:
-#   pynauty is installed by scripts/setup_nauty.sh (not here) so that we can
-#   set SDKROOT to the Xcode SDK path before pip compiles the C extension.
-#   setup_nauty.sh will warn clearly if Xcode CLT is missing and exit
-#   rather than producing a cryptic compiler error.
-#   pynauty is required — graph_db uses its canonical sparse6 as the
-#   isomorphism-class id and will refuse to run without it.
 #
 # NOT SUPPORTED — Windows (native):
 #   setup_nauty.sh is a bash script and nauty's autotools build does not
