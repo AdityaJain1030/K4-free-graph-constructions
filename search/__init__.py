@@ -8,6 +8,7 @@ from .circulant import CirculantSearch
 from .circulant_fast import CirculantSearchFast
 from .random import RandomSearch
 from .random_regular_switch import RandomRegularSwitchSearch
+from .alpha_targeted import AlphaTargetedSearch
 from .regularity import RegularitySearch
 from .regularity_alpha import RegularityAlphaSearch
 from .mattheus_verstraete import MattheusVerstraeteSearch
@@ -29,6 +30,7 @@ __all__ = [
     "CirculantSearchFast",
     "RandomSearch",
     "RandomRegularSwitchSearch",
+    "AlphaTargetedSearch",
     "RegularitySearch",
     "RegularityAlphaSearch",
     "MattheusVerstraeteSearch",

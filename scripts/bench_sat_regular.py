@@ -72,7 +72,7 @@ def run_one(n: int, a: int, spread: int, *, timeout: float, workers: int) -> dic
         timeout_s=timeout,
         workers=workers,
         degree_spread=spread,
-        symmetry_mode="edge_lex",
+        symmetry_mode="none",
         branch_on_v0=True,
         minimize_edges=True,
         verbosity=0,
@@ -94,6 +94,8 @@ def run_one(n: int, a: int, spread: int, *, timeout: float, workers: int) -> dic
         "D":          r.metadata.get("D"),
         "is_k4_free": bool(r.is_k4_free),
         "elapsed_s":  round(elapsed, 2),
+        "edges":      sorted([sorted(e) for e in G.edges()]),
+        "degree_seq": degs,
     }
 
 

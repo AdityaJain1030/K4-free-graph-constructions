@@ -224,6 +224,8 @@ Algorithm subclasses; per-search notes live under `docs/searches/`:
 | `regularity_alpha.py`    | `docs/searches/regularity/REGULARITY_ALPHA.md` | α-optimised regularity variant.                                        |
 | `mattheus_verstraete.py` | `docs/searches/MATTHEUS_VERSTRAETE.md`       | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
 | `random.py`              | `docs/searches/RANDOM.md`                    | Random + randomized-greedy baselines.                                    |
+| `random_regular_switch.py` | `docs/searches/RANDOM_REGULAR_SWITCH.md`   | Random near-regular seed + degree-preserving edge-switch hill-climb.     |
+| `alpha_targeted.py`      | `docs/searches/ALPHA_TARGETED.md`            | Stochastic local search that reduces greedy α directly (adds edge in MIS, compensates by deleting elsewhere). |
 | `sat_exact.py`           | `docs/searches/sat/SAT_EXACT.md`, `docs/searches/sat/SAT_OPTIMIZATION.md` | Certified-optimal K4-free CP-SAT scan with hard-box proof. |
 | `sat_regular.py`         | `docs/searches/sat/SAT_REGULAR.md`           | Degree-pinned CP-SAT feasibility scan (min-edge, one α at a time).       |
 
@@ -233,7 +235,7 @@ Algorithm subclasses; per-search notes live under `docs/searches/`:
 - `db_cli.py` — query / inspect `graph_db` from the shell.
 - `open_visualizer.py` — launch the tkinter visualizer.
 - `setup_nauty.sh` — build `nauty`/`geng` and install `pynauty`.
-- `run_random.py`, `run_cayley.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py` — per-algorithm sweep drivers.
+- `run_random.py`, `run_cayley.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py`, `run_random_regular_switch.py`, `run_alpha_targeted.py` — per-algorithm sweep drivers.
 - `run_sweep_10_40.py` — unified driver that runs every non-SAT search across N=10..40.
 
 ## `utils/` — Shared primitives

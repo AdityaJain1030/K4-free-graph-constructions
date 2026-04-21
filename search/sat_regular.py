@@ -57,6 +57,12 @@ _FEAS_BUDGET_FRAC = 0.15   # phase-1 gets at most this fraction of remaining
 _FEAS_BUDGET_MAX  = 90.0   # ... or this many seconds, whichever smaller
 _FEAS_BUDGET_MIN  = 5.0    # floor so phase-1 always has room to prove small cases
 
+# Phase-2 bound-tightening defaults.
+_PHASE2_MAX_S_DEFAULT = 120.0  # total phase-2 wall cap (per case)
+_PHASE2_ITER_S_INIT   = 15.0   # first bound-tightening iter budget
+_PHASE2_ITER_S_MAX    = 60.0   # grow iter budget up to this on timeout
+_PHASE2_NO_IMPROVE_N  = 2      # stop after this many consecutive non-improvements
+
 
 class SATRegular(Search):
     """
@@ -105,10 +111,11 @@ class SATRegular(Search):
         timeout_s: float = 600.0,
         workers: int | None = None,
         degree_spread: int = 1,
-        symmetry_mode: str = "edge_lex",
+        symmetry_mode: str = "none",
         branch_on_v0: bool = True,
         hard_box_params: bool | None = None,
         minimize_edges: bool = False,
+        phase2_max_s: float = _PHASE2_MAX_S_DEFAULT,
         random_seed: int | None = None,
         top_k: int = 1,
         verbosity: int = 0,
@@ -139,6 +146,7 @@ class SATRegular(Search):
             branch_on_v0=branch_on_v0,
             hard_box_params=hard_box_params,
             minimize_edges=minimize_edges,
+            phase2_max_s=phase2_max_s,
             random_seed=random_seed,
             **kwargs,
         )
@@ -216,13 +224,19 @@ class SATRegular(Search):
             for v in range(1, n):
                 model.add(deg_expr(0) >= deg_expr(v))
         elif self.symmetry_mode == "edge_lex":
-            # Lex-leader on rows 0..3 (same as sat_exact).
-            k_max = 3
+            # Row-0 lex-leader: x[0,1] >= x[0,2] >= ... >= x[0,n-1].
+            # Why: the stabilizer of vertex 0 is S_{n-1} on vertices 1..n-1;
+            # for each adjacent transposition σ_j=(j,j+1), the only row
+            # unchanged by σ_j that appears in cols j,j+1 AND below the
+            # diagonal for both cols is row 0 (row k<j is unchanged by σ_j
+            # but x[k,j] below diagonal only if k<j — for j=1, k=0 only).
+            # Empirically, using rows 0..3 as in the old k_max=3 variant
+            # interacted badly with phase-1 first-feasible-D and pruned
+            # valid 6-regular orbits at n=19 α=4 (found 59 instead of 57).
+            # k_max=0 is strictly weaker; CP-SAT's symmetry_level=4
+            # handles the rest automatically.
             for j in range(1, n - 1):
-                k_end = min(k_max, j - 1)
-                lhs = sum((1 << (k_end - i)) * x[(i, j)]     for i in range(k_end + 1))
-                rhs = sum((1 << (k_end - i)) * x[(i, j + 1)] for i in range(k_end + 1))
-                model.add(lhs >= rhs)
+                model.add(x[(0, j)] >= x[(0, j + 1)])
 
         # Branch on row 0 (pairs with edge_lex).
         if self.branch_on_v0:
@@ -311,51 +325,95 @@ class SATRegular(Search):
         return "TIMEOUT", None, 500
 
     def _phase2_minimize(
-        self, D: int, time_limit: float, direct: bool, seed: nx.Graph
-    ) -> nx.Graph:
-        """Minimize edges at D, warm-started by `seed`. Returns the best
-        witness found (seed if solver can't improve or times out)."""
+        self,
+        D: int,
+        time_limit: float,
+        direct: bool,
+        seed: "nx.Graph | None",
+        *,
+        edge_ceiling: int | None = None,
+    ) -> "nx.Graph | None":
+        """Iterative bound-tightening at D.
+
+        Per iter: feasibility with `Σx ≤ ub` and (if the current best is a
+        valid hint) `hint=best`. Found → tighten `ub`. INFEASIBLE →
+        optimality proven at this D under current ceiling. TIMEOUT →
+        grow per-iter budget, count toward `_PHASE2_NO_IMPROVE_N` cap.
+
+        `edge_ceiling` (optional): a cross-D upper bound (exclusive starting
+        point is `edge_ceiling` — solutions must have edges ≤ edge_ceiling).
+        If the seed already exceeds the ceiling, we solve without hint
+        against the ceiling bound; when we find one we switch to warm-start.
+        Returns None if no solution ≤ ceiling exists at this D.
+        """
         if time_limit <= 2.0:
-            return seed
-        best = seed
-        if direct:
-            model, x = self._build_model(
-                D, enumerate_alpha=True, alpha_cuts=None,
-                minimize=True,
-                edge_ub=seed.number_of_edges(),
-                hint=seed,
-            )
-            status, G = self._solve_model(
-                model, x, time_limit, hard_params=self.hard_box_params
-            )
-            if G is not None and G.number_of_edges() <= best.number_of_edges():
-                best = G
-            return best
-        # Lazy-α minimize: iterate cut-add + minimize until α is valid.
-        # Practically rare (only kicks in at very large n, α).
+            return seed if (
+                seed is not None
+                and (edge_ceiling is None or seed.number_of_edges() <= edge_ceiling)
+            ) else None
+
+        phase2_cap = min(time_limit, float(self.phase2_max_s))
         t0 = time.monotonic()
+
+        # Start `best` at seed only if seed respects ceiling.
+        best = seed if (
+            seed is not None
+            and (edge_ceiling is None or seed.number_of_edges() <= edge_ceiling)
+        ) else None
+        if best is not None:
+            next_ub = best.number_of_edges() - 1
+        elif edge_ceiling is not None:
+            next_ub = edge_ceiling
+        else:
+            return None  # nothing to do
+
+        iter_budget = _PHASE2_ITER_S_INIT
+        no_improve = 0
         alpha_cuts: list[tuple[int, ...]] = []
+        iteration = 0
         while True:
-            remaining = time_limit - (time.monotonic() - t0)
-            if remaining <= 2:
+            if next_ub < 0:
                 break
+            remaining = phase2_cap - (time.monotonic() - t0)
+            if remaining <= 2.0:
+                break
+            budget = min(iter_budget, remaining)
+            # Use hint only if the hint's edge count is ≤ current ub.
+            hint = best if (best is not None and best.number_of_edges() <= next_ub) else None
             model, x = self._build_model(
-                D, enumerate_alpha=False, alpha_cuts=alpha_cuts,
-                minimize=True,
-                edge_ub=best.number_of_edges(),
-                hint=best,
+                D,
+                enumerate_alpha=direct,
+                alpha_cuts=None if direct else alpha_cuts,
+                minimize=False,
+                edge_ub=next_ub,
+                hint=hint,
             )
             status, G = self._solve_model(
-                model, x, remaining, hard_params=self.hard_box_params
+                model, x, budget, hard_params=self.hard_box_params
             )
-            if G is None:
+            iteration += 1
+            if G is not None:
+                if not direct:
+                    a_actual, iset = alpha_exact_nx(G)
+                    if a_actual > self.alpha:
+                        alpha_cuts.append(tuple(iset))
+                        continue
+                best = G
+                next_ub = G.number_of_edges() - 1
+                no_improve = 0
+                self._log(
+                    "phase2_improve", level=2,
+                    D=D, iteration=iteration,
+                    edges=best.number_of_edges(),
+                    budget_s=round(budget, 1),
+                )
+                continue
+            if status == "INFEASIBLE":
                 break
-            a_actual, iset = alpha_exact_nx(G)
-            if a_actual <= self.alpha:
-                if G.number_of_edges() <= best.number_of_edges():
-                    best = G
+            no_improve += 1
+            iter_budget = min(iter_budget * 2, _PHASE2_ITER_S_MAX)
+            if no_improve >= _PHASE2_NO_IMPROVE_N:
                 break
-            alpha_cuts.append(tuple(iset))
         return best
 
     # ── run ──────────────────────────────────────────────────────────────────
@@ -381,62 +439,74 @@ class SATRegular(Search):
             self._log("scan_end", level=1, status="INFEASIBLE_RAMSEY")
             return []
 
-        feasibility_witness: nx.Graph | None = None
-        feasibility_D: int | None = None
-        phase1_iters = 0
+        best_G: nx.Graph | None = None
+        best_E: int = 10 ** 9
+        best_D: int | None = None
+        phase1_iters_total = 0
 
-        # Phase 1: scan D, each with a cheap feasibility check.
+        # Scan all D. Phase-1 feasibility at each; if found, phase-2 minimize
+        # (bounded by current global best). LB-prune: edges ≥ n*D/2, so any
+        # D with n*D/2 ≥ best_E cannot strictly improve — stop.
         for D in range(d_lo, d_hi + 1):
+            if n * D >= 2 * best_E:
+                self._log("d_prune", level=2, D=D, best_E=best_E)
+                break
             elapsed = time.monotonic() - t0
             remaining = self.timeout_s - elapsed
             if remaining <= 1:
                 self._log("out_of_time", level=1, D=D)
                 break
 
-            # Cheap infeasibility cap: <= 15% of remaining, capped at 90s.
             feas_budget = min(
                 max(_FEAS_BUDGET_MIN, remaining * _FEAS_BUDGET_FRAC),
                 _FEAS_BUDGET_MAX,
             )
             status, G, iters = self._phase1_feasibility(D, feas_budget, direct)
+            phase1_iters_total += iters
             self._log(
                 "phase1", level=0,
                 D=D, status=status, iterations=iters,
                 budget_s=round(feas_budget, 1),
             )
-            if G is not None:
-                feasibility_witness = G
-                feasibility_D = D
-                phase1_iters = iters
-                break
-            # INFEASIBLE or TIMEOUT: next D. (Below true-min D this is
-            # usually INFEASIBLE fast; at boundary could be TIMEOUT.)
+            if G is None:
+                continue
 
-        if feasibility_witness is None:
-            self._log("scan_end", level=1, status="INFEASIBLE")
-            return []
+            if G.number_of_edges() < best_E:
+                best_G, best_E, best_D = G, G.number_of_edges(), D
 
-        # Phase 2: optional min-edge optimization at the feasible D.
-        G = feasibility_witness
-        if self.minimize_edges:
+            if not self.minimize_edges:
+                break  # first feasible suffices when not minimizing
+
             remaining = self.timeout_s - (time.monotonic() - t0)
-            feas_e = feasibility_witness.number_of_edges()
-            G = self._phase2_minimize(feasibility_D, remaining, direct, feasibility_witness)
+            if remaining <= 2:
+                break
+            feas_e = G.number_of_edges()
+            ceiling = best_E - 1  # must strictly improve
+            G_opt = self._phase2_minimize(
+                D, remaining, direct, G, edge_ceiling=ceiling
+            )
+            if G_opt is not None and G_opt.number_of_edges() < best_E:
+                best_G, best_E, best_D = G_opt, G_opt.number_of_edges(), D
             self._log(
                 "phase2", level=0,
-                D=feasibility_D,
+                D=D,
                 edges_feas=feas_e,
-                edges_final=G.number_of_edges(),
+                edges_final=best_E,
                 budget_s=round(remaining, 1),
             )
 
+        if best_G is None:
+            self._log("scan_end", level=1, status="INFEASIBLE")
+            return []
+
+        G = best_G
         self._stamp(G)
         G.graph["metadata"] = {
-            "D":              feasibility_D,
+            "D":              best_D,
             "alpha_cap":      self.alpha,
             "degree_spread":  self.degree_spread,
             "method":         method,
-            "iterations":     phase1_iters,
+            "iterations":     phase1_iters_total,
             "symmetry_mode":  self.symmetry_mode,
             "minimize_edges": self.minimize_edges,
         }

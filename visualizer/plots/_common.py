@@ -32,6 +32,7 @@ SOURCE_CATEGORY = {
     "sat_pareto":        "sat",
     "sat_pareto_ilp":    "sat",
     "sat_exact":         "sat",
+    "sat_regular":       "sat",
     "brute_force":       "sat",
     # algebraic
     "cayley":            "algebraic",
