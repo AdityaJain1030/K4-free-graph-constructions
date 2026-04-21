@@ -10,8 +10,8 @@ For the "why each optimization" ablation numbers, see `SAT_OPTIMIZATION.md`
 and `logs/sat_exact_ablation.json`. For the theoretical justification of the
 encoding (α-critical ⇒ near-regular, min `c` ⇔ min `|E|`, β parametrisation
 of the conjecture), see `SAT.md`. For the simpler degree-pinned solver that
-*assumes* Hajnal and solves per-`(n, α)` feasibility rather than the Pareto
-scan, see `SAT_REGULAR.md`.
+*assumes* near-regularity (heuristic) and solves per-`(n, α)` feasibility
+rather than the Pareto scan, see `SAT_REGULAR.md`.
 
 ---
 

@@ -7,19 +7,23 @@ the Ramsey floor, solving a pure feasibility model at each step. The
 first feasible `D` gives the min-edge K4-free witness for that `(n, α)`.
 
 Ports the original reference `regular_sat` solver logic into the
-`Search` framework. It is *not* a reimplementation of `sat_exact` — it assumes
-the optimum is near-regular. That assumption is justified by
-Hajnal's theorem (see `SAT.md` Results 2–3: α-critical ⇒ near-regular,
-min `c` ⇔ min `|E|`), but it is *assumed*, not enforced. If the
-assumption fails for some `(n, α)` you care about, this solver will
-return INFEASIBLE where `sat_exact` would find a witness.
+`Search` framework. It is *not* a reimplementation of `sat_exact` — it
+assumes the optimum is near-regular. That assumption is a **heuristic**:
+rigorously proved only in the small-N Caro–Wei regime
+(`docs/theory/REGULARITY.md §2, Theorem A`, `N ≤ 35` and `d ≤ 7`) and
+supported outside that regime only by exhaustive SAT scans. Previous
+versions of this page cited Hajnal's theorem as proof; that was an
+error — see `SAT.md` Result 2 for the correction. The near-regularity
+is *assumed*, not enforced. If the assumption fails for some `(n, α)`
+you care about, this solver will return INFEASIBLE where `sat_exact`
+would find a witness.
 
 ---
 
 ## When to reach for it
 
 - You want the min-edge K4-free graph at a fixed `(n, α)` and trust
-  the Hajnal reduction.
+  the near-regular heuristic.
 - You're porting a cluster run and want a smaller CP-SAT model than
   `sat_exact` produces (no `α`-scan, degrees pinned rather than
   bounded, feasibility only, no objective).
@@ -106,7 +110,7 @@ Compared to `sat_exact`:
 | degree                  | pinned `deg(v) ∈ {D, D+1}`              | bounded `deg(v) ≤ d_cap`               |
 | scan                    | 1-D over `D`                            | 2-D over `(α, d_max)`                  |
 | objective               | none (feasibility)                      | none per box (Pareto scan)             |
-| certified optimality    | assumes Hajnal                          | yes (via `prove_box` + `verify`)       |
+| certified optimality    | heuristic (near-regular)                | yes (via `prove_box` + `verify`)       |
 | symmetry breaking       | none                                    | `anchor` / `chain` / `edge_lex`        |
 | warm starts             | none                                    | circulant seeding                      |
 

@@ -164,15 +164,19 @@ class SATExact(Search):
         timeout_s: float = 300.0,
         workers: int = 8,
         symmetry_mode: str = "edge_lex",
+        edge_lex_rows: int = 0,
         ramsey_prune: bool = True,
         scan_from_ramsey_floor: bool = True,
         circulant_hints: bool = False,
         parallel_alpha: bool = False,
         parallel_alpha_tracks: int = 0,
         branch_on_v0: bool = False,
+        branch_row0_minvalue: bool = False,
         c_log_prune: bool = True,
         seed_from_circulant: bool = True,
         hard_box_params: bool = False,
+        use_lns: bool = False,
+        use_objective_lb_search: bool = False,
         solver_log: bool = False,
         random_seed: int | None = None,
         **kwargs,
@@ -181,6 +185,8 @@ class SATExact(Search):
             raise ValueError(
                 f"symmetry_mode={symmetry_mode!r} not in {_SYMMETRY_MODES}"
             )
+        if edge_lex_rows < 0:
+            raise ValueError(f"edge_lex_rows must be ≥ 0; got {edge_lex_rows}")
         super().__init__(
             n,
             top_k=top_k,
@@ -191,15 +197,19 @@ class SATExact(Search):
             timeout_s=timeout_s,
             workers=workers,
             symmetry_mode=symmetry_mode,
+            edge_lex_rows=edge_lex_rows,
             ramsey_prune=ramsey_prune,
             scan_from_ramsey_floor=scan_from_ramsey_floor,
             circulant_hints=circulant_hints,
             parallel_alpha=parallel_alpha,
             parallel_alpha_tracks=parallel_alpha_tracks,
             branch_on_v0=branch_on_v0,
+            branch_row0_minvalue=branch_row0_minvalue,
             c_log_prune=c_log_prune,
             seed_from_circulant=seed_from_circulant,
             hard_box_params=hard_box_params,
+            use_lns=use_lns,
+            use_objective_lb_search=use_objective_lb_search,
             solver_log=solver_log,
             random_seed=random_seed,
             **kwargs,
@@ -333,16 +343,26 @@ class SATExact(Search):
             # one linear inequality per pair. Exponential weights make
             # the sum behave numerically like a lex comparison: the
             # highest-weighted (top) row dominates, and only when it
-            # ties does the next row matter. Correct and single-linear.
+            # ties does the next row matter. Sound under adjacent
+            # transpositions — those generate S_n, so every orbit has
+            # at least one local-max rep satisfying every pair.
             #     8·x[0,j] + 4·x[1,j] + 2·x[2,j] + x[3,j]
             #   ≥ 8·x[0,j+1] + 4·x[1,j+1] + 2·x[2,j+1] + x[3,j+1]
             # Row-k is included only when k < j (swap σ=(j,j+1) only
             # touches row-k at columns j, j+1 when k < j). A prefix-
             # sum (equal-weighted) form would over-constrain when row
             # 0 wins but later rows go in the opposite direction.
-            k_max = 3  # break rows 0..3
+            #
+            # Default edge_lex_rows = 0 (row-0 only, = S_{n-1} stabilizer
+            # of vertex 0). Higher k_max is empirically sound but can be
+            # pathologically slow at boundary boxes — e.g. n=19 α=4
+            # d_max=6 goes 0.24 s at k_max=0 to 510 s at k_max=3 for
+            # the same FEASIBLE verdict. See SAT_OPTIMIZATION.md §8.
+            k_max = self.edge_lex_rows
             for j in range(1, n - 1):
                 k_end = min(k_max, j - 1)
+                if k_end < 0:
+                    continue
                 lhs = sum(
                     (1 << (k_end - i)) * x[(i, j)] for i in range(k_end + 1)
                 )
@@ -370,10 +390,15 @@ class SATExact(Search):
         # free to explore other strategies.
         if self.branch_on_v0:
             row0_vars = [x[(0, j)] for j in range(1, n)]
+            select = (
+                cp_model.SELECT_MIN_VALUE
+                if self.branch_row0_minvalue
+                else cp_model.SELECT_MAX_VALUE
+            )
             model.add_decision_strategy(
                 row0_vars,
                 cp_model.CHOOSE_FIRST,
-                cp_model.SELECT_MAX_VALUE,
+                select,
             )
 
         return model, x
@@ -429,6 +454,10 @@ class SATExact(Search):
             solver.parameters.cp_model_probing_level = 3
             solver.parameters.symmetry_level = 4
             solver.parameters.cp_model_presolve = True
+        if self.use_lns:
+            solver.parameters.use_lns = True
+        if self.use_objective_lb_search:
+            solver.parameters.use_objective_lb_search = True
         if self.solver_log:
             solver.parameters.log_search_progress = True
         if self.random_seed is not None:
@@ -567,7 +596,7 @@ class SATExact(Search):
         if seed_G is not None:
             self._stamp(seed_G)
             seed_G.graph["metadata"] = {
-                "source": "circulant_seed",
+                "seed_source": "circulant_seed",
                 "status": "FEASIBLE",
                 "solve_s": 0.0,
             }

@@ -29,7 +29,11 @@ sys.path.insert(0, REPO)
 from search import SATExact
 
 
-REFERENCE_C_LOG = {12: 0.7767, 15: 0.7195}
+REFERENCE_C_LOG = {
+    10: 0.8656, 11: 0.7869, 12: 0.7767, 13: 0.7728, 14: 0.7176,
+    15: 0.7195, 16: 0.7213, 17: 0.6789, 18: 0.7441, 19: 0.705,
+    20: 0.7195,
+}
 
 # Each config is (label, kwargs). Kwargs must name SATExact kwargs exactly.
 # The default new-opt config below must explicitly disable c_log_prune and
@@ -88,6 +92,47 @@ CONFIGS: list[tuple[str, dict]] = [
       "scan_from_ramsey_floor": True,
       "c_log_prune": True,
       "seed_from_circulant": True}),
+
+    # ── 2026-04-21 N=20 sweep configs (see SAT_N20_BENCHMARK.md). Each
+    # stacks onto all_on, flipping one knob at a time unless noted.
+    ("lns_on",
+     {"symmetry_mode": "edge_lex", "ramsey_prune": True,
+      "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True,
+      "use_lns": True}),
+    ("edge_lex_row0_only",
+     {"symmetry_mode": "edge_lex", "edge_lex_rows": 0,
+      "ramsey_prune": True, "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True}),
+    ("edge_lex_rows01",
+     {"symmetry_mode": "edge_lex", "edge_lex_rows": 1,
+      "ramsey_prune": True, "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True}),
+    ("branch_row0_minvalue",
+     {"symmetry_mode": "edge_lex", "ramsey_prune": True,
+      "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True,
+      "branch_on_v0": True, "branch_row0_minvalue": True}),
+    ("circulant_hints_on",
+     {"symmetry_mode": "edge_lex", "ramsey_prune": True,
+      "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True,
+      "circulant_hints": True}),
+    ("obj_lb_search",
+     {"symmetry_mode": "edge_lex", "ramsey_prune": True,
+      "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True,
+      "use_objective_lb_search": True}),
+    ("chain_symmetry",
+     {"symmetry_mode": "chain", "ramsey_prune": True,
+      "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True}),
+    # Stacked new knobs: rows 0-1 + LNS + obj LB search.
+    ("all_accel_plus",
+     {"symmetry_mode": "edge_lex", "edge_lex_rows": 1,
+      "ramsey_prune": True, "scan_from_ramsey_floor": True,
+      "c_log_prune": True, "seed_from_circulant": True,
+      "use_lns": True, "use_objective_lb_search": True}),
 ]
 
 

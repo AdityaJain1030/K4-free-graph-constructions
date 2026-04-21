@@ -77,37 +77,54 @@ Three regimes:
 
 ---
 
-## Result 2 (PROVED): the optimal graph is near-regular
+## Result 2 (EMPIRICAL; PROVED only in small-N regime): the optimal graph is near-regular
 
-**Claim.** For any fixed `N` and `α`, the K₄-free graph minimising
-`c` satisfies `d_max ≤ d_min + 1`.
+**Claim.** For every `(N, α)` we have so far solved exactly, the K₄-free
+graph minimising `c` satisfies `d_max ≤ d_min + 1`. In the full generality
+of K₄-free α-critical graphs this is **not** proved.
 
-**Proof.** An optimal graph must be α-critical: if any edge `e` could
-be removed without increasing `α`, then `G − e` is K₄-free with the
-same `α` but fewer edges, so `d_max(G − e) ≤ d_max(G)` and
-`c(G − e) ≤ c(G)` — contradiction.
+**What actually holds.**
 
-Hajnal's theorem (Lovász–Plummer, *Matching Theory* 1986, Ch. 12)
-says every α-critical graph satisfies `d_max ≤ d_min + 1`. Original
-α-critical theory: Zykov (1949).
+1. An optimal graph must be α-critical: if any edge `e` could be removed
+   without increasing `α`, then `G − e` is K₄-free with the same `α` but
+   fewer edges, so `d_max(G − e) ≤ d_max(G)` and `c(G − e) ≤ c(G)` —
+   contradiction. (α-critical theory: Zykov 1949.)
+
+2. **Near-regularity is not implied by α-criticality alone.** The
+   statement "every α-critical graph has `d_max ≤ d_min + 1`" is
+   sometimes attributed to Hajnal / Lovász–Plummer Ch. 12, but it is
+   *not* a theorem in that form — α-critical graphs can have arbitrary
+   degree spread. Previous versions of this doc cited it as proved; that
+   was an error.
+
+3. **What *is* proved** is the small-N Caro–Wei regime: for
+   `N ≤ 35, d ≤ 7` the Caro–Wei headroom forces `d_max ≤ d_min + 1` in
+   any α-critical K₄-free `c`-optimiser. See
+   `docs/theory/REGULARITY.md §2, Theorem A` for the actual proof.
+   Outside that regime the claim is supported only by the exhaustive
+   SAT scans in `graphs/sat_optimal_proven.json` and is therefore a
+   **heuristic** for the purposes of `search/sat_regular.py`.
 
 ---
 
-## Result 3 (PROVED): minimising `c` ⇔ minimising `|E|`
+## Result 3 (CONDITIONAL on Result 2): minimising `c` ⇔ minimising `|E|`
 
 **Claim.** Among K₄-free graphs on `N` vertices with `α = t−1`,
-minimising `c` is equivalent to minimising `|E|`.
+minimising `c` is equivalent to minimising `|E|` — **conditional on the
+optimiser being near-regular (Result 2)**, which is proved only in the
+small-N Caro–Wei regime and otherwise empirical.
 
-**Proof.**
+**Argument.**
 
-*Forward.* By Result 2 the optimum is near-regular, so
+*Forward.* If the optimum is near-regular (Result 2 regime), then
 `d_max ≈ 2|E|/N`. Since `d/log d` is monotone increasing for `d > e`,
-minimising `d_max` minimises `c`. For near-regular graphs, minimising
-`d_max` is equivalent to minimising `|E|`.
+minimising `d_max` minimises `c`, and for near-regular graphs minimising
+`d_max` ⇔ minimising `|E|`.
 
 *Converse.* The `|E|`-minimiser subject to K₄-free and `α ≤ t−1` is
-α-critical (else remove an edge), hence near-regular by Hajnal. So no
-regularity or degree constraints are needed in the optimisation.
+α-critical (else remove an edge). It is near-regular *if* Result 2
+applies at this `(N, α)`. Outside the small-N Caro–Wei regime this
+step is a heuristic, not a proof.
 
 **Consequence for the solver.** The SAT model needs only
 
@@ -201,8 +218,11 @@ For each `N` and target `α = t−1`:
 > - **α ≤ t−1**: for every `t`-subset `S`, at least one edge inside
 >   `S` is present
 
-The solution is automatically α-critical (hence near-regular) by
-Results 2–3. `d_min(N) = 2|E*|/N` directly measures β.
+The solution is automatically α-critical; near-regularity follows
+empirically (Result 2) — rigorously only in the small-N Caro–Wei
+regime. `d_min(N) = 2|E*|/N` directly measures β assuming the
+near-regular heuristic holds, which every exhaustively-scanned
+`(N, α)` to date confirms.
 
 This is what `search/sat_exact.py:_build_model` encodes, one `(α, d)`
 box at a time. The scan in §2 of `SAT_EXACT.md` walks the Pareto

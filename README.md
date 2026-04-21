@@ -111,12 +111,13 @@ It handles the full Pareto scan, hard-box optimality proofs, and
 certification. See:
 
 - `docs/searches/sat/SAT.md` — theoretical foundations (what we're
-  actually minimising, α-critical ⇒ near-regular, min c ⇔ min |E|,
-  β-parametrisation of the conjecture).
+  actually minimising, near-regular *heuristic* (proved only for
+  `N ≤ 35, d ≤ 7` via Caro–Wei — see `docs/theory/REGULARITY.md §2`),
+  min c ⇔ min |E|, β-parametrisation of the conjecture).
 - `docs/searches/sat/SAT_EXACT.md` — pipeline walkthrough (model, scan,
   accelerators, prove_box, verify_optimality).
 - `docs/searches/sat/SAT_REGULAR.md` — degree-pinned feasibility scan
-  (smaller model, assumes Hajnal near-regularity).
+  (smaller model, assumes near-regular *heuristic*).
 - `docs/searches/sat/SAT_OPTIMIZATION.md` — what sped the solver up, what
   didn't, open ideas.
 

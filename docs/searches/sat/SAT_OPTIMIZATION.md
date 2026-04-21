@@ -336,3 +336,136 @@ can't reach them.
 5. **Correctness is cheap; speed is earned one constraint at a
    time.** Every accelerator in `sat_exact.py` paid rent against the
    Pareto reference baselines before being kept.
+
+---
+
+## 8. N=20 sweep, 2026-04-21
+
+Goal: find knobs that shrink the N=20 scan below the 125 s baseline
+against the proven-optimal benchmark `graphs/sat_optimal_proven.json`
+(c\* = 0.7195, α=4, d\_max=7). Raw per-config JSON:
+`logs/sat_exact_n20_sweep.json`. Correctness gate: every config had to
+return the same witness c\*. **All 9 configs passed.**
+
+| config               | wall (s) | vs all\_on | verdict                 |
+|----------------------|---------:|-----------:|-------------------------|
+| all\_on (baseline)   |    125.0 |       —    | reference               |
+| obj\_lb\_search      |    124.5 |   −0.4 %   | noise                   |
+| edge\_lex\_rows01    |    124.2 |   −0.6 %   | noise                   |
+| edge\_lex\_row0\_only|    125.2 |   +0.2 %   | noise                   |
+| circulant\_hints\_on |    125.9 |   +0.7 %   | noise                   |
+| all\_accel\_plus     |    126.3 |   +1.0 %   | noise (stacked)         |
+| branch\_row0\_minvalue|   131.8 |   +5.4 %   | mild regression         |
+| lns\_on              |    141.7 |  +13.4 %   | regression              |
+| chain\_symmetry      |    519.6 |  +316 %    | **large regression**    |
+
+### 8.1 Observations
+
+- **None of the eight new knobs beats baseline meaningfully.** The
+  "winners" at −0.4 % / −0.6 % are well inside CP-SAT's per-run
+  variance (3–5 s on a 125 s solve). No promotion to defaults.
+- **`chain_symmetry` is a 4× regression.** The `n−1` cardinality
+  inequalities `deg(0) ≥ deg(1) ≥ …` overconstrain the feasibility
+  search at N=20 in a way edge\_lex does not. Confirms the 2026-04-20
+  finding in `sat_regular` that lex-leader on row 0 is the right
+  symmetry break for the Pareto scan; don't reach for `chain`.
+- **`use_lns = True` is the only solver-param flag that clearly
+  hurts.** LNS is a diversification mode optimised for objective
+  minimisation on large feasibility gaps; here it burns workers on
+  local moves the ramsey/c\_log prune already rules out.
+- **`branch_row0_minvalue` (+5 %) underperforms `SELECT_MAX_VALUE`.**
+  At N=20 the fastest path through the Pareto scan is still to pack
+  row 0 eagerly, not to bias toward INFEASIBLE proofs.
+- **`edge_lex_rows` from 0 → 1 → 3 is flat within noise at N=20.**
+  The row-0 break does most of the symmetry work; rows 1–3 cost
+  about as much as they save. `sat_regular` empirically needed rows
+  to go to 0, but that was driven by the phase-1 first-feasible
+  interaction, not by raw scan speed.
+- **`circulant_hints_on` is flat**, consistent with the scan already
+  seeding c\* from the circulant catalog via
+  `seed_from_circulant=True`. The in-model hint is redundant once the
+  outer c\_log prune has c\* in hand.
+
+### 8.2 Hard-box probe: not run
+
+The plan allowed an 1800 s `prove_box` probe for the top-2 configs
+against the `n=20 α=4 d=6` 1350 s INFEASIBLE. Given that no config
+delivered more than ±1 % on the scan, there is no signal that any of
+them would close the hard box faster than the existing
+`hard_box_params=True` path. Skipping the probe — cost ≈ 1 h, expected
+value ≈ 0.
+
+### 8.3 edge_lex soundness audit
+
+A follow-up soundness check against the concern that `edge_lex` with
+`k_max ≥ 1` over-prunes regular K₄-free graphs with `d > α + 1` (the
+Paley-like regime — P(17): d=8, α=3; 6-regular K₄-free at n=19 with
+α=4). The theoretical concern was that row-1 edge_lex would require
+the full row-1 sequence to be globally lex-decreasing across the
+row-0 partition boundary, which is impossible for graphs where every
+edge has a co-neighborhood smaller than the degree minus one.
+
+**That theoretical reading is not what the code enforces.** The code
+uses *adjacent-column* weighted-sum comparisons (not a global row-1
+lex). The weight-8 row-0 dominance relaxes the boundary: at the
+transition from N(0) to V\N[0], `x[0,j]=1 > x[0,j+1]=0` already
+satisfies the constraint regardless of row 1.
+
+**Empirical checks confirm soundness** — every `(n, α, d_max)` box
+we probed returns the correct FEASIBLE verdict at every
+`edge_lex_rows ∈ {0, 1, 2, 3}`:
+
+| box                      | k_max=0 | k_max=1 | k_max=2 | k_max=3 |
+|--------------------------|--------:|--------:|--------:|--------:|
+| n=17 α=3 d=8 (P(17))     | 0.12 s  | 0.20 s  | 0.17 s  | 0.11 s  |
+| n=13 α=3 d=6             | 0.08 s  | 0.06 s  | 0.04 s  | 0.03 s  |
+| **n=19 α=4 d=6** (57 E)  | **0.24 s** | 65 s | 139 s | **510 s** |
+| n=20 α=4 d=7             | 0.53 s  | 0.46 s  | 3.5 s   | 26 s    |
+
+All FEASIBLE at every k_max. **Sound.**
+
+But the n=19 α=4 d=6 column shows a **2000× slowdown** from k_max=0
+to k_max=3 — even though the answer is the same 57-edge 6-regular
+witness. Higher k_max is sound but pathologically hard to satisfy
+when the valid labeling lives deep inside a narrow orbit wedge.
+
+### 8.4 Default change: `edge_lex_rows = 0`
+
+Changed on 2026-04-21 in `search/sat_exact.py`. Rationale:
+
+- **Scan mode doesn't need it.** `c_log_prune` + `seed_from_circulant`
+  already skip the hard boundary boxes that would benefit from tighter
+  symmetry. The N=10..20 scans run in ≤ 140 s total with k_max=0
+  (unchanged from k_max=3).
+- **Targeted-box mode (`prove_box`) does.** When the seed can't prune
+  and the box is at the feasibility frontier, k_max=3 burned two
+  orders of magnitude more wall clock for the same answer.
+- **Consistency with `sat_regular`**, which made the same change on
+  2026-04-20 after finding n=19 α=4 returned 59 edges instead of 57
+  under the old k_max=3 edge_lex (documented in
+  `memory/project_sat_regular_refactor.md`). The mechanism for the
+  sat_regular bug was the interaction with first-feasible-D search
+  rather than raw unsoundness, but dropping to k_max=0 fixed both.
+
+Higher `k_max` remains available as an opt-in via the
+`edge_lex_rows` kwarg.
+
+### 8.5 What to promote / keep as flags / discard
+
+- **Promote to default**: `edge_lex_rows = 0` (this section).
+- **Keep as opt-in flags** (harmless, future-useful on different
+  hardware or N): `edge_lex_rows ≥ 1`, `use_lns`,
+  `use_objective_lb_search`, `branch_row0_minvalue`.
+- **Discard**: nothing — all new kwargs are harmless off-by-default.
+
+### 8.4 Open questions for the cluster / N ≥ 21 run
+
+1. Does `use_lns` flip sign above N=22 when the seed catalog runs out
+   and CP-SAT has to discover c\* from scratch?
+2. Is the chain symmetry penalty N-dependent, or does it disappear on
+   harder instances where the n−1 cardinality inequalities pay for
+   themselves? A single N=24 α=4 d=6 box would answer this.
+3. The real move for N=20 α=4 d=6 (1350 s INFEASIBLE) is almost
+   certainly structural — the "crazy ideas" in `memory/env_hardware.md`
+   (circulant-restricted encoding, degree-case split) rather than any
+   solver-param knob.

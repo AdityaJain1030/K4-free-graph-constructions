@@ -5,9 +5,9 @@ Sweep SATRegular across (n, α) pairs and compare against the true
 Pareto min-edge references in `reference/pareto/`.
 
 Two configs per (n, α):
-  A) spread=1, minimize_edges=True — Hajnal near-regular + min-edge objective.
-  B) spread=3, minimize_edges=True — relaxes Hajnal; can reach true optima
-     whose optimal degree sequence spans >2 values (e.g. n=10 α=3: {2,3,4}).
+  A) spread=1, minimize_edges=True — near-regular heuristic + min-edge objective.
+  B) spread=3, minimize_edges=True — relaxes near-regularity; can reach true
+     optima whose optimal degree sequence spans >2 values (e.g. n=10 α=3: {2,3,4}).
 
 Both use `edge_lex` + `branch_on_v0`.
 
@@ -133,7 +133,7 @@ def main() -> None:
             label = f"n={n:2d} α={a}"
             print(f"── {label}  [ref: edges={ref_edges}, d_max={ref_d_max}]")
 
-            # Config A: spread=1 (Hajnal) + minimize
+            # Config A: spread=1 (near-regular heuristic) + minimize
             a_got = run_one(n, a, spread=1, timeout=args.timeout, workers=cpus)
             match_A = a_got.get("num_edges") == ref_edges if a_got["status"] == "FEASIBLE" else False
             better_A = (a_got.get("num_edges", 10**9) < ref_edges) if a_got["status"] == "FEASIBLE" else False

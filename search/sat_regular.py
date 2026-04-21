@@ -72,10 +72,14 @@ class SATRegular(Search):
     -----------
     alpha          : int (hard) — α(G) ≤ alpha. Mandatory.
     degree_spread  : int        — `D ≤ deg(v) ≤ D + degree_spread`.
-                                  0 = D-regular. 1 = Hajnal near-regular.
-                                  ≥2 = relaxes Hajnal; reaches true optima
-                                  whose optimal deg sequence spans >2 values.
-                                  Default 1.
+                                  0 = D-regular. 1 = near-regular
+                                  (heuristic: empirically optimal, and
+                                  rigorously proved only in the small-N
+                                  Caro–Wei regime N ≤ 35, d ≤ 7; see
+                                  docs/theory/REGULARITY.md §2).
+                                  ≥2 = broader search that reaches true
+                                  optima whose deg sequence spans >2
+                                  values. Default 1.
     timeout_s      : float      — wall budget for the whole (n, α) run.
     workers        : int        — CP-SAT workers. Default os.cpu_count().
 
