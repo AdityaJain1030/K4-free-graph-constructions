@@ -27,10 +27,15 @@ mkdir -p logs/pipeline logs/search logs/cores
 ulimit -c unlimited 2>/dev/null || echo "[run_job] could not raise core limit (hard-capped by condor_starter); faulthandler will still catch traps"
 export PYTHONFAULTHANDLER=1
 
-# Phase-1 (easy scan)  : 2 α-tracks × 4 threads = 8 CPUs (memory-limited at large N)
-# Phase-3 (hard boxes) : one CP-SAT per box, 32 threads
+# Phase-1 (easy scan)  : 4 α-tracks × 4 threads = 16 CPUs
+# Phase-3 (hard boxes) : skipped — the N≥21 boundary boxes are not closing with
+#                        available timeouts (see logs/optimality_proofs.json).
+#                        Run targeted prove_box jobs separately once we have
+#                        better params; this pipeline just collects easy-scan
+#                        c* witnesses so N=22..30 progress isn't blocked by one
+#                        stuck 7h box.
 python scripts/run_proof_pipeline.py \
     --n-min "$N_MIN" --n-max "$N_MAX" \
-    --easy-timeout 300 --easy-workers 4 --alpha-tracks 2 \
-    --hard-timeout 3600 --hard-timeout-max 14400 --hard-workers 32 \
+    --easy-timeout 300 --easy-workers 4 --alpha-tracks 4 \
+    --skip-hard \
     --save-graphs

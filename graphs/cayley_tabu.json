@@ -1,0 +1,1813 @@
+[
+  {
+    "id": "22a88f2e556f1ff1",
+    "sparse6": ":I`A?WAFWHXDLCXRQGS~",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 4,
+      "c_log": 0.8656170245333781,
+      "group": "Z10",
+      "connection_set": [
+        3,
+        7,
+        4,
+        6
+      ],
+      "surrogate_c_log": 0.8656170245333781,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "2c3e71140dff24e8",
+    "sparse6": ":J`A?WAFWkQecSsPdNG`c^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 4,
+      "c_log": 0.7869245677576164,
+      "group": "Z11",
+      "connection_set": [
+        3,
+        8,
+        4,
+        7
+      ],
+      "surrogate_c_log": 0.7869245677576164,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "24089de3c77778ec",
+    "sparse6": ":K`AC@OEQHWcLG`hdMaG`ePCOrh",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 5,
+      "c_log": 0.7766686681995149,
+      "group": "Z12",
+      "connection_set": [
+        6,
+        2,
+        10,
+        5,
+        7
+      ],
+      "surrogate_c_log": 0.7766686681995149,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 3
+    }
+  },
+  {
+    "id": "129ec0cf28e23170",
+    "sparse6": ":K`?K?oD?Ow@HCOqpCOsqePOhbheOyCi",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 6,
+      "c_log": 0.8371659398268708,
+      "group": "Z3xZ4",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "surrogate_c_log": 0.8371659398268708,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 4
+    }
+  },
+  {
+    "id": "c601b815eb1ede0e",
+    "sparse6": ":L`?K?oCM?WAaK`XBGY`RGeSpwdOdSbFQh^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 6,
+      "c_log": 0.7727685598401884,
+      "group": "Z13",
+      "connection_set": [
+        1,
+        12,
+        3,
+        10,
+        6,
+        7
+      ],
+      "surrogate_c_log": 0.7727685598401884,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 5
+    }
+  },
+  {
+    "id": "e822613277e729b5",
+    "sparse6": ":M`A?g@FWlRTLS{RGc\\KQGTGYT~",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 4,
+      "c_log": 0.8243971662222649,
+      "group": "Z14",
+      "connection_set": [
+        3,
+        11,
+        6,
+        8
+      ],
+      "surrogate_c_log": 0.8243971662222649,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 2
+    }
+  },
+  {
+    "id": "f8d1e3091db6f467",
+    "sparse6": ":M`A?WAFWlRTLS|cHm`IgaFCPE^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 4,
+      "c_log": 0.8243971662222649,
+      "group": "Z2xZ7",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "surrogate_c_log": 0.8243971662222649,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 5
+    }
+  },
+  {
+    "id": "7b179f6998a7ad13",
+    "sparse6": ":N`ACGB_OkbPJCXRqGXAXBG\\AWbG\\AgaGS{PBK`n",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 6,
+      "c_log": 0.8929770024819956,
+      "group": "Z15",
+      "connection_set": [
+        1,
+        14,
+        3,
+        12,
+        7,
+        8
+      ],
+      "surrogate_c_log": 0.8929770024819956,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 2
+    }
+  },
+  {
+    "id": "165bd50c87de1c22",
+    "sparse6": ":N`A?WA_Cc@BJEPyFPKyGbMdSaGQh[PdK\\SaDK`N",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 6,
+      "c_log": 0.8929770024819956,
+      "group": "Z3xZ5",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "surrogate_c_log": 0.8929770024819956,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "880b0fb4383e5f23",
+    "sparse6": ":O`A?WAFWlRTLS|cVQjATJaIGuqGtv",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 4,
+      "c_log": 0.7213475204444817,
+      "group": "Z16",
+      "connection_set": [
+        2,
+        14,
+        4,
+        12
+      ],
+      "surrogate_c_log": 0.7213475204444817,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 4
+    }
+  },
+  {
+    "id": "a9afcde4c2669c93",
+    "sparse6": ":O`AC@OEQwXeNGtRHaKqgaMaHBiVKiCkcOps~",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 5,
+      "c_log": 0.7766686681995149,
+      "group": "D8",
+      "connection_set": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          5
+        ]
+      ],
+      "surrogate_c_log": 0.7766686681995149,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 2
+    }
+  },
+  {
+    "id": "616eac31100bc37e",
+    "sparse6": ":P__@_@_@_B_AD_BCE_ACD`ADE`CEFH`BCDH`ABGIcDEGIJKbDFGHIKaBEFJKLaCFGHJMN",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 3,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "Z17",
+      "connection_set": [
+        3,
+        14,
+        5,
+        12,
+        6,
+        11,
+        7,
+        10
+      ],
+      "surrogate_c_log": 0.6789153133595123,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 11
+    }
+  },
+  {
+    "id": "82594daeae0dcfe3",
+    "sparse6": ":Q___@_A_@C_ABgDFeF`FHaFGbEFHJcDFGI`DGHIaEGHJM`BCILaBCJKO",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 6,
+      "c_log": 0.7441475020683297,
+      "group": "Z18",
+      "connection_set": [
+        3,
+        15,
+        7,
+        11,
+        8,
+        10
+      ],
+      "surrogate_c_log": 0.7441475020683297,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 21
+    }
+  },
+  {
+    "id": "6a8d281aabad2908",
+    "sparse6": ":R__@_@__AC_BC`dFeFGcaIbIJ`BFIK`AFHJcDFGILcEHIJMaDGJKbEGHKP",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 6,
+      "c_log": 0.7049818440647334,
+      "group": "Z19",
+      "connection_set": [
+        1,
+        18,
+        7,
+        12,
+        8,
+        11
+      ],
+      "surrogate_c_log": 0.7049818440647334,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 7
+    }
+  },
+  {
+    "id": "18147bf6fda98e69",
+    "sparse6": ":S_____B_C_@ADE`FaFbDGaEHIcEHIaCHIK`BGIJL`DGJKaCEJMN`BDKLNO`ABCGHbCDEGHQ",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 7,
+      "c_log": 0.719457679317651,
+      "group": "D10",
+      "connection_set": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "surrogate_c_log": 0.719457679317651,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 61
+    }
+  },
+  {
+    "id": "517e6a25ff72f0ce",
+    "sparse6": ":S_____C_B_@BD_ACEF`FaG`CHIaBHIJ`BEFIKaCDGHJL`BDEHIKaCDEHIJ`ABCHILM`CDEFKNaBDEGJOQ",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 8,
+      "c_log": 0.7694373551407805,
+      "group": "Z20",
+      "connection_set": [
+        1,
+        19,
+        3,
+        17,
+        4,
+        16,
+        6,
+        14
+      ],
+      "surrogate_c_log": 0.7694373551407805,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 13
+    }
+  },
+  {
+    "id": "7834164967efd010",
+    "sparse6": ":S____B__D_@CD_ABEFaG`FaCDH`BEIJbCDEHIJK`BCFHJaDEGIKM`DEFHJaBCGIKO`ACEHIMN`ABDHIOP",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 8,
+      "c_log": 0.7694373551407805,
+      "group": "Z2xZ10",
+      "connection_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "surrogate_c_log": 0.7694373551407805,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 3
+    }
+  },
+  {
+    "id": "8812a7612418bc72",
+    "sparse6": ":T_____B_C_ABE_@CDFbDcE`BCHaDEHJaBCI`DEIL`AGHIJM`AFHIKLNaBDFIJL`CEGHJLPaCEFHKM`BDGIKMR",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 8,
+      "c_log": 0.7327974810864577,
+      "group": "Z21",
+      "connection_set": [
+        4,
+        17,
+        6,
+        15,
+        9,
+        12,
+        10,
+        11
+      ],
+      "surrogate_c_log": 0.7327974810864577,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 53
+    }
+  },
+  {
+    "id": "aa356a092d0eb4fc",
+    "sparse6": ":U_____B_C_@BE_ACDFcEbD`FHIaGHI`CHIJaBHIKL`DEIJMaDEHKL`BDFKMaCEGJLP`CEFINOaBDGHNOR`ABCJKPQ",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 8,
+      "c_log": 0.6994885046734369,
+      "group": "Z22",
+      "connection_set": [
+        1,
+        21,
+        4,
+        18,
+        5,
+        17,
+        10,
+        12
+      ],
+      "surrogate_c_log": 0.6994885046734369,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 23
+    }
+  },
+  {
+    "id": "723de9b5dcb6caf6",
+    "sparse6": ":V__@___C_B_@BD_ACEfgHcDHbEIJdFHIKeGHIJ`DEKLMaDEJLM`CFHJKNaBGIJKO`ABEILO`ACDHMNaBCFHQS`BCGIPRT",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 5,
+      "d_max": 8,
+      "c_log": 0.8363449512399789,
+      "group": "Z23",
+      "connection_set": [
+        1,
+        22,
+        3,
+        20,
+        6,
+        17,
+        7,
+        16
+      ],
+      "surrogate_c_log": 0.8363449512399789,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "3c9b2c4e75c6113b",
+    "sparse6": ":W___@_ABeDddEdFGjIiJiJiKjLkMNlMNOeFeGQfHQR`A`BTaCTU",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 4,
+      "c_log": 0.7213475204444818,
+      "group": "Z24",
+      "connection_set": [
+        3,
+        21,
+        6,
+        18
+      ],
+      "surrogate_c_log": 0.7213475204444818,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 24
+    }
+  },
+  {
+    "id": "3976a3cbedf01cd1",
+    "sparse6": ":W____B_B_CD_AB_@CF_ADG_@EFHdEFGbDHIJcEHIJbCFGKL`EGIJMaDFHJMNaBFHKLN`CGIKLOP`ABELMNP`ACDKMOQR`ABCDENOPQ`ABEFIJKS`ACDGHJLRU",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 4,
+      "d_max": 10,
+      "c_log": 0.7238241365054197,
+      "group": "Z2xZ12",
+      "connection_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          7
+        ]
+      ],
+      "surrogate_c_log": 0.7238241365054197,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 7
+    }
+  },
+  {
+    "id": "cc40d15fda8837a4",
+    "sparse6": ":X___A_@_AC_@BgFgffGHfGIaHI`HILdJeKbFJNcGKO`EIKMOaDHJLNaBFILP`CGHMQbENOPcDNOQV",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 6,
+      "c_log": 0.803679302233796,
+      "group": "Z25",
+      "connection_set": [
+        3,
+        22,
+        5,
+        20,
+        8,
+        17
+      ],
+      "surrogate_c_log": 0.803679302233796,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 3
+    }
+  },
+  {
+    "id": "b3b3e7832f35c3c6",
+    "sparse6": ":X_____B_CD_C_BFdgHfHeIJaDIK`FIKaEHJLM`GHJLMaDEHKMO`FGIJLNPaBCDHKN`BCGIJM`BCFIJOaBCEHKL`ACDGTU`ABEFRSV",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.9233248261689366,
+      "group": "Z5xZ5",
+      "connection_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "surrogate_c_log": 0.9233248261689366,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "ffd8e39f5b217a4c",
+    "sparse6": ":Y___A_@_AC_@BgFiGHfHfGIfGJeFHJdGHI`KaLbIKOcJLPbEHIMQcDHJNRaDGLNP`EFKMOaBOPQ`COPRW",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 6,
+      "c_log": 0.7727685598401884,
+      "group": "Z26",
+      "connection_set": [
+        6,
+        20,
+        9,
+        17,
+        11,
+        15
+      ],
+      "surrogate_c_log": 0.7727685598401884,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 2
+    }
+  },
+  {
+    "id": "b04f6f0837d38069",
+    "sparse6": ":Y__@_@__AC_BCgFfGfGffHJfIJgJKgIJMgHLMiKLMOhJLNOhIKNPQ`CD`BCS`AESbDESUaCETUaBDTVW",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 6,
+      "c_log": 0.7727685598401884,
+      "group": "Z2xZ13",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          12
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          9
+        ]
+      ],
+      "surrogate_c_log": 0.7727685598401884,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 7
+    }
+  },
+  {
+    "id": "b44afa63f44450cf",
+    "sparse6": ":Z__@___B_C_BE_CDFjCEIbDH`EHIaBHI`CHILMaDHILM`FHJL`GHJNPaFIKMPaGIKOQR`BCJMP`DEJOQTaDEKLRaBCKNSVcEFGHKTUbDFGIJVW",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.8549303946008673,
+      "group": "Z3xZ9",
+      "connection_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          7
+        ]
+      ],
+      "surrogate_c_log": 0.8549303946008673,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 3
+    }
+  },
+  {
+    "id": "e167669f5a27a7cc",
+    "sparse6": ":Z___A_@_@B_ACgFfGfGfHgIhJiKLdHLMeILMaJ`KcFJPbGKQcEFIORbDGHNSaEJLOP`DKMNQ`CPQRaBPQSX",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 7,
+      "d_max": 6,
+      "c_log": 0.8681720857463846,
+      "group": "Z27",
+      "connection_set": [
+        6,
+        21,
+        8,
+        19,
+        13,
+        14
+      ],
+      "surrogate_c_log": 0.7441475020683297,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 10
+    }
+  },
+  {
+    "id": "49e4411fa8f031b0",
+    "sparse6": ":[_____B_C_ACD_@BEFjIiJdHJeHKLbDHIJLcEHIKMaFKN`GJOaBIKLNP`CIJMOQaDHIKMP`EHIJLQ`BDGPRaCEFQSVaBDFHKLT`CEGHJMU`ABCPQVW",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.8243971662222649,
+      "group": "Z2xZ14",
+      "connection_set": [
+        [
+          0,
+          5
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          1,
+          8
+        ]
+      ],
+      "surrogate_c_log": 0.8243971662222649,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 1
+    }
+  },
+  {
+    "id": "e4dba20844ab4a4d",
+    "sparse6": ":\\__@___C_B_ACE_@BDjDIeHbHIJcHIKbEJKLcDJKMN`DHLNaEIMO`BIJaCHK`GHPRSaFIQRSTdGHIJMPeFHIKLQcFGMSTVbFGLRUWX`ACDKNPS`ABEJOQR",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.795969677731842,
+      "group": "Z29",
+      "connection_set": [
+        1,
+        28,
+        7,
+        22,
+        8,
+        21,
+        11,
+        18
+      ],
+      "surrogate_c_log": 0.795969677731842,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 5
+    }
+  },
+  {
+    "id": "e383b3fe721d2153",
+    "sparse6": ":]_____C_B_@CE_ABDFiHkJiJKhJKeHIKMdHIJLbEHJKNcDIJKO`FLPaGMQ`BJLNPRaCKMOQS`EHIJLRaDHIKMSaBEGRT`CDFSUXaCDGIMOW`BEFHLNV`ABCRSXY",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.7694373551407805,
+      "group": "Z30",
+      "connection_set": [
+        2,
+        28,
+        3,
+        27,
+        13,
+        17,
+        14,
+        16
+      ],
+      "surrogate_c_log": 0.7694373551407805,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 8
+    }
+  },
+  {
+    "id": "076656aac7ff579f",
+    "sparse6": ":]_____B_C_@BE_ACDFjHiJhIdHJLeIKLaIKLM`HJLNObDHMOcEINP`EHIJKaDHIJKaGKLOQT`FJLPRSaBCMQU`BCNRVaCEGQWX`BDFRWXYaBDGHKMT`CEFIJNS",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.7694373551407805,
+      "group": "D15",
+      "connection_set": [
+        [
+          1,
+          6
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          12
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          11
+        ]
+      ],
+      "surrogate_c_log": 0.7694373551407805,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 4
+    }
+  },
+  {
+    "id": "724a4a4f740b08f1",
+    "sparse6": ":^____B_C_BD__F_@BG_ACFH_@EGI_ADFHJdEFKdEGJbEHILMcDHILM`BDFLMNaCEGLMOPaDEINOP`DEHNOQ`BHJLMPRaCIKLMQS`ACEFMOPSU`ABDGLNQRT`BCDGKNRTUaBCEFJOSTUaCFGIKMSTVWY`BFGHJLRUVWX`ACFGIJKNPSY`ABFGHJKOQRX",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 5,
+      "d_max": 12,
+      "c_log": 0.7788960084809897,
+      "group": "Z31",
+      "connection_set": [
+        5,
+        26,
+        9,
+        22,
+        10,
+        21,
+        11,
+        20,
+        12,
+        19,
+        13,
+        18
+      ],
+      "surrogate_c_log": 0.7788960084809897,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 7
+    }
+  },
+  {
+    "id": "43adfd124f62a42c",
+    "sparse6": ":____@_ABeDddEdFGjIiiJiKLoNnOnOnPoQpRSqRSTjKjLVkMVWeFeGYfHYZ`A`B\\aC\\]",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 4,
+      "c_log": 0.7213475204444817,
+      "group": "Z32",
+      "connection_set": [
+        4,
+        28,
+        8,
+        24
+      ],
+      "surrogate_c_log": 0.7213475204444817,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 77
+    }
+  },
+  {
+    "id": "342a5944c3516cbe",
+    "sparse6": ":`_OGCA?C_?w?Y?DBo?G]?ACAW?CGEDO?OKIHDoOwcVACA`_uEEDb@kOIJEBgOOIIEbwGKKHFCAKKGFDCAKKGGCbqPMCDB@ph?aQHdGGSKGFBqHGeS___WSMLFcAsCCCBA@o{_T``P?cSNGCRCOKFCa`x?cV`@?w_ULFCa`eABBa@_s[PHegGGOIDbAXSmYLoOO[QJEDAp_q[`?o_SKIEdAxgw]__o_SKHFCr@cu\\",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 5,
+      "d_max": 12,
+      "c_log": 0.7316901897851721,
+      "group": "Z33",
+      "connection_set": [
+        5,
+        28,
+        8,
+        25,
+        10,
+        23,
+        11,
+        22,
+        12,
+        21,
+        14,
+        19
+      ],
+      "surrogate_c_log": 0.7316901897851721,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 335
+    }
+  },
+  {
+    "id": "2a7d3786d6094bbd",
+    "sparse6": ":a_O?K?B??o?[?CD_?o_Y?AA@XOeQIcahGiQKcapscWLFqPWs\\IDb`{gYNGChOoYMHQ`WoaReb`xCeSIr@p?aQHdXWo]OIDQskYOGca`[p@@@OsCGEBegGKGDLOOOKOZa@Oo_u[Moog[OYLfWOKKFMFRsGGFCEb`|@",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "Z2xZ17",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          16
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          15
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          13
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          9
+        ]
+      ],
+      "surrogate_c_log": 0.6789153133595123,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 20
+    }
+  },
+  {
+    "id": "3d352bdb86d98e6e",
+    "sparse6": ":b_OGC?F?_O?k?L?@@?ga?@@`_weWJ`AwGqIFEbgo_YMaA@WoYM``pWoYM_a`_w]O`APWs]O`@p?o[NIOOw_ULGCwGKIJEbqXUCCBB@p?gU``?o_WLGdGWOIFDbaPMACA`aPKtA@`OpCgX`@OwcmXLfGGWOIKEbXozABA@Go]PIdgGSMIDcAPSk^__o_gUNHDr`uCBAAP`?aWLfn",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 7,
+      "d_max": 10,
+      "c_log": 0.8685889638065036,
+      "group": "Z35",
+      "connection_set": [
+        1,
+        34,
+        2,
+        33,
+        10,
+        25,
+        11,
+        24,
+        17,
+        18
+      ],
+      "surrogate_c_log": 0.7445048261198602,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 146
+    }
+  },
+  {
+    "id": "d3ac0d03a4bc2366",
+    "sparse6": ":c_OG?E?A_?_[?ACc@w{[PFCpp?mMHDRp_yYMcBaCc[NdBPp?dJEB`xEOKFcAKcYNGCak_SJGdHGgUQHdzOKrCKpRHmKXLOOpcu\\`@RHgxBAeb`uGELfBiAAA@eb{CCCLfcV",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 6,
+      "c_log": 0.7441475020683297,
+      "group": "Z36",
+      "connection_set": [
+        2,
+        34,
+        6,
+        30,
+        8,
+        28
+      ],
+      "surrogate_c_log": 0.7441475020683297,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 281
+    }
+  },
+  {
+    "id": "0dc3b8078f65d5ac",
+    "sparse6": ":d_OG?I?@_?O[?CCc@w{aMGCpp?iQJdB@k[RGDQPkg\\GDcGwo^JEbaPMWLFCQcc]PdCASSaSJPaPKjAKOQ{O_WLopx[xABCb@gv@AcQxcxCBCAXgzBAbq`c|@AEr`uCBLfBqN",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 10,
+      "d_max": 6,
+      "c_log": 0.9050442592722929,
+      "group": "Z37",
+      "connection_set": [
+        1,
+        36,
+        13,
+        24,
+        14,
+        23
+      ],
+      "surrogate_c_log": 0.8145398333450636,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 62
+    }
+  },
+  {
+    "id": "beac5c7bb4db9fd5",
+    "sparse6": ":e_O?K?B?_?_c?ECc@wwaMGbppGmMIDqH_yYMFqxHESPHQ@OwaRcAPp?dJEB`xChJEcAHGjHEBqPMSLFcAXaBDLPbPmHAMorhyABLFR{CCYMFg_SsZMgG_Ww\\NGWOSu]Noopkw^Q^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 6,
+      "c_log": 0.7049818440647334,
+      "group": "Z2xZ19",
+      "connection_set": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          18
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          0,
+          12
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          11
+        ]
+      ],
+      "surrogate_c_log": 0.7049818440647334,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 17
+    }
+  },
+  {
+    "id": "e158d52355f6198d",
+    "sparse6": ":e_O?K?B?@OGC?AD_?_o]?BAaG?OKF_?ogi?CBAP[GX@DopOuGHFBwwk[OcB@g}ABBB`xCdAA@Ph?aQ`?ogWZ@A@OowjABA@PGeSIoOg[QPHdAp]AACb@gwaW__`OkYMHDwOSOHFCAPWqY_`_wgYNGdRHiABBaA@WsZ`@?w_]TKfGWSQJEb`x?gTNP?ogWLFBq@Kk\\``OwkYPHdAh[y_a@`?o[QHdAp_{^``@Gg]OIdax_y]```?cUKGCQPgw\\a@OwgUKFcQPcu]",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 12,
+      "c_log": 0.7624981977761268,
+      "group": "D19",
+      "connection_set": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          1,
+          12
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          17
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          16
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          15
+        ]
+      ],
+      "surrogate_c_log": 0.7624981977761268,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 99
+    }
+  },
+  {
+    "id": "f2185c3aca5cd3e8",
+    "sparse6": ":f_O?K?B?_?_c?ECc@wwaMGbppGmMIDrpsw^MFrhp?dMGchxGfNGcak{_SIsQXOiVgCa`WnOGcqp_rGDbH?gUZcAPhmSKEerkcULMFXGgW[NFwGOJ@@`CKCCEOoogXAb`@?qHFA@`SQPJ",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 9,
+      "d_max": 6,
+      "c_log": 0.7727685598401886,
+      "group": "Z3xZ13",
+      "connection_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          11
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          7
+        ]
+      ],
+      "surrogate_c_log": 0.7727685598401886,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 39
+    }
+  },
+  {
+    "id": "e62bcb7cc970bc3f",
+    "sparse6": ":g_OG?E?A@p_kUIEa`pCkTIdAxOoZOFrxxA]PHTQdOjSItAtSnUKEYx_qYgCY@GxPHfBkkXJEfx_w}_b@wo`DFCgc[CD@@hWOPIe",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 10,
+      "d_max": 4,
+      "c_log": 0.7213475204444817,
+      "group": "Z40",
+      "connection_set": [
+        5,
+        35,
+        10,
+        30
+      ],
+      "surrogate_c_log": 0.7213475204444817,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 117
+    }
+  },
+  {
+    "id": "0530dd276443942d",
+    "sparse6": ":h_OGCA@?_?ok?GE_@PC?KFCo?OKR??`@Om?A@`P?q?@A@_wkZAA`gGSL@CA`xACFCbqCKIHEbq@EGEDB`x?cRaAPOo]OGdGWcSJFcAPMIFCaqCWOIEBwOSULFcQ`WmW_``_w_QHdQxaCHDBQ@GeV_aPOw]PIEGOKGDCCQXSoXLFGGKGEBca`WmXLErkOIGCbPpCiUKErcKKFDBPpGiUJercGIFCA``GeUKfB{CKFCAPXCgTLEsCCCBAA@`?gVKERcCCBA@pW{eVKEbYMCBA@OwkYOGcb@tF@@`?o_WMFcQP[{cQoOOOIGDb@hWo[OGSSCCBB@pWo[TJeryDD",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 14,
+      "c_log": 0.7763304210233146,
+      "group": "Z41",
+      "connection_set": [
+        2,
+        39,
+        4,
+        37,
+        7,
+        34,
+        11,
+        30,
+        12,
+        29,
+        13,
+        28,
+        14,
+        27
+      ],
+      "surrogate_c_log": 0.7763304210233146,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 567
+    }
+  },
+  {
+    "id": "9bea1abd1843d8ef",
+    "sparse6": ":i_OGCA?B_@G?GEE_?O_SNICqXKeQKcbXGkWNca`gw`KFRP{gWLHQpo{cSdb@hMSMFcqsgUPHCq`]SJGCaXSkWdb@p?eSJQ`g{aQIDbSkYNGCah]SKFCQXSm[``W_YABAFgOSK]OO_WO~@A`byIAACFby@F@@@rp|AaQO_WSM^OGgGOKGNGCQYCCB@rqDF@@`P@|AbS^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 8,
+      "c_log": 0.7327974810864577,
+      "group": "Z42",
+      "connection_set": [
+        4,
+        38,
+        6,
+        36,
+        10,
+        32,
+        12,
+        30
+      ],
+      "surrogate_c_log": 0.7327974810864577,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 96
+    }
+  },
+  {
+    "id": "8057567cbb859e13",
+    "sparse6": ":j_OGCA?C_?w?OL?@`XgeTJEr@scYNdBa@ESJEBqKcUKGCa[_SLIPpGwfDCa`WslECa`_wjCAbQ{KKMKP?wcWULOp?gUTKp_x?aTJEGg_]QIdaxuACEEgOKUXNo_oo_^OOOgk]^OOOoc_PLo_gg]QMO`?kYQIGCcCMKFCQX|FA@`BPpCc__o`cu`PoOO_YNKgdCCCFFCBQDN",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 10,
+      "d_max": 8,
+      "c_log": 0.8946945990009075,
+      "group": "Z43",
+      "connection_set": [
+        1,
+        42,
+        3,
+        40,
+        8,
+        35,
+        9,
+        34
+      ],
+      "surrogate_c_log": 0.8052251391008168,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 344
+    }
+  },
+  {
+    "id": "a00aa668435bb667",
+    "sparse6": ":k_OGCA?B_@G?CEE_?__SNICqXKeQKcbXGgWNcapgw`LFr@sg_QHqqHGfIEcaXQUKHCqhYSMFcq`]UMFcahYSKFCAh]ULFcQ`WtIEbq@KoXdb@pCcWKfHOkWLIDRPmGE``WG[}_`AByAACNgCKGE^OGc[CIEOGScGIENgc[CEDBgccGGECGSY]ACB@sATLA@`P@|IeSoOOKG`PHtF",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 8,
+      "c_log": 0.6994885046734369,
+      "group": "Z44",
+      "connection_set": [
+        2,
+        42,
+        8,
+        36,
+        10,
+        34,
+        20,
+        24
+      ],
+      "surrogate_c_log": 0.6994885046734369,
+      "tabu_n_iters": 3000,
+      "tabu_best_iter": 44
+    }
+  },
+  {
+    "id": "6c188bcffef07410",
+    "sparse6": ":l_OGCA@?_@g?U?BBo?__R??`?k?CBBAw?CGGCbG?GEFDApk?CECAP[?ADBa`_}ACEcGOK[N`AP_}AIDcGO[QMGcwG_SLHDGW[QKGcaXOlCCA`XCcRIDWOSKGCcQPKgW_`Oo[SPHCq`[r@@`?w_aRIdaxeCBA@p@GgTJEBSKKHEbq@GiXLp?gg[NGCQpgxBA@Ooo[PHdQpgw\\``?gWULHDAhWqZNFwg_QLFcAHOoYLgGo[SMFcAPKmXMFwGGGDB@p`GgTJeBiAAA@`Oo_UPHdax_{^PoOWOKKEba@Ki\\NGSSGECAapgw]SJFRqDD@@@P?cUKFcQp_{aQoOOWMIDbA@GiVMgSsCEFCAPOoYQHdBqHKfSO__[OHDAppCeSMgSi\\PA@`Oo[QKFBqp_qZMHGGOIECA`Ws_TJebXpEj",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 16,
+      "c_log": 0.7694373551407805,
+      "group": "Z45",
+      "connection_set": [
+        3,
+        42,
+        10,
+        35,
+        12,
+        33,
+        13,
+        32,
+        14,
+        31,
+        19,
+        26,
+        20,
+        25,
+        21,
+        24
+      ],
+      "surrogate_c_log": 0.7694373551407805,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 1555
+    }
+  },
+  {
+    "id": "1a4dccb4ba2c92c4",
+    "sparse6": ":l_OGCA?C_?w?E?A_?_WSN??`?oaWJfBWWkXCEbggs\\EDbGwk[NGq@_s_QHooo{dCAcAKGIKFdWGOUQIo_WsaU_``p?lDBapg{rECAph?pBBb@pCnCCB@pGtBCapg{q[Mp`Oo[QLFBh}GIDbQ@_u]aaP_waVLfcKCSJFCq`_tACb@hKgVKoOO[]PHdQqQAACCAPOiUPhX?cSSMFbyHHFCaaXky_Ogs{CGDBbqh_qZ`?oo__UKERaeCCAaAPSmYNOOWWMPJDrPtV",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 9,
+      "d_max": 10,
+      "c_log": 0.8685889638065035,
+      "group": "Z3xZ15",
+      "connection_set": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          12
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          14
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          12
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          11
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          2,
+          7
+        ]
+      ],
+      "surrogate_c_log": 0.7720790789391143,
+      "tabu_n_iters": 2500,
+      "tabu_best_iter": 168
+    }
+  },
+  {
+    "id": "8fd1009809fd77ee",
+    "sparse6": ":m_OGCA@?_@W?Y?@Bo?O_R??`?k?CBBAw?GEGCaw?CGFDB@k?GDCAPc?EEBa`W}GHDbwWgWO`@`_saQ_`PWwaQ_`@o{fA@bQ@QGFCbaHKhBCA`hGeSJoOO[OPHDrCGGDBAQHKiUKEWGKIEDCa`SkVKegGWMHDcQh_rAAa@OocUJeRcCIHEbq@OiVKegOWSMFcAXWoXLoOOKGDCCQXOkWMOOOKGEBcaXOiVMp`?cYNGCaXWu\\OPOwg[NGCQ`Ss[OoogWMGECQ`SkWLFBh|BCA`_w_UQHdQp[u[MfcCCCCBB@gw]QKFbyHF@@?ogkYMGCQxw}aPoO_SMHDb`xKkXLFSAECBBA@OoYOIDRHkw_OiGWOKGCap_{kWMfsY]ECA`pOkWOIdr`xCe`@?w_QIEBaHGk]PHtQmABBa@GgULGcah|EeTI~",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 6,
+      "d_max": 16,
+      "c_log": 0.7527104561159809,
+      "group": "Z46",
+      "connection_set": [
+        1,
+        45,
+        2,
+        44,
+        4,
+        42,
+        12,
+        34,
+        13,
+        33,
+        17,
+        29,
+        19,
+        27,
+        20,
+        26
+      ],
+      "surrogate_c_log": 0.7527104561159809,
+      "tabu_n_iters": 3000,
+      "tabu_best_iter": 264
+    }
+  },
+  {
+    "id": "907af7d4a282dfb7",
+    "sparse6": ":n_OGCA?@_?g?M?C_?OWWP?@@?g]YFcPPkW\\ADbWGo\\CEBqKKUOHQPg{fIFCAcGKLGCQ[CIMFcacKMLFcA`[pCCB`x?eVKOooocWa@PXCnECAq`eIFECrSGGKEcbsCEJFCRkCOKGDb[GMJFdRcCQLGcah|?``A`pCcUNgCSKQKGcq`Su_aA`XGeSJFByUMIEBQpxAaPq@Gk[TMgSQPNECap`?iULfWggUKFdQpo{h`@?o_YXMfb{CEDBbbPs{_To_WWMNKEraIACAaA@[u[Oj^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 9,
+      "d_max": 10,
+      "c_log": 0.8316277313040992,
+      "group": "Z47",
+      "connection_set": [
+        4,
+        43,
+        6,
+        41,
+        9,
+        38,
+        10,
+        37,
+        15,
+        32
+      ],
+      "surrogate_c_log": 0.7392246500480881,
+      "tabu_n_iters": 3000,
+      "tabu_best_iter": 108
+    }
+  },
+  {
+    "id": "48e36e53a8ffaa55",
+    "sparse6": ":o_OGCA@?A@W?OJ?@@G?KIG_?owa?ABAPS{XKFraCwbLFBqSs]OGca[C[S_bAHKj@EBa@GgT_bA@CcRJQp_siVKQPgw_RJeBKKYMFcAHSkY`B@gw]PIdbKCGNGCQPcx@BB@xGeULErkCILGCa`SqZNOOwoYMHEb`s~@CBPxCeTKERkCSKEb`xOkVOGW_[QJJpOocUWa`p?gYbQP?o_SNPhGWSQIIHSsGKGDcsiXNBBaPP@EcSO___UKPhCyeCBA@QqPKfTO_WWMPQHTAdVA@`?gWMQRiDIiCBB@pOkibRIwOKGDCAPqLIkV^",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 8,
+      "d_max": 11,
+      "c_log": 0.7645593842777849,
+      "group": "D24",
+      "connection_set": [
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          22
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          20
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          16
+        ]
+      ],
+      "surrogate_c_log": 0.7645593842777849,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 180
+    }
+  },
+  {
+    "id": "f971dec7a6ccab33",
+    "sparse6": ":p_OGCA@?_@g?U?CA`g?GIF_?ooa?@BaG?CEGCag?KGEDBG?GGDDb@k?AABaPWyEG`@W_WaQ_`qHIIFCCAPMIECBaHQKFCBQPOiUa`_w{aRIdgOKMNGCqxaCBBBPpOmWKoO_S[NGdQsCGGEcAPSkZ_`pGgWPHdAhcxBCA`WoaQHdrPqCDCa`XCcSKERXyGECap`GeSJEbXuAAA@P`?aSJewOKGEDBqPOiYOoOWOOHFCaX_wa___W[ULGcqpdAbaA@_s[NJERQ@Ac_`PGs]OIeRPtCb`@`Ww]OKEr`|EcQhgW[SLFCAxkw]OgciYAAAaPOsaTJDrHs{`Qoo__UKFcahWoYNgCYYCCBAPX?gTJeBXs}aSOOW[SKFCqp[o[NGCa]ECB@pGgUMGcaXc}aRIWGGKFDAp`?aQIEbqPIi`@?g_QIEBqPKg[MgTAqABAa@GkWLGcq`l?bRi~",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 7,
+      "d_max": 16,
+      "c_log": 0.8243971662222648,
+      "group": "Z7xZ7",
+      "connection_set": [
+        [
+          1,
+          1
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "surrogate_c_log": 0.8243971662222648,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 5
+    }
+  },
+  {
+    "id": "30f85de18b277cb6",
+    "sparse6": ":q_OG?I?@_?_c?ABc@w{[RFCPp?iMHDrpsw^MFraK{_QgCa\\CcRdBaPQUNHdXhCjKGDHOo[OJEXWs]PJeHGggUKq@XSmWcAPh_zGCbBHo|`OWKM@CbogcYR?`PWCIMEaRPCY]K`Qhgi@Gf``cQTOia@SYPQj_`cq`TAAhtImAA@iDsCCCSjuF",
+    "source": "cayley_tabu",
+    "metadata": {
+      "algo": "cayley_tabu",
+      "alpha": 12,
+      "d_max": 6,
+      "c_log": 0.803679302233796,
+      "group": "Z2xZ25",
+      "connection_set": [
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          21
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          0,
+          16
+        ],
+        [
+          0,
+          12
+        ],
+        [
+          0,
+          13
+        ]
+      ],
+      "surrogate_c_log": 0.803679302233796,
+      "tabu_n_iters": 400,
+      "tabu_best_iter": 165
+    }
+  }
+]
