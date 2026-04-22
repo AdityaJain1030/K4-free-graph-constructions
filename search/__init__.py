@@ -15,8 +15,7 @@ from .regularity_alpha import RegularityAlphaSearch
 from .mattheus_verstraete import MattheusVerstraeteSearch
 from .norm_graph import NormGraphSearch
 from .polarity import PolaritySearch
-from .sat_exact import SATExact
-from .sat_regular import SATRegular
+from .sat_circulant import SATCirculant
 
 __all__ = [
     "Search",
@@ -38,6 +37,5 @@ __all__ = [
     "MattheusVerstraeteSearch",
     "NormGraphSearch",
     "PolaritySearch",
-    "SATExact",
-    "SATRegular",
+    "SATCirculant",
 ]

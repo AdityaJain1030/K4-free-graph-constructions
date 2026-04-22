@@ -1,5 +1,14 @@
 # Rules for the K₄-Free Graph Optimizer
 
+## Read NON_VT_CATALOG.md first
+
+`NON_VT_CATALOG.md` is the **primary source of constructions**. Your job
+is to port the entries it lists — not to invent new families. "Invent a
+non-VT graph" failed in prior sessions because the model anchors on
+Paley; "port the Mattheus–Verstraete construction" is a concrete
+translation task the LLM can do well. Work the catalog. See
+`CLAUDE.md §"Iteration loop"` for the exact per-iteration procedure.
+
 ## The target
 
 Find **one** K₄-free graph on **one** N that achieves
@@ -96,9 +105,10 @@ Every file `candidates/gen_NNN_description.py` must start with this
 header block, in this order, all four fields required:
 
 ```python
-# Family: <tag>             # e.g. asymmetric_lift, perturbed_paley, core_periphery
-# Parent: gen_XXX           # or "none" if this is a fresh idea
-# Hypothesis: <2-5 sentences on why you expect this to beat Paley>
+# Family: <family_tag>      # broad family, e.g. polarity, incidence, random_process
+# Catalog: <entry_tag>      # which NON_VT_CATALOG.md entry this implements
+# Parent: gen_XXX           # or "none" if this is a fresh port from the catalog
+# Hypothesis: <1-2 sentences on what this implementation does and what you expect>
 # Why non-VT: <1-2 sentences on what breaks vertex-transitivity>
 
 def construct(N: int) -> list[tuple[int, int]]:
@@ -170,10 +180,12 @@ score = best_c + 0.001 · code_length      # code_length is only a tiebreaker
 
 ## N grid
 
-Stage 1 evaluates **every integer N in [7, 100]**. The dense grid is
-intentional — more N values means more chances to hit a minimizer, and
-N values your construct doesn't handle are essentially free (fast-fail
-at `d_max_too_low`).
+Stage 1 evaluates **every integer N in [30, 100]**. Small N is excluded
+deliberately: the Paley threshold is a large-N statement, and prior
+runs spent compute on N ≤ 20 minimizers that cannot generalize. Your
+construction must produce d_max ≥ 2 at some N ≥ 34 to be meaningful.
+N values where your construct returns `[]` are essentially free
+(fast-fail at `d_max_too_low`).
 
 Stage 2 (triggered when Stage 1 `best_c < 1.0`, or forced with
 `--full`) extends to N ∈ {110, 120, 133, 150}. Use `--quick` for
@@ -243,9 +255,9 @@ Stop only when one of:
 3. The human intervenes.
 
 "Structurally different families" means the underlying mechanism is
-different, not just the parameters. `perturbed_paley` with 1 swapped
-edge and `perturbed_paley` with 5 swapped edges are the same family;
-`perturbed_paley` and `core_periphery` are different families.
+different, not just the parameters. `perturbed_algebraic` with 1 swapped
+edge and `perturbed_algebraic` with 5 swapped edges are the same family;
+`perturbed_algebraic` and `core_periphery` are different families.
 
 If you find yourself repeating variants of the same idea, that's a
 signal to invent, not to stop.

@@ -46,7 +46,7 @@ RESULTS_PATH = HERE / "results.jsonl"
 # construction has no valid output. N that a candidate returns `[]` for
 # are cheap (they fail fast at d_max_too_low and never hit the α
 # solver).
-N_FAST = list(range(7, 101))                 # every integer in [7, 100]
+N_FAST = list(range(30, 101))                # every integer in [30, 100]
 N_ALL = N_FAST + [110, 120, 133, 150]        # Stage 2 extends further
 # Stage 2 triggers when best_c (min over valid N) is below this.
 STAGE2_BEST_C_THRESHOLD = 1.0

@@ -1,180 +1,86 @@
-# claude_search — LLM-in-the-loop optimizer for K₄-free graphs
+# claude_search — ARCHIVED
 
-**Note for the agent:** this file is for humans operating the system. Ignore
-it during optimization — your operating manual is `CLAUDE.md` and the
-problem briefing is `RULES.md`.
+> **This experiment is archived. It did not find a sub-Paley construction.**
+>
+> After 110 evaluations across 10 non-VT graph families, the best result was
+> **c = 0.9593** — 41% above the P(17) target of 0.6789. No candidate
+> in the run came within striking distance of the target. The candidate
+> programs have been moved to `candidates/archive/`. Results are preserved
+> in `results.jsonl` and `leaderboard.md` for reference.
+>
+> See `docs/NON_VT_SEARCH.md` for the full post-mortem: what was tried,
+> why each approach failed, and why the non-VT direction was closed.
 
 ---
 
-## What this is
+## What this was
 
-An environment where a Claude Code agent evolves graph-construction
-functions `construct(N) -> edge_list` that minimize
+An environment where a Claude Code agent evolved graph-construction
+functions `construct(N) -> edge_list` targeting **non-VT** K₄-free graphs,
+trying to beat the Paley P(17) benchmark of c ≈ 0.6789.
+
+The agent worked through a catalog of 10 non-VT families from the literature
+(`NON_VT_CATALOG.md`), writing and evaluating candidates over a single
+session (2026-04-22, ~3 hours).
+
+## Why it didn't work
+
+**The seed problem.** Non-VT graph construction requires landing seeds in a
+good basin. The 561-bit adjacency space at N=34 has no known structural
+parameterisation that places seeds near a sub-0.6789 region. Without that,
+any search — LLM-generated or otherwise — explores the wrong neighbourhood.
+
+**The objective mismatch.** This is a "find one good graph in a deterministic
+environment" problem. RL-shaped methods (including LLM evolution) optimise
+expected return, not max-over-samples. Tabu search with good seeds is the
+right tool; the LLM provided no better seeds than random initialisation.
+
+**The competition.** The Cayley/circulant SAT pipeline (currently running)
+produces certified improvements at N=43, 47, 62, 71, 73 in a single sweep.
+110 LLM evaluations achieved c=0.9593; SAT-over-circulants beat that
+routinely within seconds per N.
+
+See `docs/NON_VT_SEARCH.md` §3 for the detailed case.
+
+## Preserved artefacts
+
+| File / dir                  | Contents                                       |
+|-----------------------------|------------------------------------------------|
+| `results.jsonl`             | Append-only history of all 110 evaluations     |
+| `leaderboard.md`            | Final rankings snapshot                        |
+| `candidates/archive/`       | All 97 candidate `.py` files (gen_001–gen_096) |
+| `insights.md`               | Agent's running mathematical observations      |
+| `thoughts.md`               | Agent's per-iteration process notes            |
+| `NON_VT_CATALOG.md`         | The 10 literature families the agent worked from |
+
+## Final stats (2026-04-22)
 
 ```
-c = α(G) · d_max / (N · ln(d_max))
+Total evaluations:          110
+Non-VT candidates:           77 / 110
+Stage 2 triggered:           20  (best_c < 1.0 in Stage 1)
+Achieved best_c < 1.0:       20
+Beat P(17) (c < 0.6789):      0
+
+Best c overall:           0.9593  (gen_037, random d-regular + K4 repair, N=30)
+Best non-VT family:       core_periphery  (best=1.3049 after 58 attempts, STALE)
+
+Failure breakdown (per-N evals):
+  d_max too low:   40.5%
+  crash:            2.8%
+  timeout:          1.3%
+  not K4-free:      0.3%
 ```
 
-over K₄-free graphs G. The Paley graph P(17) achieves **c ≈ 0.6789** —
-the 30-year benchmark the agent is trying to beat.
+## Infrastructure notes (if ever reactivated)
 
-The mission targets **non-VT** constructions (see `RULES.md` §"Why non-VT
-is the mission"): every Paley-beater attempt in the parent repo that
-stays inside vertex-transitive / Cayley / SRG space has hit `c ≥ 0.6789`.
-A single `(N, G)` pair with `c < 0.6789` at *any* N is a winning
-submission. Scoring is pure minimization (`best_c + 0.001 · code_length`);
-breadth across N is not rewarded.
+The eval/leaderboard pipeline is intact and could be reused with a different
+objective (e.g. Cayley-restricted construction, or a different graph property).
+The sandbox settings in `.claude/settings.local.json` remain valid.
 
-## Layout
-
-```
-claude_search/
-├── run_optimizer.sh       launcher script (this is what you run)
-├── CLAUDE.md              operating rules auto-loaded by Claude Code
-├── RULES.md               problem briefing for the optimizer agent
-├── eval.py                oracle — evaluates candidate/gen_NNN_*.py
-├── graph_utils.py         α computation (SAT + branch-and-bound), K₄-free check
-├── leaderboard.py         rankings from results.jsonl → stdout + leaderboard.md
-├── show_best.py           top-3 inspection: source + full metrics
-├── candidates/            the agent writes here (gen_NNN_description.py)
-├── results.jsonl          append-only history of every evaluation
-├── leaderboard.md         human-readable rankings (regenerated by leaderboard.py)
-├── logs/                  per-run agent transcripts (auto-mode only)
-└── .claude/settings.local.json   tool allowlist/denylist for the agent
-```
-
-## Prerequisites
-
-- `k4free` micromamba environment with PySAT, networkx, numpy, scipy,
-  matplotlib. Already provisioned (see `../environment.yml` at repo root).
-- Claude Code CLI installed and authenticated.
-
-Verify the env works:
-
+To re-run from scratch:
 ```bash
-micromamba run -n k4free python -c "import pysat, networkx, numpy; print('ok')"
+: > results.jsonl
+rm -f leaderboard.md logs/run_*.log
+# restore candidates from archive if needed
 ```
-
-## Launching the optimizer
-
-From `claude_search/`:
-
-```bash
-./run_optimizer.sh              # interactive — watch in terminal
-./run_optimizer.sh --auto       # one-shot non-interactive, logs to logs/
-```
-
-First time: run interactively, watch the first 2–3 candidates, Ctrl-C if
-anything looks wrong. Once you trust it, switch to `--auto`. The agent's
-iteration horizon is long (150+ candidates across 8+ structurally distinct
-non-VT families — see `RULES.md` §"Iteration horizon"), so budget runs
-accordingly.
-
-The script activates the `k4free` env, cds into `claude_search/`,
-and launches Claude Code with the allowlist in
-`.claude/settings.local.json` enforcing the sandbox.
-
-### Overriding the model and effort level
-
-```bash
-CLAUDE_MODEL=claude-sonnet-4-5-20250929 ./run_optimizer.sh --auto
-CLAUDE_EFFORT=medium ./run_optimizer.sh --auto    # low | medium | high | xhigh
-```
-
-Defaults: `claude-sonnet-4-6` at `high` effort. The script patches
-`.claude/settings.local.json` with the selected effort level before
-launch. Sonnet is sufficient for the short `construct()` bodies the
-agent writes. `high` gives a good depth/speed balance; drop to `medium`
-if you want more iterations for the same budget.
-
-## Monitoring
-
-Open a second terminal and run any of:
-
-```bash
-# Agent's full stdout (auto mode only)
-tail -f logs/run_<timestamp>.log
-
-# Every evaluation as it happens
-tail -f results.jsonl
-
-# Rolling leaderboard
-watch -n 10 'micromamba run -n k4free python leaderboard.py | head -20'
-
-# New candidate files as they land
-watch -n 5 'ls -lt candidates/ | head'
-```
-
-## Inspecting results manually
-
-```bash
-micromamba activate k4free
-
-python leaderboard.py       # top 20, frontier per N, recent thoughts, failure analysis
-python show_best.py         # full source + metrics of top 3
-python eval.py candidates/gen_NNN_description.py          # re-run (auto-trigger Stage 2)
-python eval.py candidates/gen_NNN_description.py --quick  # Stage 1 only (N ∈ [7, 100])
-python eval.py candidates/gen_NNN_description.py --full   # force Stage 2 (N up to 150)
-```
-
-## Writing your own candidate
-
-Drop a file `candidates/gen_NNN_description.py` with the required
-header block (all four fields — see `RULES.md` §"Candidate file format"):
-
-```python
-# Family: <tag>           # e.g. perturbed_paley, core_periphery, invented
-# Parent: gen_XXX         # or "none" if this is a fresh idea
-# Hypothesis: <2-5 sentences on why you expect this to beat Paley>
-# Why non-VT: <1-2 sentences on what breaks vertex-transitivity>
-
-def construct(N: int) -> list[tuple[int, int]]:
-    """Return edge list for a K4-free graph on N vertices (0-indexed)."""
-    return [(0, 1), (1, 2), ...]
-```
-
-Then `python eval.py candidates/gen_NNN_description.py`. The six
-existing seeds in `candidates/gen_00[1-6]_*.py` are starting points
-the agent can mutate from.
-
-## Sandbox guarantees
-
-The agent runs under `.claude/settings.local.json` which:
-
-- **allows** `Read`, `Write`/`Edit` on `candidates/**`, `Glob`, `Grep`,
-  and specific `Bash(python ...)` commands only;
-- **denies** writes/edits to `eval.py`, `graph_utils.py`, `leaderboard.py`,
-  `show_best.py`, `RULES.md`, `CLAUDE.md`, `results.jsonl`;
-- **denies** `pip`, `conda`, `apt`, `rm`, `curl`, `wget`, `git push`,
-  `WebFetch`, `WebSearch`.
-
-Combined with `CLAUDE.md`'s scope rules, the agent can only read from
-`claude_search/`, write in `candidates/`, and run the eval/leaderboard
-scripts.
-
-## Resetting
-
-To wipe history and start fresh (leaves seed constructions intact):
-
-```bash
-: > results.jsonl            # truncate (eval.py appends)
-rm -f leaderboard.md
-rm -f logs/run_*.log
-# Optionally clear the agent's process/insights logs too:
-#   (keep the top header; wipe the rest)
-# Optionally drop everything the agent has written (keeps the 6 seeds):
-#   ls candidates/gen_*.py | sort | tail -n +7 | xargs -r rm
-```
-
-## Known limits
-
-- `results.jsonl` grows without bound. After ~100 evaluations consider
-  rotating: `mv results.jsonl results.archive.$(date +%Y%m%d).jsonl`.
-  The agent uses `leaderboard.py`/`show_best.py` as summarized views, so
-  raw JSONL size doesn't directly hit its context.
-- Each eval invokes `multiprocessing.spawn` which is slow to start on
-  Windows/WSL (~0.5s/N). Stage 1 takes ~5–15s for well-behaved candidates,
-  more if SAT runs long at N ≥ 50.
-- α computation falls back to a greedy lower bound if SAT times out
-  (N > 75 is where this starts mattering). Records include
-  `alpha_exact: false` in those cases.
