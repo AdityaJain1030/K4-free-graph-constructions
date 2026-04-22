@@ -1,0 +1,27 @@
+[
+  {
+    "id": "2a7d3786d6094bbd",
+    "sparse6": ":a_O?K?B??o?[?CD_?o_Y?AA@XOeQIcahGiQKcapscWLFqPWs\\IDb`{gYNGChOoYMHQ`WoaReb`xCeSIr@p?aQHdXWo]OIDQskYOGca`[p@@@OsCGEBegGKGDLOOOKOZa@Oo_u[Moog[OYLfWOKKFMFRsGGFCEb`|@",
+    "source": "dihedral_exhaustive_min",
+    "metadata": {
+      "n": 34,
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "D_17",
+      "connection_set": [
+        3,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        14
+      ],
+      "orbits_examined": 131659,
+      "k4_free_orbits": 5724,
+      "certificate": "exact D_17 Cayley minimum, verified by exhaustive Aut(D_p)-orbit enumeration"
+    }
+  }
+]

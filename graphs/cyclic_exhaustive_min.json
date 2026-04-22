@@ -1,0 +1,173 @@
+[
+  {
+    "id": "616eac31100bc37e",
+    "sparse6": ":P__@_@_@_B_AD_BCE_ACD`ADE`CEFH`BCDH`ABGIcDEGIJKbDFGHIKaBEFJKLaCFGHJMN",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 17,
+      "alpha": 3,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "cyclic",
+      "connection_set": [
+        3,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        14
+      ],
+      "orbits_examined": 35,
+      "k4_free_orbits": 15,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "aa356a092d0eb4fc",
+    "sparse6": ":U_____B_C_@BE_ACDFcEbD`FHIaGHI`CHIJaBHIKL`DEIJMaDEHKL`BDFKMaCEGJLP`CEFINOaBDGHNOR`ABCJKPQ",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 22,
+      "alpha": 4,
+      "d_max": 8,
+      "c_log": 0.6994885046734369,
+      "group": "cyclic",
+      "connection_set": [
+        4,
+        6,
+        7,
+        9,
+        13,
+        15,
+        16,
+        18
+      ],
+      "orbits_examined": 415,
+      "k4_free_orbits": 105,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "2a7d3786d6094bbd",
+    "sparse6": ":a_O?K?B??o?[?CD_?o_Y?AA@XOeQIcahGiQKcapscWLFqPWs\\IDb`{gYNGChOoYMHQ`WoaReb`xCeSIr@p?aQHdXWo]OIDQskYOGca`[p@@@OsCGEBegGKGDLOOOKOZa@Oo_u[Moog[OYLfWOKKFMFRsGGFCEb`|@",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 34,
+      "alpha": 6,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "cyclic",
+      "connection_set": [
+        6,
+        10,
+        12,
+        14,
+        20,
+        22,
+        24,
+        28
+      ],
+      "orbits_examined": 16459,
+      "k4_free_orbits": 1338,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "a00aa668435bb667",
+    "sparse6": ":k_OGCA?B_@G?CEE_?__SNICqXKeQKcbXGgWNcapgw`LFr@sg_QHqqHGfIEcaXQUKHCqhYSMFcq`]UMFcahYSKFCAh]ULFcQ`WtIEbq@KoXdb@pCcWKfHOkWLIDRPmGE``WG[}_`AByAACNgCKGE^OGc[CIEOGScGIENgc[CEDBgccGGECGSY]ACB@sATLA@`P@|IeSoOOKG`PHtF",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 44,
+      "alpha": 8,
+      "d_max": 8,
+      "c_log": 0.6994885046734369,
+      "group": "cyclic",
+      "connection_set": [
+        8,
+        12,
+        14,
+        18,
+        26,
+        30,
+        32,
+        36
+      ],
+      "orbits_examined": 432575,
+      "k4_free_orbits": 11644,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "6a8d281aabad2908",
+    "sparse6": ":R__@_@__AC_BC`dFeFGcaIbIJ`BFIK`AFHJcDFGILcEHIJMaDGJKbEGHKP",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 19,
+      "alpha": 4,
+      "d_max": 6,
+      "c_log": 0.7049818440647334,
+      "group": "cyclic",
+      "connection_set": [
+        4,
+        6,
+        9,
+        10,
+        13,
+        15
+      ],
+      "orbits_examined": 59,
+      "k4_free_orbits": 22,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "beac5c7bb4db9fd5",
+    "sparse6": ":e_O?K?B?_?_c?ECc@wwaMGbppGmMIDqH_yYMFqxHESPHQ@OwaRcAPp?dJEB`xChJEcAHGjHEBqPMSLFcAXaBDLPbPmHAMorhyABLFR{CCYMFg_SsZMgG_Ww\\NGWOSu]Noopkw^Q^",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 38,
+      "alpha": 8,
+      "d_max": 6,
+      "c_log": 0.7049818440647334,
+      "group": "cyclic",
+      "connection_set": [
+        8,
+        12,
+        18,
+        20,
+        26,
+        30
+      ],
+      "orbits_examined": 58287,
+      "k4_free_orbits": 3147,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  },
+  {
+    "id": "a281ac166fde78c6",
+    "sparse6": ":r_O?K?B??o?[?CD_?o_Y?AA@XOeQIcahGiQKcapscWLFqPWs\\RHSa\\GfQHsalGgVhDQpacSJDyXOmWhdb@cvRIdaxmeSIebdWmWLFBhyiVKebXo|SIeBHs{^iDbHgu\\OGXOk[NdBPx@FIEBPqMSJECScs[NGhCiYWMGCSYPLJEBqATKfdbQ@DEdSIWGGIE_`?o\\V@@`?imAA@aDcOIECJDiyEDBaDYp\\A@`_yt[n`@?w`UlWK^",
+    "source": "cyclic_exhaustive_min",
+    "metadata": {
+      "n": 51,
+      "alpha": 9,
+      "d_max": 8,
+      "c_log": 0.6789153133595123,
+      "group": "cyclic",
+      "connection_set": [
+        9,
+        15,
+        18,
+        21,
+        30,
+        33,
+        36,
+        42
+      ],
+      "orbits_examined": 2105419,
+      "k4_free_orbits": 41162,
+      "certificate": "exact cyclic Cayley minimum, verified by exhaustive (Z_n)*-orbit enumeration"
+    }
+  }
+]

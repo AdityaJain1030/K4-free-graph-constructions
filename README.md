@@ -193,9 +193,11 @@ JSON batches consumed by `graph_db/`, one file per producing source:
 
 - `circulant.json` — circulant catalog from exhaustive `CirculantSearch` (N ≤ 35).
 - `cayley.json` — residue-class Cayley graphs `Cay(Z_p, R_k)` for `k ∈ {2, 3, 6}`.
+- `cayley_tabu.json` — tabu-search survivors over Cayley connection sets.
 - `mattheus_verstraete.json` — explicit construction from Mattheus–Verstraete 2023.
 - `regularity.json` — outputs of regularity-partition-based constructions.
 - `random.json` — random/greedy baselines.
+- `srg_catalog.json` — K₄-free survivors from McKay's SRG enumeration (see `docs/searches/SRG_CATALOG.md`; non-VT ingest, null on sub-Paley).
 
 SAT/ILP results are not yet wired into `graphs/`; they currently live under
 `reference/pareto/` as raw Pareto JSON.
@@ -222,6 +224,7 @@ Algorithm subclasses; per-search notes live under `docs/searches/`:
 | `circulant.py`           | `docs/searches/circulant/CIRCULANTS.md`      | Exhaustive circulant enumeration for N ≤ 35.                             |
 | `circulant_fast.py`      | `docs/searches/circulant/CIRCULANT_FAST.md`  | Scalable K4-free circulant search (N up to ~100).                        |
 | `cayley.py`              | `docs/searches/CAYLEY.md`                    | Residue-class Cayley graphs `Cay(Z_p, R_k)`, k ∈ {2, 3, 6}.              |
+| `cayley_tabu.py`         | `docs/searches/CAYLEY_TABU.md`               | Tabu search over Cayley connection sets across all supported groups of order N. |
 | `regularity.py`          | `docs/searches/regularity/REGULARITY.md`     | Regularity-partition-based construction.                                 |
 | `regularity_alpha.py`    | `docs/searches/regularity/REGULARITY_ALPHA.md` | α-optimised regularity variant.                                        |
 | `mattheus_verstraete.py` | `docs/searches/MATTHEUS_VERSTRAETE.md`       | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
@@ -237,7 +240,9 @@ Algorithm subclasses; per-search notes live under `docs/searches/`:
 - `db_cli.py` — query / inspect `graph_db` from the shell.
 - `open_visualizer.py` — launch the tkinter visualizer.
 - `setup_nauty.sh` — build `nauty` (`geng`, `labelg`, …) inside the env.
-- `run_random.py`, `run_cayley.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py`, `run_random_regular_switch.py`, `run_alpha_targeted.py` — per-algorithm sweep drivers.
+- `run_random.py`, `run_cayley.py`, `run_cayley_tabu.py`, `run_regularity.py`, `run_regularity_alpha.py`, `run_mattheus_verstraete.py`, `run_random_regular_switch.py`, `run_alpha_targeted.py` — per-algorithm sweep drivers.
+- `compare_cayley_tabu.py`, `persist_cayley_tabu.py` — Cayley-tabu specific: write per-N comparison vs baselines to `results/cayley_tabu/comparison.md`, or re-ingest existing run outputs into the graph_db.
+- `run_srg_screen.py` — one-shot ingest of McKay's strongly-regular-graph catalog under `source='srg_catalog'`. Non-VT complement to the Cayley searches. See `docs/searches/SRG_CATALOG.md`.
 - `run_sweep_10_40.py` — unified driver that runs every non-SAT search across N=10..40.
 
 ## `utils/` — Shared primitives

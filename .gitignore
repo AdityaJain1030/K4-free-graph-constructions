@@ -1,10 +1,14 @@
 __pycache__
 cache.db
 
+# Raw third-party graph catalogues (e.g. McKay's SRG enumerations).
+# Not ours to version; scripts fetch on demand.
+graphs_src/
+
 # Run artifacts. Logs and other ephemeral outputs are regenerated on
 # every invocation — tracking them produces noisy diffs and merge
 # conflicts. The log directories are created by search/logger.py and
 # the run_* scripts themselves, so they don't need placeholder files.
 logs/
-funsearch/claude_search/logs/
+claude_search/logs/
 funsearch/experiments/evo_search/logs/

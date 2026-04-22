@@ -113,6 +113,15 @@ subclass.
 
 - `n ≤ 35` with no interest in algebraic metadata — `CirculantSearch`
   already covers the same ground.
-- Composite `n` — not supported.
+- Composite `n` — not supported. See `CAYLEY_TABU.md` for the general
+  Cayley search that covers non-prime `N` and non-cyclic groups.
 - You want irregular / near-regular constructions — the whole family
   is exactly regular of degree `(p-1)/k`.
+
+## Related
+
+- `CAYLEY_TABU.md` — the general Cayley search. Tabu over inversion-orbit
+  bitvectors for every supported group of order `N` (cyclic, dihedral,
+  direct products, elementary abelian, `ℤ_3 × ℤ_2^k`). Non-deterministic,
+  no algebraic guarantee, but reaches the parts of the Cayley-graph
+  space that this residue-only construction cannot.
