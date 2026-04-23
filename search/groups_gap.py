@@ -132,11 +132,13 @@ def _parse_gap_output(n: int, text: str) -> list[dict]:
             continue
         if line.startswith("CAP "):
             nsg = int(line.split()[1])
-            raise RuntimeError(
-                f"order n={n} has {nsg} SmallGroups, above cap "
-                f"MAX_GROUPS_PER_N={MAX_GROUPS_PER_N}. Bump the cap "
-                f"or filter before calling."
+            print(
+                f"[groups_gap] skipping n={n}: {nsg} SmallGroups exceeds "
+                f"cap MAX_GROUPS_PER_N={MAX_GROUPS_PER_N}. "
+                f"Raise the cap in groups_gap.py to include it.",
+                flush=True,
             )
+            return []
         if line == "BEGIN":
             current = {"id": None, "sd": None, "mult": []}
             continue
