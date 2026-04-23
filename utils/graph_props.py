@@ -677,3 +677,34 @@ def c_log_value(alpha: int, n: int, d_max: int) -> float | None:
     if d_max <= 1:
         return None
     return alpha * d_max / (n * log(d_max))
+
+
+# ---------------------------------------------------------------------------
+# Lovász theta (SDP upper bound on α)
+# ---------------------------------------------------------------------------
+
+def lovasz_theta(adj: np.ndarray, solver: str = "SCS") -> float | None:
+    """
+    Lovász ϑ(G) via  max ⟨J, X⟩  s.t.  X ⪰ 0, tr(X) = 1,
+                                       X_ij = 0 for every edge ij.
+    Polynomial-time SDP upper bound on α(G): α(G) ≤ ϑ(G) ≤ χ(Ḡ).
+    Returns None for n ≤ 1 (trivial) or if cvxpy is not importable.
+    """
+    n = adj.shape[0]
+    if n == 0:
+        return 0.0
+    if n == 1:
+        return 1.0
+    try:
+        import cvxpy as cp
+    except ImportError:
+        return None
+    X = cp.Variable((n, n), symmetric=True)
+    cons = [X >> 0, cp.trace(X) == 1]
+    iu, ju = np.where(np.triu(adj, 1) > 0)
+    for i, j in zip(iu, ju):
+        cons.append(X[i, j] == 0)
+    prob = cp.Problem(cp.Maximize(cp.sum(X)), cons)
+    prob.solve(solver=solver, verbose=False)
+    val = prob.value
+    return round(float(val), 6) if val is not None else None

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "ab710fcf522d2d43",
+    "sparse6": ":a_O?K?B??o?K?B??o?_U?CAo?o[OH_@_w_R?@?oo[OH_?_WWMGCo?OKGDDAw?GECAa`[?CBA@Oo]ACAa@GgUO_`?g_QIDcGGGEGCb@h?aQ___W_QKEcAHIAA@`_wgUOGcgGGEEBa`X?aQ_`?gWMMFcAXQACA`_ww]OHdGo[SJEBPo{aQHdAxaKFDAp_s[NGcaXOmW`?p?cSJFBqXOiUJeGOKOHDApo{eSIdaxaCBA@P_s[NGcahWqY`?o_SWLFBqHGiUKeg_SKFCAP_siUJeBXoy]a@Oo[OHEBQhWmWLfBhyAA@`?gWMGCa`WoYMFcN",
+    "source": "paley_randomized_blowup",
+    "metadata": {
+      "construction": "standard_K22_blowup",
+      "p": 1.0,
+      "k": 2,
+      "baseline": true,
+      "alpha_exact": 6
+    }
+  }
+]

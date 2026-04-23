@@ -179,22 +179,25 @@ Run via `scripts/verify_p17_lift.py --n {N}`.
 
 ### Open
 
-- k = 2, D_17: 2²⁵ subsets, not exhaustive. Best tabu upper bound at
-  N=34 is 0.6789 but this is empirical only. Needs a symmetry-aware
-  exhaustive or tabu-with-proof-certificate.
-- k = 3, non-abelian Z_17⋊Z_3 (order 51): 2²⁸ subsets with Aut-group
-  acting, not yet run. Same scale as D_17.
+- k = 2, D_17: 2²⁵ subsets, exhaustively verified 2026-04-21 via
+  `scripts/verify_dihedral.py` — unique c-minimizer = rotation-only
+  k=2 lift of P(17) at 0.6789. Closes Conjecture B at k=2 (combined
+  with cyclic Z_34).
+- k = 3, order 51: **no non-abelian group exists** (|Aut(Z_17)|=16,
+  3∤16, so Z_17⋊Z_3 is trivial and the only group is cyclic Z_51;
+  GAP confirms `NrSmallGroups(51)=1`). Cyclic Z_51 is already
+  exhaustively verified, so B at k=3 is closed.
 - k ≥ 4 (cyclic): 2³³+ subsets — feasible with multiprocessing +
   tighter K₄ reject, probably hours.
 
 ### Upshot
 
 At k ∈ {1, 2, 3}, the ceiling c = 0.6789 we see in tabu is NOT a
-search-budget artifact for the cyclic case. It is the strict minimum
-over the full exponential space, confirmed exhaustively. At each of
-N = 17, 34, 51 the unique minimizer (up to (Z_n)*-action) is exactly
-the k-lift of P(17). Breaking below 0.6789 at any of these N requires
-a non-Cayley-on-Z_n construction — either a non-cyclic group (D_17,
-Z_17⋊Z_3) or a non-vertex-transitive graph. This is the first
-lower-bound proof of Paley-optimality in any specific family for
-our problem.
+search-budget artifact. It is the strict minimum over the full
+exponential space for every group of order 17k at these k (cyclic
+Z_n exhaustively at all three, plus D_17 at k=2 and the triviality
+argument at k=3). At each of N = 17, 34, 51 the unique minimizer
+(up to the relevant Aut-action) is exactly the k-lift of P(17).
+Breaking below 0.6789 at any of these N requires a non-Cayley /
+non-vertex-transitive construction. This is the first lower-bound
+proof of Paley-optimality in any specific family for our problem.

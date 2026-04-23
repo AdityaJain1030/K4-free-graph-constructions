@@ -3387,5 +3387,34 @@
       "tabu_n_iters": 1500,
       "tabu_best_iter": 492
     }
+  },
+  {
+    "id": "cc5e62f8f44802b6",
+    "sparse6": ":~?AD_C?_?A_?@?[E?kD?sD?sD?{E@CF@KG@SK`[H@WM`OK@kLACM@{MASLAKSa[QAWUaGSAkTBCUA{UBSTBK[b[YBW]bG[Bk\\CC]B{]CS\\CKcc[aCWecGcCkdDCeC{eDSdDKkd[iDWmdGkDklECmD{mESlEKse[qEWueGsEktFCuE{uFStFK{f[yFW}fG{Fk|GC}F{}GS|GLCg\\AGXEgHCGlDHDEG|EHTDHLKh\\IHXMhHKHlLIDMH|MITLILSi\\QIXUiHSIlTJDUI|UJTTJL[j\\YJX]jH[Jl\\KD]J|]KT\\KLck\\aKXekHcKldLDeK|eLTdLLkl\\iLXmlHkLllMDmL|mMTlMLsm\\qMXumHsMltNDuM|uNTtNL{n\\yNX}nH{NkANi?_H}N{@?`}OSA?X|ON",
+    "source": "cayley_tabu",
+    "metadata": {
+      "group": "Z7xZ19",
+      "connection_set": [
+        [
+          1,
+          16
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          2,
+          13
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "surrogate_c_log": 0.8243971662222649,
+      "tabu_n_iters": 100,
+      "tabu_best_iter": 1
+    }
   }
 ]

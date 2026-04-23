@@ -19,6 +19,7 @@ from utils.graph_props import (
     c_log_value,
     codegree_stats,
     high_degree_verts,
+    lovasz_theta,
 )
 
 
@@ -129,6 +130,12 @@ def compute_properties(G: nx.Graph) -> dict:
 
     cv = c_log_value(alpha_val, n, p["d_max"])
     p["c_log"] = round(cv, 6) if cv is not None else None
+
+    # Lovász ϑ (SDP upper bound on α). See utils/graph_props.lovasz_theta.
+    try:
+        p["lovasz_theta"] = lovasz_theta(adj)
+    except Exception:
+        p["lovasz_theta"] = None
 
     # beta: d_avg = (n/alpha) * ln(n/alpha)^beta
     beta = None

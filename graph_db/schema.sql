@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS cache (
     eigenvalues_lap         TEXT    NOT NULL,
     algebraic_connectivity  REAL,
     alpha                   INTEGER NOT NULL,
+    lovasz_theta            REAL,
     c_log                   REAL,
     beta                    REAL,
     turan_density           REAL    NOT NULL,
@@ -52,3 +53,4 @@ CREATE INDEX IF NOT EXISTS idx_d_max    ON cache(d_max);
 CREATE INDEX IF NOT EXISTS idx_is_k4    ON cache(is_k4_free);
 CREATE INDEX IF NOT EXISTS idx_regular  ON cache(is_regular);
 CREATE INDEX IF NOT EXISTS idx_codeg_max ON cache(codegree_max);
+CREATE INDEX IF NOT EXISTS idx_lovasz_theta ON cache(lovasz_theta);

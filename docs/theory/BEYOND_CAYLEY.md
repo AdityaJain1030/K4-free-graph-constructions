@@ -144,8 +144,15 @@ From `P17_LIFT_OPTIMALITY.md` Results section:
   Combined with cyclic k=2, this closes **Conjecture B at k=2** for
   order 34: both groups of order 34 have the P(17)-lift as unique
   minimizer. 340s runtime.
-- **Z_17 ⋊ Z_3 at N=51** (only non-abelian group of order 51) — pending;
-  closes Conjecture B at k=3 once verified.
+- **Conjecture B at k=3 (N=51) — closed trivially, 2026-04-23.** There
+  is no non-abelian group of order 51: |G|=51=3·17, Sylow-17 normal,
+  and φ: Z_3 → Aut(Z_17)=Z_16 must be trivial since 3 ∤ 16, so G = Z_51
+  (verified independently via GAP: `NrSmallGroups(51) = 1`, structure
+  `C51`). The cyclic-Z_51 exhaustive verification (41,162 K₄-free
+  orbits, P(17)-lift the unique minimizer) therefore closes B at k=3.
+  Earlier drafts of this doc and `P17_LIFT_OPTIMALITY.md` claimed a
+  "Z_17 ⋊ Z_3" as a second group of order 51 — that was a factual
+  error; corrected here.
 - **B at other orders, C** — require flag algebra / SDP work. Out of
   current scope.
 

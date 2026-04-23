@@ -1,0 +1,63 @@
+[
+  {
+    "id": "5cf33ba1860e4c4e",
+    "sparse6": ":L`?K?o_Gc@caOkPcNCPbrIWyXCK`K`dOh^",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Paley",
+      "name": "P(13)",
+      "group": "Z_13",
+      "connection_set": "quadratic_residues"
+    }
+  },
+  {
+    "id": "3a29026d3bc0b61e",
+    "sparse6": ":P____eDedF`DbFHaEcGJaBEH`ADKbCFJ`CGI",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Cyclotomic",
+      "name": "Cay(Z_17, 4th_powers)",
+      "group": "Z_17",
+      "connection_set": [
+        1,
+        4,
+        13,
+        16
+      ],
+      "k": 4
+    }
+  },
+  {
+    "id": "081d077214f2f1a0",
+    "sparse6": ":O`ACGPDC[QPJGYCqG\\KafPK`ckeSqDsIWyn",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "SRG",
+      "name": "Clebsch (Z_2^4)",
+      "group": "Z_2^4",
+      "connection_set": "{e_1,e_2,e_3,e_4,1111}"
+    }
+  },
+  {
+    "id": "ff2b19f34a7432c4",
+    "sparse6": ":O`?K?o_Gc@caQGrpC]`bggSyXDOiXSJXGqTKeXIum",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "SRG",
+      "name": "Shrikhande (Z_4xZ_4)",
+      "group": "Z_4xZ_4",
+      "connection_set": "{\u00b1(1,0),\u00b1(0,1),\u00b1(1,1)}"
+    }
+  },
+  {
+    "id": "d307cca7e5ea8fea",
+    "sparse6": ":Z____B_A_@gFiHfHgIJfHgIL`AFG`DJKNaELMNbDHJbEHLcEIMRcDIKQdEHIOP`BFJR`CGKSVaCGMTaBFLQX",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(3,3) (Z_3^3)",
+      "group": "Z_3^3",
+      "connection_set": "{\u00b1e_i}"
+    }
+  }
+]

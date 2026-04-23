@@ -69,10 +69,14 @@ theoretic proof of A for all k (likely 2–5 pages), or (b) closing
 **Conjecture B** (all groups of order 17k, not just cyclic) by running
 the non-abelian groups at N=34 and N=51.
 
-Decision: (b). D_17 at N=34 is the only non-abelian group of order 34;
-Z_17 ⋊ Z_3 is the only non-abelian group of order 51 (since 3 | 17-1).
-If both return ≥ 0.6789, **Conjecture B is proved exhaustively at k=2
-and k=3** — a strict strengthening beyond what's already done.
+Decision: (b). D_17 at N=34 is the only non-abelian group of order 34.
+*(Original note said Z_17 ⋊ Z_3 was the only non-abelian group of order
+51 "since 3 | 17−1"; that's wrong — 17−1 = 16, 3 ∤ 16. Corrected
+2026-04-23: there is no non-abelian group of order 51, so B at k=3 is
+closed by the cyclic Z_51 verification alone.)*
+If D_17 returns ≥ 0.6789, **Conjecture B is proved exhaustively at k=2
+and (by the above argument) at k=3** — a strict strengthening beyond
+what's already done.
 
 ### 5. Wrote `scripts/verify_dihedral.py` (not yet run)
 
@@ -190,9 +194,14 @@ and D_17 (dihedral, verified now). Both admit the P(17)-lift as their
 unique c-minimizer up to automorphism. **No non-abelian Cayley graph on
 34 vertices beats P(17).**
 
-Remaining for Conjecture B at k=3 (order 51): Z_17 ⋊ Z_3 (only non-
-abelian group of order 51 since 3 | 17−1). Cyclic case already done.
-Script not yet written.
+Remaining for Conjecture B at k=3 (order 51): **nothing** — but this
+was noticed only on 2026-04-23 and corrected retroactively. The claim
+"3 | 17−1" written above is wrong: 17 − 1 = 16 and 3 ∤ 16, so
+Aut(Z_17) = Z_16 has no element of order 3 and no nontrivial
+Z_17 ⋊ Z_3 exists. GAP confirms: `NrSmallGroups(51) = 1`, structure
+`C51`. The cyclic-Z_51 verification (done earlier this session)
+already closes Conjecture B at k=3. See BEYOND_CAYLEY.md §7 and
+P17_LIFT_OPTIMALITY.md for corrected status.
 
 ## Addendum — SRG catalog screen (evening session)
 

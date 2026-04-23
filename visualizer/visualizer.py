@@ -126,17 +126,70 @@ def _format_metrics(rec: dict) -> tuple[dict, list, list, list]:
     m["beta"]               = f"{b:.4f}" if b is not None else "–"
     m["source"]             = rec["source"]
 
+    # Hoffman bound + saturation (derived on the fly from λ_min)
+    lam_min = None
+    eig_adj_tmp = rec.get("eigenvalues_adj", [])
+    if eig_adj_tmp:
+        lam_min = min(eig_adj_tmp)
+    d = rec.get("d_max")
+    if lam_min is not None and d is not None and d > lam_min:
+        H = rec["n"] * (-lam_min) / (d - lam_min)
+        m["Hoffman bound H"] = f"{H:.4f}"
+        if H > 0:
+            m["α / H (saturation)"] = f"{rec['alpha']/H:.4f}"
+        else:
+            m["α / H (saturation)"] = "–"
+    else:
+        m["Hoffman bound H"] = "–"
+        m["α / H (saturation)"] = "–"
+
+    # Highlights-mode enrichment: show slug, tier, curator note
+    if rec.get("_highlight_slug"):
+        m["★ slug"]  = rec["_highlight_slug"]
+        m["★ tier"]  = str(rec.get("_highlight_tier", "–"))
+        m["★ label"] = rec.get("_highlight_label", "")
+        note = rec.get("_highlight_note", "")
+        # wrap long notes at ~60 chars for the sidebar table
+        if note:
+            words = note.split()
+            lines, cur = [], ""
+            for w in words:
+                if len(cur) + len(w) + 1 > 60:
+                    lines.append(cur.strip()); cur = w
+                else:
+                    cur = f"{cur} {w}" if cur else w
+            if cur:
+                lines.append(cur.strip())
+            m["★ note"] = "\n".join(lines)
+
     eig_adj = rec.get("eigenvalues_adj", [])
     eig_lap = rec.get("eigenvalues_lap", [])
     degrees = rec.get("degree_sequence", [])
     return m, eig_adj, eig_lap, degrees
 
 
-def _load_data(source_filter: str | None = None) -> dict[int, list[dict]]:
+def _load_data(source_filter: str | None = None,
+               highlights_manifest: str | None = None) -> dict[int, list[dict]]:
     """
     Open graph_db, sync, load all records with G+adj attached.
     Returns {n: [rec, ...]} sorted by n.
+
+    If `highlights_manifest` is given (path to a JSON list of
+    {slug, graph_id, source, label, note, tier, ...} entries), the
+    returned records are restricted to that set and enriched with the
+    manifest fields (`slug`, `label`, `note`, `tier`).
     """
+    import json as _json
+
+    manifest: list[dict] = []
+    wanted_keys: set[tuple[str, str]] | None = None
+    slug_by_key: dict[tuple[str, str], dict] = {}
+    if highlights_manifest:
+        with open(highlights_manifest) as f:
+            manifest = _json.load(f)
+        wanted_keys = {(m["graph_id"], m["source"]) for m in manifest}
+        slug_by_key = {(m["graph_id"], m["source"]): m for m in manifest}
+
     kwargs = {}
     if source_filter:
         kwargs["source"] = source_filter
@@ -144,11 +197,21 @@ def _load_data(source_filter: str | None = None) -> dict[int, list[dict]]:
     with DB() as db:
         records = db.hydrate(db.query(**kwargs))
 
+    if wanted_keys is not None:
+        records = [r for r in records if (r["graph_id"], r["source"]) in wanted_keys]
+        for r in records:
+            m = slug_by_key.get((r["graph_id"], r["source"]), {})
+            r["_highlight_slug"]  = m.get("slug")
+            r["_highlight_label"] = m.get("label")
+            r["_highlight_note"]  = m.get("note")
+            r["_highlight_tier"]  = m.get("tier")
+
     data: dict[int, list[dict]] = {}
     for rec in records:
         data.setdefault(rec["n"], []).append(rec)
     for n in data:
-        data[n].sort(key=lambda r: (r.get("c_log") or float("inf")))
+        data[n].sort(key=lambda r: (r.get("_highlight_tier") or 99,
+                                    r.get("c_log") or float("inf")))
     return data
 
 
@@ -157,17 +220,22 @@ def _load_data(source_filter: str | None = None) -> dict[int, list[dict]]:
 # ---------------------------------------------------------------------------
 
 class App(tk.Tk):
-    def __init__(self, source_filter: str | None = None):
+    def __init__(self, source_filter: str | None = None,
+                 highlights_manifest: str | None = None):
         super().__init__()
-        self.title("K₄-Free Graph Explorer")
+        self.title("K₄-Free Graph Explorer"
+                   + (" — Highlights" if highlights_manifest else ""))
         self.geometry("1400x900")
         self.configure(bg=C_BG)
 
-        self.data = _load_data(source_filter)
+        self.highlights_mode = highlights_manifest is not None
+        self.data = _load_data(source_filter, highlights_manifest)
         if not self.data:
             msg = "No graphs found"
             if source_filter:
                 msg += f" for source='{source_filter}'"
+            if highlights_manifest:
+                msg += f" for manifest='{highlights_manifest}'"
             tk.Label(self, text=msg, font=("sans-serif", 14)).pack(expand=True)
             return
 
@@ -799,11 +867,28 @@ class App(tk.Tk):
 
 def main():
     import argparse
+    import os as _os
     parser = argparse.ArgumentParser(description="K₄-Free Graph Explorer")
     parser.add_argument("--source", default=None,
                         help="Filter by source tag (e.g. sat_pareto)")
+    parser.add_argument("--highlights", action="store_true",
+                        help="Load the curated highlights/ manifest "
+                             "(highlights/index.json). Restricts the view to "
+                             "the ~46 curated graphs and shows their slug + note.")
+    parser.add_argument("--manifest", default=None,
+                        help="Custom manifest JSON path (alternative to --highlights).")
     args = parser.parse_args()
-    App(source_filter=args.source).mainloop()
+
+    manifest = args.manifest
+    if args.highlights and not manifest:
+        repo = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+        manifest = _os.path.join(repo, "highlights", "index.json")
+        if not _os.path.exists(manifest):
+            raise SystemExit(
+                f"--highlights requested but {manifest} not found; "
+                f"run `python scripts/build_highlights.py` first."
+            )
+    App(source_filter=args.source, highlights_manifest=manifest).mainloop()
 
 
 if __name__ == "__main__":

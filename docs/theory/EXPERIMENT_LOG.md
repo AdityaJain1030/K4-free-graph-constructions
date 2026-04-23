@@ -371,10 +371,16 @@ held until Exp 23 (cayley_tabu sweep) frees CPU. Expected runtime
 20–60 min. Two-branch stopping rule: min c ≥ 0.6789 ⇒ Conjecture B
 closed at k = 2; min c < 0.6789 ⇒ first construction to beat Paley.
 
-### Exp 27 — Z_17 ⋊ Z_3 at N = 51 (not yet scripted)
-**Question.** Same as Exp 26 for the other non-abelian group at 17k.
-**Approach.** To-be-written verifier; same technique, different Aut.
-**Result.** Pending Exp 26's result.
+### Exp 27 — Z_17 ⋊ Z_3 at N = 51 (not needed, 2026-04-23)
+**Question.** Same as Exp 26 for any non-abelian group of order 51.
+**Approach.** None — the premise was wrong. There is no non-abelian
+group of order 51: Aut(Z_17) = Z_16 has no element of order 3 since
+3 ∤ 16, so every φ: Z_3 → Aut(Z_17) is trivial and G = Z_51 (cyclic).
+GAP confirms: `NrSmallGroups(51) = 1`, structure `C51`.
+**Result.** **Conjecture B closed at k=3 trivially** by the cyclic-Z_51
+exhaustive verification already in the DB (`source='cyclic_exhaustive_min'`,
+41,162 K₄-free orbits, unique minimizer = k=3 lift of P(17)). No
+verification script needed.
 
 ---
 
@@ -443,7 +449,8 @@ Ordered by cost-vs-payoff in `BEYOND_CAYLEY.md §8`:
 2. Smoke-test `verify_dihedral.py --p 5` (seconds).
 3. Full D_17 exhaustive (Exp 26). **Either closes B at k=2 or breaks
    Paley.**
-4. Write + run Z_17 ⋊ Z_3 verifier at N = 51 (Exp 27).
+4. ~~Write + run Z_17 ⋊ Z_3 verifier at N = 51 (Exp 27).~~ Dropped
+   2026-04-23: no such group exists; B at k=3 closed by cyclic Z_51.
 5. SAT-exact at N = 17 full-bitvector (Exp 30, small-N half).
 6. SAT-exact at N = 34 on the 200 GB server (Exp 30, big-N half).
 7. Asymmetric lift tabu with multi-flip moves (follow-up to Exp 28).

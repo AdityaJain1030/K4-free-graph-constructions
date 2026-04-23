@@ -36,7 +36,7 @@ _INSERT_COLUMNS = (
     "clique_num", "greedy_chromatic_bound", "is_k4_free",
     "eigenvalues_adj", "spectral_radius", "spectral_gap", "n_distinct_eigenvalues",
     "eigenvalues_lap", "algebraic_connectivity",
-    "alpha", "c_log", "beta", "turan_density",
+    "alpha", "lovasz_theta", "c_log", "beta", "turan_density",
     "codegree_avg", "codegree_max",
     "mis_vertices", "triangle_edges", "triangle_vertices", "high_degree_vertices",
     "metadata",
@@ -99,6 +99,7 @@ class PropertyCache:
     _AUTO_ADD_COLUMNS = (
         ("codegree_avg", "REAL"),
         ("codegree_max", "INTEGER"),
+        ("lovasz_theta", "REAL"),
     )
 
     def _migrate_add_missing_columns(self):
@@ -171,7 +172,8 @@ class PropertyCache:
             j(props["eigenvalues_adj"]), props["spectral_radius"],
             props["spectral_gap"], props["n_distinct_eigenvalues"],
             j(props["eigenvalues_lap"]), props["algebraic_connectivity"],
-            props["alpha"], props["c_log"], props["beta"],
+            props["alpha"], props["lovasz_theta"],
+            props["c_log"], props["beta"],
             props["turan_density"],
             props["codegree_avg"], props["codegree_max"],
             j(props["mis_vertices"]), j(props["triangle_edges"]),
@@ -239,6 +241,6 @@ class PropertyCache:
             "clique_num", "greedy_chromatic_bound", "is_k4_free",
             "spectral_radius", "spectral_gap", "n_distinct_eigenvalues",
             "algebraic_connectivity",
-            "alpha", "c_log", "beta", "turan_density",
+            "alpha", "lovasz_theta", "c_log", "beta", "turan_density",
             "codegree_avg", "codegree_max",
         }
