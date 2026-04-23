@@ -33,6 +33,9 @@ request_cpus   = 64
 request_memory = 50GB
 request_disk   = 10GB
 
+stream_output = True
+stream_error = True
+
 # Long walltime for the 2–3 day sweep. Some HTCondor pools enforce a
 # soft default (e.g. 72h) via MaxWallClockMin; uncomment and raise as
 # needed for your site's policy.
