@@ -30,11 +30,10 @@ export PYTHONFAULTHANDLER=1
 #   local run established 180s is the floor at N=25; 600s gives comfortable
 #   headroom for larger N with more inversion orbits.
 # --n-iters / --n-restarts tuned to the knobs that worked locally.
-# --better-only skips persisting to graph_db when the new record doesn't
-#   improve the existing best c_log for that N under source='cayley_tabu_gap'.
+# (--better-only is off here: the cluster's cache.db can be rebuilt
+# separately; this run persists every completed task to graphs/*.json.)
 python scripts/run_cayley_tabu_gap_parallel.py \
     --n-lo 10 --n-hi 144 \
     --workers 64 \
     --time-limit 1200 \
-    --n-iters 600 --n-restarts 16 \
-    --better-only
+    --n-iters 600 --n-restarts 16
