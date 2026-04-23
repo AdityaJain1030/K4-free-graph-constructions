@@ -36,6 +36,9 @@ dependencies:
   - tqdm
   - numba        # JIT-compiled bitmask B&B in utils/graph_props.alpha_bb_numba
 
+  # ── GAP (SmallGroups library) — backs search/groups_gap.py ────────────────
+  - gap-defaults
+
   # ── UI (tkinter backend for visualizer) ────────────────────────────────────
   - tk
 

@@ -1,0 +1,45 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — GAP-backed Cayley tabu sweep
+# scripts/run_cayley_tabu_gap_parallel.py
+#
+# Single-job shape: one HTCondor job holds all 32 CPUs for the duration
+# of the sweep; the Python driver dispatches (N, SmallGroup) pairs to a
+# ProcessPoolExecutor internally. Simpler to track than an array job,
+# matches the existing PROOF_PIPELINE.sub pattern, and lets a pool
+# worker grab the next task as soon as any finishes (good load-balance
+# given N=32 has 51 SmallGroups while N=29 has 1).
+# ----------------------------------------------------------------------
+
+universe = vanilla
+
+executable = cluster/run_cayley_tabu_gap.sh
+
+# Edit to match your repo location on the cluster.
+initialdir = /home/adityaj8/k4free
+
+getenv = True
+
+output = logs/pipeline/cayley_tabu_gap_$(Cluster)_$(Process).out
+error  = logs/pipeline/cayley_tabu_gap_$(Cluster)_$(Process).err
+log    = logs/pipeline/cayley_tabu_gap_$(Cluster)_$(Process).log
+
+# ----------------------------------------------------------------------
+# Resource Requests
+# 32 CPUs: one ProcessPoolExecutor worker per CPU. Memory per worker
+# is ~100–200 MB (tabu state + numpy + ortools is small); 200 GB is
+# way more than needed but leaves headroom if we bump N past ~100.
+# ----------------------------------------------------------------------
+request_cpus   = 64
+request_memory = 50GB
+request_disk   = 10GB
+
+# Long walltime for the 2–3 day sweep. Some HTCondor pools enforce a
+# soft default (e.g. 72h) via MaxWallClockMin; uncomment and raise as
+# needed for your site's policy.
+# +MaxWallClockMin = 4320
+
+# Optional machine pin — no native-code dependency here, leave as-is
+# unless the site requires it.
+# Requirements = (Machine == "vision-c23.cs.illinois.edu")
+
+queue

@@ -5,6 +5,7 @@ from .brown import BrownSearch
 from .brute_force import BruteForce
 from .cayley import CayleyResidueSearch
 from .cayley_tabu import CayleyTabuSearch
+from .cayley_tabu_gap import CayleyTabuGapSearch
 from .circulant import CirculantSearch
 from .circulant_fast import CirculantSearchFast
 from .random import RandomSearch
@@ -29,6 +30,7 @@ __all__ = [
     "BruteForce",
     "CayleyResidueSearch",
     "CayleyTabuSearch",
+    "CayleyTabuGapSearch",
     "CirculantSearch",
     "CirculantSearchFast",
     "RandomSearch",
