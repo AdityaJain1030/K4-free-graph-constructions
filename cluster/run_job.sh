@@ -1,12 +1,23 @@
 #!/bin/bash
-# Cluster-job template for the end-to-end K4-free optimality pipeline.
-# Paired with HTCondor submit files in this directory.
+# Cluster-job template — N=34 SAT-exact push seeded with 2·P(17).
+#
+# Goal: prove (or disprove) that 2·P(17) is the c-optimal K4-free graph on
+# 34 vertices, i.e. that no non-Cayley graph on 34 vertices beats
+# c = 24/(17·ln 8) ≈ 0.6789. Cayley case is already exhaustively closed
+# (Z_34 and D_17; verify_p17_lift.py, verify_dihedral.py).
+#
+# The driver scripts/run_n34_push.py:
+#   • seeds SATExact with 2·P(17) directly (CirculantSearchFast is
+#     heuristic and not guaranteed to find this graph),
+#   • runs the Pareto scan with c_log_prune to kill every box whose
+#     c-bound ≥ 0.6789,
+#   • hard-box-proves the remaining (α ≤ 5 boxes with d ≤ cutoff and
+#     any α=6 box with d<8 that survives the scan).
 #
 # Edit:
-#   - REPO     : path to the checked-out 4cycle repo on the server
-#   - ENV      : micromamba env with ortools + networkx + numpy
-#   - N_MIN / N_MAX : range of N to prove
-#   - resource kwargs : match the .sub file's request_cpus and RAM
+#   - REPO : path to the checked-out 4cycle repo on the server
+#   - ENV  : micromamba env with ortools + networkx + numpy
+#   - timeouts/workers : match PROOF_PIPELINE.sub's request_cpus and RAM
 
 set -euo pipefail
 
@@ -14,28 +25,21 @@ eval "$(micromamba shell hook -s bash)"
 
 REPO="/home/adityaj8/k4free"
 ENV="k4free"
-N_MIN=20
-N_MAX=30
 
 micromamba activate "$ENV"
 cd "$REPO"
 mkdir -p logs/pipeline logs/search logs/cores
 
-# Try to enable native core dumps; HTCondor may pin the hard limit at 0, in
-# which case we fall through silently and rely on Python's faulthandler (which
-# run_proof_pipeline.py registers for SIGILL/SEGV/ABRT/BUS/FPE) for the trace.
-ulimit -c unlimited 2>/dev/null || echo "[run_job] could not raise core limit (hard-capped by condor_starter); faulthandler will still catch traps"
+# HTCondor often pins the hard core-file limit at 0; faulthandler in the
+# Python driver will still capture SIGILL/SEGV/ABRT/BUS/FPE.
+ulimit -c unlimited 2>/dev/null || echo "[run_job] core limit capped; using faulthandler"
 export PYTHONFAULTHANDLER=1
 
-# Phase-1 (easy scan)  : 4 α-tracks × 4 threads = 16 CPUs
-# Phase-3 (hard boxes) : skipped — the N≥21 boundary boxes are not closing with
-#                        available timeouts (see logs/optimality_proofs.json).
-#                        Run targeted prove_box jobs separately once we have
-#                        better params; this pipeline just collects easy-scan
-#                        c* witnesses so N=22..30 progress isn't blocked by one
-#                        stuck 7h box.
-python scripts/run_proof_pipeline.py \
-    --n-min "$N_MIN" --n-max "$N_MAX" \
-    --easy-timeout 300 --easy-workers 4 --alpha-tracks 4 \
-    --skip-hard \
+# Phase-1 (easy scan)  : 8 α-tracks × 4 threads = 32 CPUs
+# Phase-3 (hard boxes) : 32 threads on one box at a time, 2h initial
+#                        timeout, escalating to 12h ceiling.
+python scripts/run_n34_push.py \
+    --easy-timeout 600 --easy-workers 4 --alpha-tracks 8 \
+    --hard-timeout 7200 --hard-timeout-max 43200 --hard-workers 32 \
+    --seed-hint \
     --save-graphs

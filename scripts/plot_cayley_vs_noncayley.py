@@ -69,6 +69,11 @@ NON_CAYLEY_SOURCES = {
     "norm_graph",
 }
 
+# Sources that actually produce competitive (optimal-ish) non-Cayley graphs.
+# Used to flag where non-Cayley data is TRUSTWORTHY vs where it's just
+# whatever random/blowup happened to find.
+NON_CAYLEY_COMPETITIVE = {"sat_exact", "sat_regular"}
+
 
 def _best_per_n(db: DB, sources: set[str]) -> dict[int, tuple[float, str]]:
     placeholders = ",".join("?" * len(sources))
@@ -103,6 +108,7 @@ def main() -> int:
     db = DB()
     cay = _best_per_n(db, CAYLEY_SOURCES)
     non = _best_per_n(db, NON_CAYLEY_SOURCES)
+    non_competitive = _best_per_n(db, NON_CAYLEY_COMPETITIVE)
 
     # Align on common N's
     Ns = list(range(args.n_min, args.n_max + 1))
@@ -110,6 +116,7 @@ def main() -> int:
     cay_src = [cay.get(n, (None, None))[1] for n in Ns]
     non_c = [non.get(n, (None, None))[0] for n in Ns]
     non_src = [non.get(n, (None, None))[1] for n in Ns]
+    has_competitive_noncay = [n in non_competitive for n in Ns]
 
     # Write CSV
     csv_path = os.path.join(args.outdir, "cayley_vs_noncayley.csv")
@@ -138,26 +145,58 @@ def main() -> int:
 
     cay_Ns = [n for n, c in zip(Ns, cay_c) if c is not None]
     cay_vals = [c for c in cay_c if c is not None]
-    non_Ns = [n for n, c in zip(Ns, non_c) if c is not None]
-    non_vals = [c for c in non_c if c is not None]
+    # Split non-Cayley into "competitive coverage" (sat_exact / sat_regular ran)
+    # and "weak coverage" (only random/blowup/regularity/etc).
+    non_Ns_comp = [n for n, c, h in zip(Ns, non_c, has_competitive_noncay) if c is not None and h]
+    non_vals_comp = [c for n, c, h in zip(Ns, non_c, has_competitive_noncay) if c is not None and h]
+    non_Ns_weak = [n for n, c, h in zip(Ns, non_c, has_competitive_noncay) if c is not None and not h]
+    non_vals_weak = [c for n, c, h in zip(Ns, non_c, has_competitive_noncay) if c is not None and not h]
+
+    # Shade the "no competitive non-Cayley coverage" band (typically N > 20)
+    if non_Ns_comp:
+        last_comp = max(non_Ns_comp)
+        ax1.axvspan(last_comp + 0.5, args.n_max + 0.5, color="#ffd9cc",
+                    alpha=0.3, zorder=-10,
+                    label=f"no competitive non-Cayley coverage (N > {last_comp})")
+        ax2.axvspan(last_comp + 0.5, args.n_max + 0.5, color="#ffd9cc",
+                    alpha=0.3, zorder=-10)
 
     ax1.plot(cay_Ns, cay_vals, "o-", color="#1f77b4", label="Cayley-class best",
              markersize=4, linewidth=1.2)
-    ax1.plot(non_Ns, non_vals, "s-", color="#d62728", label="Non-Cayley-class best",
-             markersize=4, linewidth=1.2, alpha=0.8)
+    ax1.plot(non_Ns_comp, non_vals_comp, "s-", color="#d62728",
+             label="Non-Cayley best (competitive: sat_exact/sat_regular)",
+             markersize=5, linewidth=1.4)
+    ax1.plot(non_Ns_weak, non_vals_weak, "s", color="#aaaaaa",
+             label="Non-Cayley best (weak: random/blowup/regularity only)",
+             markersize=3, alpha=0.5)
     ax1.axhline(y=0.6789, color="gray", linestyle="--", linewidth=0.6,
                 label="P(17) = 0.6789")
     ax1.set_ylabel("c_log")
     ax1.set_title(f"K4-free frontier: Cayley vs Non-Cayley, N ∈ [{args.n_min}, {args.n_max}]")
-    ax1.legend(loc="best")
+    ax1.legend(loc="upper left", fontsize=8)
     ax1.grid(True, alpha=0.3)
 
-    # Gap subplot
-    gap_Ns = [n for n, cc, nc in zip(Ns, cay_c, non_c) if cc is not None and nc is not None]
-    gap_vals = [cc - nc for cc, nc in zip(cay_c, non_c) if cc is not None and nc is not None]
-    colors = ["#2ca02c" if g < -0.01 else ("#d62728" if g > 0.01 else "#888")
-              for g in gap_vals]
-    ax2.bar(gap_Ns, gap_vals, color=colors, alpha=0.75)
+    # Gap subplot — only show for N with competitive non-Cayley coverage.
+    gap_Ns = []
+    gap_vals = []
+    gap_comp = []
+    for n, cc, nc, h in zip(Ns, cay_c, non_c, has_competitive_noncay):
+        if cc is None or nc is None:
+            continue
+        gap_Ns.append(n)
+        gap_vals.append(cc - nc)
+        gap_comp.append(h)
+    colors = []
+    for g, comp in zip(gap_vals, gap_comp):
+        if not comp:
+            colors.append("#aaaaaa")  # weak coverage: faded
+        elif g > 0.01:
+            colors.append("#d62728")  # non-Cayley wins
+        elif g < -0.01:
+            colors.append("#2ca02c")  # Cayley wins
+        else:
+            colors.append("#888")
+    ax2.bar(gap_Ns, gap_vals, color=colors, alpha=0.85)
     ax2.axhline(y=0, color="black", linewidth=0.5)
     ax2.set_ylabel("gap = c_cay − c_noncay")
     ax2.set_xlabel("N")

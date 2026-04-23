@@ -16,6 +16,8 @@ from .mattheus_verstraete import MattheusVerstraeteSearch
 from .norm_graph import NormGraphSearch
 from .polarity import PolaritySearch
 from .sat_circulant import SATCirculant
+from .sat_circulant_exact import SATCirculantExact
+from .sat_exact import SATExact
 
 __all__ = [
     "Search",
@@ -38,4 +40,6 @@ __all__ = [
     "NormGraphSearch",
     "PolaritySearch",
     "SATCirculant",
+    "SATCirculantExact",
+    "SATExact",
 ]

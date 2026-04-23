@@ -141,6 +141,19 @@ class SATExact(Search):
                     c_log is achievable, and every box with worse
                     c-bound prunes without a solver call. Fast for any
                     n up to ~100 (sub-minute wall time). Default True.
+    seed_graph    : nx.Graph | None. Explicit K4-free seed witness.
+                    Overrides the circulant seed: c* is computed from
+                    this graph and it is emitted as a FEASIBLE_SEED.
+                    Use when CirculantSearchFast's heuristic DFS is not
+                    guaranteed to find the known optimum for this n
+                    (e.g. n=34 with 2·P(17)). The caller is responsible
+                    for correctness — no K4 check, no α/d recomputation
+                    shortcut. Default None.
+    seed_hint     : bool. If True and `seed_graph` is provided, pass the
+                    seed's edges to CP-SAT as a warm-start hint at every
+                    box where deg fits. Helps SAT proofs of boxes the
+                    seed already satisfies; does not help UNSAT. Default
+                    False.
 
     Run-mode kwargs
     ---------------
@@ -174,6 +187,8 @@ class SATExact(Search):
         branch_row0_minvalue: bool = False,
         c_log_prune: bool = True,
         seed_from_circulant: bool = True,
+        seed_graph: "nx.Graph | None" = None,
+        seed_hint: bool = False,
         hard_box_params: bool = False,
         use_lns: bool = False,
         use_objective_lb_search: bool = False,
@@ -214,6 +229,10 @@ class SATExact(Search):
             random_seed=random_seed,
             **kwargs,
         )
+        # Assigned directly (not via super) so a full nx.Graph doesn't
+        # land in the search_begin log kv dump.
+        self.seed_graph = seed_graph
+        self.seed_hint = bool(seed_hint)
 
     # ── Ramsey helpers ───────────────────────────────────────────────────────
 
@@ -256,9 +275,12 @@ class SATExact(Search):
         return self._c_bound(alpha_cap, d_lo)
 
     def _seed_c_star(self) -> tuple[float, "nx.Graph | None"]:
-        """Seed (c*, witness) from the best K4-free circulant for this n
-        via CirculantSearchFast. Returns (+inf, None) if the search
-        produces nothing.
+        """Seed (c*, witness) from a known K4-free graph.
+
+        If `self.seed_graph` is set, that graph is the seed (overrides
+        the circulant catalog). Otherwise falls back to the best
+        K4-free circulant for this n via CirculantSearchFast. Returns
+        (+inf, None) if no seed is available.
 
         The witness is returned so the caller can emit it directly as a
         result — this avoids a redundant SAT re-solve of a box whose
@@ -266,7 +288,7 @@ class SATExact(Search):
         still take minutes to reproduce at n ≥ 19 boundary)."""
         from utils.graph_props import alpha_exact_nx, c_log_value, is_k4_free_nx
 
-        G = _best_circulant_for(self.n)
+        G = self.seed_graph if self.seed_graph is not None else _best_circulant_for(self.n)
         if G is None or not is_k4_free_nx(G):
             return float("inf"), None
         degs = dict(G.degree())
@@ -372,14 +394,17 @@ class SATExact(Search):
                 )
                 model.add(lhs >= rhs)
 
-        # Optional: warm-start hint from the circulant catalog. The
-        # catalog holds one hand-picked circulant per n; when its
-        # structural (α, d) fits inside the current box we pass it as
-        # a CP-SAT hint. Only applied if the hint's labelling happens
-        # to satisfy the active symmetry break — otherwise CP-SAT
-        # would ignore it anyway. The labelling check below is a
-        # cheap feasibility probe for the row-0 edge_lex order.
-        if self.circulant_hints:
+        # Optional: warm-start hint. Priority:
+        #   1. self.seed_graph + self.seed_hint  — arbitrary seed graph
+        #      (e.g. 2·P(17) at n=34). Edges are hinted directly; no
+        #      cyclic rotation because an arbitrary graph has no
+        #      obvious Aut action to canonicalize row-0 against.
+        #   2. self.circulant_hints — legacy path, picks the best
+        #      K4-free circulant and relabels cyclically so row-0 is
+        #      lex-largest (best chance under edge_lex).
+        if self.seed_hint and self.seed_graph is not None:
+            self._maybe_hint_seed(model, x, self.seed_graph, d_cap)
+        elif self.circulant_hints:
             self._maybe_hint_circulant(model, x, alpha_cap, d_cap)
 
         # Optional: tell CP-SAT to branch on vertex 0's row first, trying
@@ -402,6 +427,23 @@ class SATExact(Search):
             )
 
         return model, x
+
+    def _maybe_hint_seed(self, model, x, G, d_cap):
+        """Hint CP-SAT with the seed graph's edges directly. Skipped if
+        the seed's max degree exceeds d_cap (hint would violate the
+        degree constraint and CP-SAT would drop it anyway). The seed
+        labelling is used as-is; the caller is responsible for
+        pre-aligning the seed with the active symmetry break if that
+        matters. Pure no-op when seed is empty."""
+        n = self.n
+        degs = dict(G.degree())
+        d_actual = max(degs.values()) if degs else 0
+        if d_actual > d_cap:
+            return
+        adj = nx.to_numpy_array(G, nodelist=range(n), dtype=int)
+        for i in range(n):
+            for j in range(i + 1, n):
+                model.add_hint(x[(i, j)], int(adj[i, j]))
 
     def _maybe_hint_circulant(self, model, x, alpha_cap, d_cap):
         n = self.n
@@ -589,21 +631,29 @@ class SATExact(Search):
         # answers (which at the n≥19 feasibility boundary is often the
         # single slowest box in the scan).
         out: list[nx.Graph] = []
-        if self.c_log_prune and self.alpha is None and self.seed_from_circulant:
+        use_seed = (
+            self.c_log_prune
+            and self.alpha is None
+            and (self.seed_from_circulant or self.seed_graph is not None)
+        )
+        if use_seed:
             c_star, seed_G = self._seed_c_star()
         else:
             c_star, seed_G = float("inf"), None
         if seed_G is not None:
             self._stamp(seed_G)
+            seed_source = (
+                "explicit_seed" if self.seed_graph is not None else "circulant_seed"
+            )
             seed_G.graph["metadata"] = {
-                "seed_source": "circulant_seed",
+                "seed_source": seed_source,
                 "status": "FEASIBLE",
                 "solve_s": 0.0,
             }
             out.append(seed_G)
             self._log(
                 "seed_c_star", level=0,
-                c_star=round(c_star, 4), source="circulant_fast",
+                c_star=round(c_star, 4), source=seed_source,
             )
             # Emit a synthetic ATTEMPT entry for the seed's exact (α, d)
             # box so optimality verifiers parsing the scan log see the
@@ -651,8 +701,49 @@ class SATExact(Search):
         """Dispatch each α to its own worker process. Server-only —
         each worker holds its own model, so memory footprint scales
         linearly in the number of tracks.
+
+        Seeding is done once in the parent (so we emit the seed witness
+        and compute c* exactly once) and the resulting c* is threaded
+        into every worker so each α-track benefits from c_log_prune
+        from the first box. Without this, parallel tracks would each
+        start at c*=inf and miss every dominated box.
         """
         from concurrent.futures import ProcessPoolExecutor, as_completed
+
+        # Seed once in the parent; emit witness; pass c_star to workers.
+        out: list[nx.Graph] = []
+        use_seed = (
+            self.c_log_prune
+            and self.alpha is None
+            and (self.seed_from_circulant or self.seed_graph is not None)
+        )
+        if use_seed:
+            c_star, seed_G = self._seed_c_star()
+        else:
+            c_star, seed_G = float("inf"), None
+        if seed_G is not None:
+            self._stamp(seed_G)
+            seed_source = (
+                "explicit_seed" if self.seed_graph is not None else "circulant_seed"
+            )
+            seed_G.graph["metadata"] = {
+                "seed_source": seed_source,
+                "status": "FEASIBLE",
+                "solve_s": 0.0,
+            }
+            out.append(seed_G)
+            self._log(
+                "seed_c_star", level=0,
+                c_star=round(c_star, 4), source=seed_source,
+            )
+            from utils.graph_props import alpha_exact_nx
+            a_seed, _ = alpha_exact_nx(seed_G)
+            d_seed = max(dict(seed_G.degree()).values())
+            self._log(
+                "attempt", level=0,
+                alpha=a_seed, d_max=d_seed,
+                status="FEASIBLE_SEED", solve_s=0.0,
+            )
 
         cfg = {
             "top_k":                  self.top_k,
@@ -664,7 +755,13 @@ class SATExact(Search):
             "scan_from_ramsey_floor": self.scan_from_ramsey_floor,
             "circulant_hints":        self.circulant_hints,
             "c_log_prune":            self.c_log_prune,
-            "seed_from_circulant":    self.seed_from_circulant,
+            # Workers do NOT re-seed: we already emitted the witness
+            # and computed c_star in the parent. Re-seeding in every
+            # worker would duplicate the seed event and waste a
+            # CirculantSearchFast call per α-track.
+            "seed_from_circulant":    False,
+            "seed_graph":             self.seed_graph,
+            "seed_hint":              self.seed_hint,
             # d_max propagates so "fixed d, scan α" stays available.
             "d_max":                     self.d_max,
         }
@@ -673,10 +770,10 @@ class SATExact(Search):
             if self.parallel_alpha_tracks and self.parallel_alpha_tracks > 0
             else len(alpha_range)
         )
-        results: list[nx.Graph] = []
+        results: list[nx.Graph] = list(out)
         with ProcessPoolExecutor(max_workers=max_workers) as pool:
             futures = {
-                pool.submit(_scan_one_alpha_worker, self.n, a, cfg): a
+                pool.submit(_scan_one_alpha_worker, self.n, a, cfg, c_star): a
                 for a in alpha_range
             }
             for fut in as_completed(futures):
@@ -694,7 +791,7 @@ class SATExact(Search):
         return results
 
 
-def _scan_one_alpha_worker(n: int, a: int, cfg: dict) -> list[nx.Graph]:
+def _scan_one_alpha_worker(n: int, a: int, cfg: dict, c_star: float) -> list[nx.Graph]:
     """Top-level so it survives pickling for ProcessPoolExecutor."""
     s = SATExact(n=n, alpha=a, **cfg)
-    return s._scan_one_alpha(a)
+    return s._scan_one_alpha(a, c_star=c_star)

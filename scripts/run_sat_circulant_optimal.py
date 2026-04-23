@@ -141,11 +141,15 @@ def solve_box(
     return [k for k in range(1, half + 1) if solver.Value(g[k]) == 1]
 
 
-def warm_start(n: int, max_conn_size: int = 6) -> dict[int, list[int]]:
-    """Run CirculantSearchFast and return {degree: best S_half}."""
+def warm_start(n: int, max_conn_size: int = 6, top_k: int = 1) -> dict[int, list[int]]:
+    """Run CirculantSearchFast and return {degree: best S_half}.
+
+    Legacy DFS warm-start. Scales O(N^6/6); too slow past N ≈ 100.
+    Prefer `warm_start_hoffman` for N ≥ 100.
+    """
     try:
         w = CirculantSearchFast(
-            n=n, top_k=20, max_conn_size=max_conn_size, min_conn_size=1,
+            n=n, top_k=top_k, max_conn_size=max_conn_size, min_conn_size=1,
             verbosity=0,
         )
         results = w.run()
@@ -164,6 +168,74 @@ def warm_start(n: int, max_conn_size: int = 6) -> dict[int, list[int]]:
     return {d: s for d, (_, s) in per_d.items()}
 
 
+def warm_start_hoffman(
+    n: int,
+    clauses,
+    coef_matrix,
+    d_list,
+    time_limit_per_d: float = 10.0,
+    workers: int = 4,
+) -> dict[int, list[int]]:
+    """
+    Hoffman-maximizing warm-start. For each d in `d_list`, solve:
+        max L
+        s.t. K4-free clauses
+             degree = d
+             sum_k c_jk * g_k >= L   for each frequency j
+    via CP-SAT and return {d: S_hint}.
+
+    Since Hoffman's bound α ≤ -N·λ_min/(d-λ_min) tightens as λ_min grows,
+    maximizing min_j λ_j gives the (d-regular) circulant with smallest
+    certified α upper bound. At Hoffman-tight graphs (e.g. Paley, Paley
+    blowups) this returns the true optimum directly; elsewhere it's a
+    reasonable hint.
+
+    O(N^3/6) clauses + O(N) linear eigenvalue constraints per d.
+    Scales polynomially in N, unlike the DFS warm-start.
+    """
+    half = n // 2
+    J = coef_matrix.shape[0]
+    hints: dict[int, list[int]] = {}
+
+    for d in d_list:
+        model = cp_model.CpModel()
+        g = [None] + [model.NewBoolVar(f"g_{k}") for k in range(1, half + 1)]
+
+        for gaps in clauses:
+            model.AddBoolOr([g[k].Not() for k in gaps])
+
+        if n % 2 == 0:
+            model.Add(2 * sum(g[k] for k in range(1, half)) + g[half] == d)
+        else:
+            model.Add(2 * sum(g[k] for k in range(1, half + 1)) == d)
+
+        # λ_j ≥ L, integer-scaled. Range of λ_j is [-d, d], scaled to
+        # [-d·SCALE, d·SCALE].
+        L = model.NewIntVar(-d * SCALE, d * SCALE, "L")
+        for j in range(J):
+            terms = []
+            for k in range(1, half + 1):
+                c = int(coef_matrix[j, k - 1])
+                if c != 0:
+                    terms.append(c * g[k])
+            if terms:
+                model.Add(sum(terms) >= L)
+
+        model.Maximize(L)
+
+        solver = cp_model.CpSolver()
+        solver.parameters.max_time_in_seconds = time_limit_per_d
+        solver.parameters.num_search_workers = workers
+        status = solver.Solve(model)
+
+        if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            S = [k for k in range(1, half + 1) if solver.Value(g[k]) == 1]
+            if S:
+                hints[d] = S
+
+    return hints
+
+
 def _fmt(x):
     return "—" if x is None else f"{x:.4f}"
 
@@ -175,6 +247,7 @@ def search_n(
     time_limit: float,
     alpha_time_limit: float,
     workers: int,
+    warm_start_mode: str = "hoffman",
 ) -> tuple[float | None, int, int, list[int], int, float]:
     """Return (best_c, best_alpha, best_d, best_S, n_sat_calls, dt)."""
     t0 = time.monotonic()
@@ -182,8 +255,17 @@ def search_n(
     coef_matrix, _ = _eigenvalue_coefficients(n)
     d_hi = d_max if d_max is not None else min(n - 2, max(6, int(2 * n ** 0.5)))
 
-    # Warm start
-    hints = warm_start(n)
+    # Warm start — Hoffman-objective SAT (scales to large N) or legacy DFS
+    if warm_start_mode == "hoffman":
+        d_candidates = [d for d in range(d_min, d_hi + 1) if log(d) > 0]
+        hints = warm_start_hoffman(
+            n, clauses, coef_matrix, d_candidates,
+            time_limit_per_d=10.0, workers=workers,
+        )
+    elif warm_start_mode == "dfs":
+        hints = warm_start(n)
+    else:
+        hints = {}
 
     # Initial best from warm start
     best_c = None
@@ -215,14 +297,20 @@ def search_n(
         # Caro-Wei minimum α at this d
         alpha_cw = ceil(n / (d + 1))
 
-        # Max useful α at this d (strict improvement over best_c)
-        if best_c is None:
-            alpha_max = n - 1
-        else:
-            # want α * d / (N * ln d) < best_c
-            alpha_max = int(math.floor(best_c * n * log(d) / d))
-            if alpha_max * d / (n * log(d)) >= best_c:
-                alpha_max -= 1  # strict
+        # α_target ladder start: n - d - 1 (or n - 1) — intentionally LOOSE
+        # so the Hoffman constraint admits Hoffman-loose S's (where actual
+        # α ≪ Hoffman upper bound). Tightening the start based on warm-
+        # start's best_c prematurely excludes these solutions.
+        #
+        # After the first SAT, actual α updates the ladder, so subsequent
+        # iterations tighten appropriately.
+        alpha_max = min(n - 1, 2 * n // 3)  # loose upper, avoid trivial α=N
+        if best_c is not None:
+            # use best_c only as a sanity floor on alpha_max — if best_c
+            # says α ≥ M is pointless, cap there (but not below n/3 to
+            # keep Hoffman-loose headroom).
+            alpha_from_best = int(math.floor(best_c * n * log(d) / d))
+            alpha_max = max(alpha_from_best, min(alpha_max, n // 2))
         if alpha_max < alpha_cw:
             continue  # d can't beat current best
 
