@@ -1,0 +1,32 @@
+[
+  {
+    "id": "336b4e63fd39e3f2",
+    "sparse6": ":J`ACGqJC`hBI]GqEcK`^",
+    "source": "z11_bicayley_component",
+    "metadata": {
+      "group": "Z11",
+      "connection_set": [
+        2,
+        3,
+        8,
+        9
+      ],
+      "role": "inside_sheet_R"
+    }
+  },
+  {
+    "id": "2c3e71140dff24e8",
+    "sparse6": ":J`A?WAFWkQecSsPdNG`c^",
+    "source": "z11_bicayley_component",
+    "metadata": {
+      "group": "Z11",
+      "connection_set": [
+        1,
+        2,
+        9,
+        10
+      ],
+      "role": "between_sheets_L"
+    }
+  }
+]
