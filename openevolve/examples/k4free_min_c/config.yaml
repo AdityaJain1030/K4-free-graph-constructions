@@ -1,0 +1,103 @@
+# k4free_min_c — MVP OpenEvolve config, local Ollama.
+#
+# Prereqs:
+#   ollama pull qwen2.5-coder:7b-instruct-q4_K_M
+#   ollama serve   # :11434
+#
+# Run:
+#   K4FREE_N=14 python openevolve-run.py \
+#       examples/k4free_min_c/initial_program.py \
+#       examples/k4free_min_c/evaluator.py \
+#       --config examples/k4free_min_c/config.yaml \
+#       --iterations 25 \
+#       --output examples/k4free_min_c/out_n14
+
+max_iterations: 25
+checkpoint_interval: 5
+random_seed: 42
+
+llm:
+  api_base: "http://localhost:11434/v1"
+  api_key: "ollama"
+  # 7B models slip the SEARCH/REPLACE format often; lowering temperature
+  # and switching to full-rewrite mode below gives a much higher yield
+  # of parseable responses at the cost of smaller per-iter deltas.
+  temperature: 0.5
+  max_tokens: 6144
+  timeout: 900
+  retries: 2
+  retry_delay: 5
+
+  models:
+    # 14B handles "write complete, self-contained code" far better than
+    # 7B in this task. Q3 quant fits on an 8 GB GPU with partial CPU
+    # offload; ~2-3x slower per iteration than 7B Q4 but much higher
+    # valid-program yield.
+    - name: "qwen2.5-coder:14b-instruct-q3_K_M"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "qwen2.5-coder:14b-instruct-q3_K_M"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 2
+  num_diverse_programs: 1
+  include_artifacts: true
+  system_message: |
+    You are an expert in extremal graph theory and combinatorial search.
+    You are evolving the Python function construct(N) to produce an
+    N-vertex K4-free graph (no 4-clique) that minimises
+        c_log = alpha(G) * d_max(G) / (N * ln(d_max(G))).
+    Lower c_log is better. The benchmark is the Paley graph P(17) at
+    c_log ~= 0.679; a random K4-free greedy sits around c_log ~= 1.1-1.2.
+
+    HARD CONSTRAINTS (violating them gives score 0):
+      - construct(N) must return an N x N symmetric uint8 numpy adjacency
+        matrix with zero diagonal.
+      - The graph must be K4-free. A pragmatic check: K4-free iff every
+        neighbourhood N(v) is triangle-free.
+      - construct(N) must NOT raise on the given N. If a construction
+        only works for certain N (e.g. Paley needs N prime with N = 1
+        mod 4, circulant needs specific difference sets), fall back to
+        a different method when N does not fit.
+
+    Helpers already imported at module scope (reuse them, do NOT
+    reimplement):
+      is_k4_free(adj) -> bool
+      find_k4(adj)    -> (a,b,c,d) tuple or None
+      alpha_bb_clique_cover(adj) -> (alpha_value, mis_vertex_list)
+
+    Good directions to explore:
+      - Structured seeds for general N: circulant C(N, S) with a
+        carefully chosen connection set S; bipartite / tripartite
+        blow-ups; Cayley graphs on small groups; products of small
+        K4-free graphs (Mycielski, Moebius-Kantor, Petersen).
+      - Near-regular degree sequences (pin d_max low).
+      - Local search / edge switching / tabu that preserves K4-freeness.
+      - Incremental K4 check on edge add (i,j): creates a K4 iff the
+        common neighbourhood N(i) & N(j) already induces an edge.
+
+    The fixed N for this run is set by the K4FREE_N environment variable
+    and is read at the top of initial_program.py. Do not hardcode a
+    different N inside construct.
+
+database:
+  population_size: 40
+  num_islands: 2
+  migration_interval: 10
+  archive_size: 15
+
+evaluator:
+  timeout: 120
+  parallel_evaluations: 1
+  cascade_evaluation: true
+  cascade_thresholds: [0.5]
+
+# Full-rewrite evolution: the 7B model emits the whole EVOLVE block as
+# a python code fence instead of SEARCH/REPLACE diffs. parse_full_rewrite
+# is permissive — accepts ```python ... ```, any ``` ... ```, or plain
+# text as a last-resort fallback — so parse failures are rare.
+diff_based_evolution: false
+max_code_length: 12000
+log_level: "INFO"

@@ -19,6 +19,7 @@ from .polarity import PolaritySearch
 from .sat_circulant import SATCirculant
 from .sat_circulant_exact import SATCirculantExact
 from .sat_exact import SATExact
+from .sat_near_regular_nonreg import SATNearRegularNonReg
 
 __all__ = [
     "Search",
@@ -44,4 +45,5 @@ __all__ = [
     "SATCirculant",
     "SATCirculantExact",
     "SATExact",
+    "SATNearRegularNonReg",
 ]

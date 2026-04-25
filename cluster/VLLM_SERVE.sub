@@ -1,0 +1,54 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — vLLM OpenAI-compatible server for openevolve
+# Serves Qwen2.5-Coder-32B-Instruct on 2x A40 (bf16 + tensor parallel).
+#
+# Submit with:
+#   condor_submit cluster/VLLM_SERVE.sub
+#
+# Once running, grab the assigned hostname from the .out log and either:
+#   a) run openevolve on the same node (same batch of jobs), or
+#   b) SSH-tunnel the port back to your workstation:
+#        ssh -L 8000:<gpu-node>:8000 login.cluster.edu -N
+#
+# Long-lived serving job: keep it up across many openevolve runs
+# instead of paying ~60 s weight-load per submission.
+# ----------------------------------------------------------------------
+
+universe = vanilla
+
+executable = cluster/run_vllm.sh
+
+# Edit to match your repo location on the cluster (mirrors PROOF_PIPELINE.sub).
+initialdir = /home/adityaj8/k4free
+
+getenv = True
+
+output = logs/vllm/vllm_$(Cluster).out
+error  = logs/vllm/vllm_$(Cluster).err
+log    = logs/vllm/vllm_$(Cluster).log
+
+# ----------------------------------------------------------------------
+# Resource Requests
+# 2 A40s for tensor parallelism; 16 CPUs for the vLLM worker processes;
+# 128 GB host RAM covers weight staging during load and plenty of KV
+# overflow room. Disk for the HF cache if not on shared scratch.
+# ----------------------------------------------------------------------
+request_cpus   = 16
+request_memory = 128GB
+request_disk   = 100GB
+request_gpus   = 2
+
+# Pin to A40s. If your cluster uses different advertised GPU names
+# (e.g. "A40" vs "NVIDIA A40"), `condor_status -compact -af GPUs_DeviceName`
+# on a login node will show the exact string.
+require_gpus = DeviceName =?= "NVIDIA A40"
+
+# Stream logs so you can tail -f and see the "Uvicorn running on ..." line
+# without waiting for the job to finish.
+stream_output = True
+stream_error  = True
+
+# 12-hour serving window. Bump if your lab policy allows a longer lease.
++MaxHours = 12
+
+queue

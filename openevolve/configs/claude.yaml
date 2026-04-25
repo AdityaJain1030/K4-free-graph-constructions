@@ -1,0 +1,48 @@
+# Claude (Anthropic) ensemble config for OpenEvolve.
+# Requires: pip install anthropic  and  export ANTHROPIC_API_KEY=...
+# The ensemble auto-routes models whose name starts with "claude-" to the
+# AnthropicLLM backend, so no custom init_client is needed.
+
+max_iterations: 100
+checkpoint_interval: 20
+random_seed: 42
+
+llm:
+  # api_base/api_key here target OpenAI by default; the Anthropic backend
+  # ignores them and uses ANTHROPIC_API_KEY from the environment.
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 120
+  retries: 3
+  retry_delay: 5
+
+  models:
+    # Heavy mutator — slower, more creative
+    - name: "claude-opus-4-5"
+      weight: 0.3
+    # Fast mutator — cheap iterations
+    - name: "claude-haiku-4-5"
+      weight: 0.7
+
+  # Keep evaluator-LLM calls (if any) on the cheap model
+  evaluator_models:
+    - name: "claude-haiku-4-5"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 3
+  num_diverse_programs: 2
+  include_artifacts: true
+
+database:
+  population_size: 200
+  num_islands: 3
+  migration_interval: 20
+  migration_rate: 0.1
+
+evaluator:
+  timeout: 60
+  parallel_evaluations: 4
+
+diff_based_evolution: true
+max_code_length: 20000

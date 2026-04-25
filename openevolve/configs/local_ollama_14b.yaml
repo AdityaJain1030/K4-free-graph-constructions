@@ -1,0 +1,41 @@
+# Local Ollama — Qwen2.5-Coder 14B Q4 (laptop, 8 GB VRAM + partial CPU offload).
+# Expect ~2-3x slower iterations than 7B, but far better diff-format discipline.
+
+max_iterations: 50
+checkpoint_interval: 10
+random_seed: 42
+
+llm:
+  api_base: "http://localhost:11434/v1"
+  api_key: "ollama"
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 900
+  retries: 2
+  retry_delay: 5
+
+  models:
+    - name: "qwen2.5-coder:14b-instruct-q3_K_M"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "qwen2.5-coder:14b-instruct-q3_K_M"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 2
+  num_diverse_programs: 1
+  include_artifacts: true
+
+database:
+  population_size: 100
+  num_islands: 2
+  migration_interval: 20
+
+evaluator:
+  timeout: 120
+  parallel_evaluations: 1
+
+diff_based_evolution: true
+max_code_length: 12000
+log_level: "INFO"

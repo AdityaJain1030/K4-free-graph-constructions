@@ -1,0 +1,50 @@
+# Local Ollama config — laptop prototyping (8 GB VRAM).
+#
+# Prereq:
+#   curl -fsSL https://ollama.com/install.sh | sh
+#   ollama pull qwen2.5-coder:7b-instruct-q4_K_M
+#   ollama serve   # listens on :11434
+#
+# Ollama exposes an OpenAI-compatible endpoint at /v1 — openevolve talks to it
+# directly via the existing OpenAILLM backend. No API key needed, but the
+# OpenAI client insists on something non-empty, so we pass a dummy.
+
+max_iterations: 50
+checkpoint_interval: 10
+random_seed: 42
+
+llm:
+  api_base: "http://localhost:11434/v1"
+  api_key: "ollama"             # dummy; Ollama ignores it
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 600                  # local inference is slow; be generous
+  retries: 2
+  retry_delay: 5
+
+  models:
+    # Sole mutator on an 8 GB laptop — Qwen2.5-Coder 7B Q4 fits in ~5 GB.
+    - name: "qwen2.5-coder:7b-instruct-q4_K_M"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "qwen2.5-coder:7b-instruct-q4_K_M"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 2           # smaller context = faster locally
+  num_diverse_programs: 1
+  include_artifacts: true
+
+database:
+  population_size: 100
+  num_islands: 2
+  migration_interval: 20
+
+evaluator:
+  timeout: 120
+  parallel_evaluations: 1       # single GPU, no batching via Ollama
+
+diff_based_evolution: true
+max_code_length: 12000
+log_level: "INFO"

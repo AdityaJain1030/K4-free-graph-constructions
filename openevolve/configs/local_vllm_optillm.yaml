@@ -1,0 +1,62 @@
+# A40 server config — vLLM backend + OptiLLM proxy for MoA.
+#
+# Prereq (on the A40 box, in its own env):
+#   pip install vllm optillm
+#
+# Terminal 1 — vLLM serving Qwen2.5-Coder-32B AWQ (~20 GB, fits 1× A40):
+#   python -m vllm.entrypoints.openai.api_server \
+#     --model Qwen/Qwen2.5-Coder-32B-Instruct-AWQ \
+#     --quantization awq --port 8001 --max-model-len 16384 \
+#     --gpu-memory-utilization 0.90
+#
+# Terminal 2 — OptiLLM in front (adds MoA / CoT / readurls plugins):
+#   OPENAI_API_BASE=http://localhost:8001/v1 OPTILLM_API_KEY=dummy \
+#   python -m optillm --port 8000
+#
+# If openevolve runs on a different machine than the A40 server, replace
+# localhost with the server's hostname/IP and open the ports.
+
+max_iterations: 500
+checkpoint_interval: 25
+random_seed: 42
+
+llm:
+  api_base: "http://localhost:8000/v1"    # OptiLLM — swap to :8001/v1 to skip OptiLLM
+  api_key: "dummy"
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 600
+  retries: 3
+  retry_delay: 5
+
+  models:
+    # Primary: plain fast mutator
+    - name: "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ"
+      weight: 0.75
+    # Secondary: Mixture-of-Agents wrap for higher-quality (slower) mutations
+    - name: "moa-Qwen/Qwen2.5-Coder-32B-Instruct-AWQ"
+      weight: 0.25
+
+  # Cheaper path for evaluator-LLM calls
+  evaluator_models:
+    - name: "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 3
+  num_diverse_programs: 2
+  include_artifacts: true
+
+database:
+  population_size: 300
+  num_islands: 4
+  migration_interval: 25
+  migration_rate: 0.1
+
+evaluator:
+  timeout: 180
+  parallel_evaluations: 8       # vLLM batches these efficiently
+
+diff_based_evolution: true
+max_code_length: 20000
+log_level: "INFO"

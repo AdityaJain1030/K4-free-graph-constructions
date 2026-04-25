@@ -1,0 +1,105 @@
+# k4free_min_c_alpha — Gemini flash-lite config.
+#
+# Fixed ALPHA_MAX, variable N. Ramsey-style setup mirroring AlphaEvolve
+# Algorithm 1 (grow the graph while preserving K4-freeness and the
+# alpha budget), scored by c_log so improvement is still the objective.
+#
+# Prereqs:
+#   export GEMINI_API_KEY=...                 # https://aistudio.google.com/apikey
+#
+# Run:
+#   bash examples/k4free_min_c_alpha/run_gemini.sh 4        # alpha_max=4
+#   bash examples/k4free_min_c_alpha/run_gemini.sh 3 40     # alpha_max=3, 40 iter
+
+max_iterations: 30
+checkpoint_interval: 5
+random_seed: 42
+
+llm:
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: "${GEMINI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 120
+  retries: 4
+  retry_delay: 15
+
+  # flash-lite chosen for apples-to-apples with the fixed-N run in
+  # examples/k4free_min_c/out_n14_gemini/. Also keeps us well inside
+  # the 5 RPM free-tier cap.
+  models:
+    - name: "gemini-2.5-flash-lite"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "gemini-2.5-flash-lite"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 3
+  num_diverse_programs: 2
+  include_artifacts: true
+  system_message: |
+    You are an expert in extremal graph theory and combinatorial search.
+    You are evolving the Python function construct(alpha_max) to produce
+    a K4-free graph G (no 4-clique) with alpha(G) <= alpha_max, choosing
+    the graph size N yourself, so as to MINIMISE
+
+        c_log = alpha(G) * d_max(G) / (N * ln(d_max(G))).
+
+    Lower c_log is better. Benchmarks:
+      - Paley(17) at alpha=3 : c_log = 0.679 (standing record, any alpha)
+      - Best alpha=4 in DB  : c_log = 0.6995, N=22, d_max=8 (circulant)
+      - Random greedy       : c_log ~ 1.0-1.2
+
+    Ramsey ceilings (N is capped by existence):
+      alpha_max = 3 : N <= 17    (R(4,4) = 18)
+      alpha_max = 4 : N <= 24    (R(4,5) = 25)
+      alpha_max = 5 : N <= 39    (R(4,6) in [35, 41])
+
+    HARD CONSTRAINTS (violating them gives score 0):
+      - construct(alpha_max) must return an N x N symmetric uint8 numpy
+        adjacency matrix with zero diagonal, for some N >= 1 of your
+        choice.
+      - The graph must be K4-free (every neighbourhood N(v) must be
+        triangle-free).
+      - The graph must have alpha(G) <= alpha_max. The evaluator will
+        reject any graph with an independent set of size > alpha_max.
+      - construct must NOT raise on the given alpha_max.
+
+    Helpers already imported at module scope (reuse, do NOT
+    reimplement):
+      is_k4_free(adj) -> bool
+      find_k4(adj)    -> (a,b,c,d) or None
+      has_independent_set(adj, k) -> bool   # fast threshold check
+      alpha_bb_clique_cover(adj) -> (alpha_value, mis_vertex_list)
+
+    Strong directions:
+      - Algebraic seeds: circulant C(N, S) on Z_N; Cayley graphs on
+        small groups (Z_p, D_n, Z_a x Z_b); quadratic-residue / Paley
+        for N prime with N = 1 mod 4; blow-ups of small K4-free graphs
+        (Petersen, Mycielski 4-chromatic).
+      - Near-regular degree sequences pin d_max low.
+      - Edge-switching / tabu local search on an algebraic seed.
+      - Vertex-transitive tricks: K4-free iff the neighbourhood of any
+        single vertex is triangle-free; alpha check is symmetric.
+
+    The fixed alpha_max for this run is set by K4FREE_ALPHA and read at
+    the top of initial_program.py. Do not hardcode a different value.
+
+database:
+  population_size: 60
+  num_islands: 3
+  migration_interval: 10
+  archive_size: 20
+
+evaluator:
+  timeout: 180
+  # Serialize LLM calls under the 5 RPM free-tier cap.
+  parallel_evaluations: 1
+  cascade_evaluation: true
+  cascade_thresholds: [0.5]
+
+diff_based_evolution: true
+max_code_length: 16000
+log_level: "INFO"

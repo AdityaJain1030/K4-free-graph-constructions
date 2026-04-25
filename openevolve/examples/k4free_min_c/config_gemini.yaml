@@ -1,0 +1,103 @@
+# k4free_min_c — Gemini config.
+#
+# Prereqs:
+#   export GEMINI_API_KEY=...            # https://aistudio.google.com/apikey
+#
+# Run:
+#   bash examples/k4free_min_c/run_gemini.sh 14     # N=14
+#   bash examples/k4free_min_c/run_gemini.sh 15     # N=15
+#
+# Gemini speaks OpenAI-compatible protocol at generativelanguage.googleapis.com.
+# Diff-based evolution is re-enabled (Gemini-2.5-flash handles SEARCH/REPLACE
+# reliably), giving finer-grained mutations than full rewrites.
+
+max_iterations: 30
+checkpoint_interval: 5
+random_seed: 42
+
+llm:
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  api_key: "${GEMINI_API_KEY}"
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 120
+  retries: 4
+  # Free tier gives 5 RPM — when we burst we get back "retry in 30s"
+  # from the API. Keep the client-side retry delay aligned.
+  retry_delay: 15
+
+  # Flash only — Pro requires a paid-tier key (free tier quota = 0 for Pro).
+  # If you upgrade to a paid API key, add back:
+  #   - name: "gemini-2.5-pro"
+  #     weight: 0.2
+  # and drop Flash to weight 0.8.
+  models:
+    - name: "gemini-2.5-flash-lite"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "gemini-2.5-flash-lite"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 3
+  num_diverse_programs: 2
+  include_artifacts: true
+  system_message: |
+    You are an expert in extremal graph theory and combinatorial search.
+    You are evolving the Python function construct(N) to produce an
+    N-vertex K4-free graph (no 4-clique) that minimises
+        c_log = alpha(G) * d_max(G) / (N * ln(d_max(G))).
+    Lower c_log is better. The benchmark is the Paley graph P(17) at
+    c_log ~= 0.679; a random K4-free greedy sits around c_log ~= 1.1-1.2.
+
+    HARD CONSTRAINTS (violating them gives score 0):
+      - construct(N) must return an N x N symmetric uint8 numpy adjacency
+        matrix with zero diagonal.
+      - The graph must be K4-free. A pragmatic check: K4-free iff every
+        neighbourhood N(v) is triangle-free.
+      - construct(N) must NOT raise on the given N. If a construction
+        only works for certain N (e.g. Paley needs N prime with N = 1
+        mod 4, circulant needs specific difference sets), fall back to
+        a different method when N does not fit.
+
+    Helpers already imported at module scope (reuse them, do NOT
+    reimplement):
+      is_k4_free(adj) -> bool
+      find_k4(adj)    -> (a,b,c,d) tuple or None
+      alpha_bb_clique_cover(adj) -> (alpha_value, mis_vertex_list)
+
+    Good directions to explore:
+      - Structured seeds for general N: circulant C(N, S) with a
+        carefully chosen connection set S; bipartite / tripartite
+        blow-ups; Cayley graphs on small groups; products of small
+        K4-free graphs (Mycielski, Moebius-Kantor, Petersen).
+      - Near-regular degree sequences (pin d_max low).
+      - Local search / edge switching / tabu that preserves K4-freeness.
+      - Incremental K4 check on edge add (i,j): creates a K4 iff the
+        common neighbourhood N(i) & N(j) already induces an edge.
+
+    The fixed N for this run is set by the K4FREE_N environment variable
+    and is read at the top of initial_program.py. Do not hardcode a
+    different N inside construct.
+
+database:
+  population_size: 60
+  num_islands: 3
+  migration_interval: 10
+  archive_size: 20
+
+evaluator:
+  timeout: 120
+  # Free-tier Gemini Flash is 5 RPM / 250 RPD. Serial evaluations keep
+  # us under the per-minute cap. If you upgrade to a paid key (1000+
+  # RPM), bump this back to 4-8 for real parallelism.
+  parallel_evaluations: 1
+  cascade_evaluation: true
+  cascade_thresholds: [0.5]
+
+# Gemini-2.5-flash handles SEARCH/REPLACE diffs reliably; use them for
+# tighter, more targeted mutations than full rewrites.
+diff_based_evolution: true
+max_code_length: 16000
+log_level: "INFO"

@@ -1,0 +1,89 @@
+# k4free_min_c — cluster vLLM config (Qwen2.5-Coder-32B on 2x A40).
+#
+# Prereqs:
+#   1. vLLM running on a cluster GPU node (see cluster/VLLM_SERVE.sub).
+#   2. Either: openevolve on the same node (use localhost),
+#      or: SSH tunnel from the head node / laptop forwarding
+#            the GPU node's :8000 to localhost:8000.
+#
+# Run:
+#   bash examples/k4free_min_c/run_cluster.sh 14         # N=14, 30 iter
+#   bash examples/k4free_min_c/run_cluster.sh 15 50      # N=15, 50 iter
+#   VLLM_HOST=gpu-node42.cluster bash ... 14             # explicit host
+
+max_iterations: 30
+checkpoint_interval: 5
+random_seed: 42
+
+llm:
+  api_base: "${VLLM_BASE_URL}"       # resolved from env; default below in run_cluster.sh
+  api_key: "dummy"                   # vLLM doesn't enforce auth by default
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 120
+  retries: 2
+  retry_delay: 3
+
+  models:
+    - name: "Qwen/Qwen2.5-Coder-32B-Instruct"
+      weight: 1.0
+
+  evaluator_models:
+    - name: "Qwen/Qwen2.5-Coder-32B-Instruct"
+      weight: 1.0
+
+prompt:
+  num_top_programs: 3
+  num_diverse_programs: 2
+  include_artifacts: true
+  system_message: |
+    You are an expert in extremal graph theory and combinatorial search.
+    You are evolving the Python function construct(N) to produce an
+    N-vertex K4-free graph (no 4-clique) that minimises
+        c_log = alpha(G) * d_max(G) / (N * ln(d_max(G))).
+    Lower c_log is better. The benchmark is the Paley graph P(17) at
+    c_log ~= 0.679; a random K4-free greedy sits around c_log ~= 1.1-1.2.
+
+    HARD CONSTRAINTS (violating them gives score 0):
+      - construct(N) must return an N x N symmetric uint8 numpy adjacency
+        matrix with zero diagonal.
+      - The graph must be K4-free. K4-free iff every neighbourhood N(v)
+        is triangle-free.
+      - construct(N) must NOT raise on the given N. If a construction
+        only works for certain N (e.g. Paley needs N prime with N = 1
+        mod 4), fall back to a different method when N does not fit.
+
+    Helpers already imported at module scope (reuse them, do NOT
+    reimplement):
+      is_k4_free(adj) -> bool
+      find_k4(adj)    -> (a,b,c,d) tuple or None
+      alpha_bb_clique_cover(adj) -> (alpha_value, mis_vertex_list)
+
+    Good directions:
+      - Structured seeds (circulant, Cayley on small groups, bipartite /
+        tripartite blow-ups, products with Mycielski / Petersen /
+        Moebius-Kantor).
+      - Near-regular degree sequences (pin d_max low).
+      - Local search / tabu / edge switching that preserves K4-freeness.
+      - Incremental K4 check on edge add (i,j): creates a K4 iff the
+        common neighbourhood N(i) & N(j) already induces an edge.
+
+    The fixed N for this run is set by the K4FREE_N environment variable
+    and is read at the top of initial_program.py.
+
+database:
+  population_size: 80
+  num_islands: 4
+  migration_interval: 10
+  archive_size: 25
+
+evaluator:
+  timeout: 120
+  # vLLM continuous batching makes parallelism free — crank it up.
+  parallel_evaluations: 8
+  cascade_evaluation: true
+  cascade_thresholds: [0.5]
+
+diff_based_evolution: true
+max_code_length: 16000
+log_level: "INFO"

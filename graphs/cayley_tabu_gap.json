@@ -8418,5 +8418,22 @@
       "tabu_n_iters": 600,
       "tabu_best_iter": 307
     }
+  },
+  {
+    "id": "7e759b38a5e42aa4",
+    "sparse6": ":~?@__GA??W?A?wWD`WSE`O[GaoiIa_mIB?uOBw}NCG{PChSSdHOTd@WVe`eXePiXEpq^Fhy]Fxw_GYObgyKcgqSeiQagiAegIammJYulJisnKJKqkjGrkbOtmB]vMJ[wlrewMjczNJgzNBurLJKtNzOuNsAmJywoOi{pOcMhIicjPYgkPSYcHYOeQISfQCe^GH{`Qy?aQsqYExg[Rhk\\Rc}TDhSVSXWWSTIOCX?QTHCRTDUJBGkLTwoMTtaE@wWGUg[HUdm@?gCBVWGCVTz",
+    "source": "cayley_tabu_gap",
+    "metadata": {
+      "group": "SG_96_13_C3:((C2xC2xC2):C4)",
+      "connection_set": [
+        33,
+        41,
+        81,
+        93
+      ],
+      "surrogate_c_log": 0.7213475204444818,
+      "tabu_n_iters": 600,
+      "tabu_best_iter": 3
+    }
   }
 ]
