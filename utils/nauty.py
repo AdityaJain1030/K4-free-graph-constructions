@@ -19,7 +19,6 @@ import hashlib
 import os
 import shutil
 import subprocess
-import tempfile
 from itertools import combinations
 
 import networkx as nx
@@ -159,20 +158,26 @@ def graphs_via_geng(geng: str, n: int, flags: str = "-k"):
     n     : number of vertices.
     flags : geng flags string (default '-k' = K4-free).
     """
-    with tempfile.NamedTemporaryFile(suffix=".g6", delete=False) as f:
-        tmpfile = f.name
+    # Stream geng's graph6 output through a pipe and parse line-by-line.
+    # Avoids materialising every graph in memory — required at n≥10 where
+    # there are millions of K4-free graphs.
+    proc = subprocess.Popen(
+        [geng, "-q"] + flags.split() + [str(n)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
     try:
-        subprocess.run(
-            [geng] + flags.split() + [str(n), tmpfile],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
-        for G in nx.read_graph6(tmpfile):
+        for line in proc.stdout:
+            line = line.strip()
+            if not line:
+                continue
+            G = nx.from_graph6_bytes(line)
             if isinstance(G, nx.Graph):
                 yield G
     finally:
-        os.unlink(tmpfile)
+        if proc.stdout is not None:
+            proc.stdout.close()
+        proc.wait()
 
 
 def graphs_via_python(n: int, k4_free: bool = True):

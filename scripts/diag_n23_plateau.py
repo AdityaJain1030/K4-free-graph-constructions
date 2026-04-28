@@ -23,7 +23,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from search.switch_tabu import _build_multiset_init, _try_switch, _edges_of
+from search.stochastic_walk.switch_tabu import _build_multiset_init, _try_switch, _edges_of
 from utils.graph_props import alpha_bb_clique_cover, find_k4
 from utils.alpha_surrogate import alpha_lb
 

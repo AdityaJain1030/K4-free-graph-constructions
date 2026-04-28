@@ -200,7 +200,7 @@ def alpha_bb_clique_cover_nx(G: nx.Graph) -> tuple[int, list[int]]:
 # `alpha` / `alpha_nx` are the project default. They resolve to
 # `alpha_bb_clique_cover`, which beats every other exact solver we ship on
 # sparse K4-free graphs (the workload here) and is competitive elsewhere —
-# see docs/ALPHA_SOLVERS.md. Use the named variants (`alpha_exact`,
+# see docs/INDEPENDENCE_NUMBER.md. Use the named variants (`alpha_exact`,
 # `alpha_cpsat`, `alpha_maxsat`, `alpha_approx`, …) only when a caller has
 # a specific reason to pick a different method.
 
@@ -538,6 +538,37 @@ def find_k4(adj: np.ndarray) -> tuple | None:
 def is_k4_free(adj: np.ndarray) -> bool:
     """Return True if the graph (n×n numpy adjacency matrix) contains no K4."""
     return find_k4(adj) is None
+
+
+def get_neighborhood(adj: np.ndarray, v: int) -> np.ndarray:
+    """
+    Return the array of vertex indices adjacent to v.
+
+    Wraps `np.where(adj[v])[0]` for convenience and to centralise the
+    convention (no self-loops, undirected). Returned in ascending order.
+    """
+    return np.where(adj[v])[0]
+
+
+def adding_induces_k4(adj: np.ndarray, u: int, v: int) -> bool:
+    """
+    Local check: does adding edge (u, v) to a K4-free graph create a K4?
+
+    Equivalent to a `find_k4` call after the addition, but only inspects
+    the local neighbourhood: a new K4 must contain u and v, so we only
+    need two more vertices x, y in N(u) ∩ N(v) with (x, y) an edge.
+    Cost is O(|N(u) ∩ N(v)|²) instead of the global O(n³ish) of `find_k4`.
+
+    Precondition: `adj` is K4-free; this function does not re-check.
+    Returns True iff adding (u, v) would create a K4.
+    """
+    common = adj[u] * adj[v]
+    common[u] = 0
+    common[v] = 0
+    if not common.any():
+        return False
+    idx = np.where(common)[0]
+    return bool(adj[np.ix_(idx, idx)].any())
 
 
 def is_k4_free_nx(G: nx.Graph) -> bool:

@@ -21,8 +21,8 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from search.mcmc import MCMCSearch
-from search.switch_tabu import _build_multiset_init
+from search.stochastic_walk.mcmc import MCMCSearch
+from search.stochastic_walk.switch_tabu import _build_multiset_init
 from graph_db.db import DB
 
 

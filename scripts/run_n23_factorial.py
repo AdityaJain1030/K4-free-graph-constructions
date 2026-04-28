@@ -32,7 +32,7 @@ import networkx as nx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from graph_db.db import DB
-from search.switch_tabu import (
+from search.stochastic_walk.switch_tabu import (
     switch_tabu_chain,
     switch_tabu_chain_mixed,
     _random_nearreg_k4free,

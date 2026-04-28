@@ -22,7 +22,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from search.switch_tabu import (
+from search.stochastic_walk.switch_tabu import (
     switch_tabu_chain, _build_multiset_init, _try_switch, _edges_of,
 )
 from utils.graph_props import alpha_bb_clique_cover

@@ -56,7 +56,7 @@ sys.path.insert(0, REPO)
 
 from graph_db.db import DB
 from utils.graph_props import alpha_bb_clique_cover, find_k4, c_log_value
-from search.switch_tabu import (
+from search.stochastic_walk.switch_tabu import (
     _random_nearreg_k4free,
     switch_tabu_chain_mixed,
 )

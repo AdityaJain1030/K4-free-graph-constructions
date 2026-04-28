@@ -68,7 +68,7 @@ compiled binaries**, not the bundled-into-pynauty copy.
   agreement over 253/253 committed records in `graphs/*.json` and
   80/80 random graphs spanning n = 3 … 150 (including the n = 64/65
   setword-boundary that previously tripped our pynauty decoder; see
-  the historical note in `docs/ALPHA_SOLVERS.md`).
+  the historical note in `experiments/alpha/ALPHA_PERFORMANCE.md`).
 
 ## Performance
 
@@ -154,7 +154,7 @@ unaffected.
 
 - `utils/nauty.py` — implementation.
 - `graph_db/DESIGN.md` — why canonical_id is the graph-db primary key.
-- `docs/ALPHA_SOLVERS.md` — historical bug in the previous pynauty
+- `experiments/alpha/ALPHA_PERFORMANCE.md` — historical bug in the previous pynauty
   certificate decoder at n ≥ 65 (fully moot now).
 - `scripts/setup_nauty.sh` — builds nauty 2.9.3 and puts `labelg` +
   `geng` on `PATH` via a conda activation hook.

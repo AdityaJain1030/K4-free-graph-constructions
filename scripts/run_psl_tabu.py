@@ -29,7 +29,7 @@ sys.path.insert(0, REPO)
 
 from search.groups_psl import psl2
 from search.groups import cayley_adj_from_bitvec, connection_set_from_bitvec
-from search.tabu import multi_restart_tabu, TabuResult
+from search.stochastic_walk.tabu import multi_restart_tabu, TabuResult
 from utils.graph_props import is_k4_free, alpha_bb_clique_cover, alpha_cpsat
 from utils.alpha_surrogate import alpha_lb
 

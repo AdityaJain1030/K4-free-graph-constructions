@@ -1,0 +1,57 @@
+[
+  {
+    "id": "5cf33ba1860e4c4e",
+    "sparse6": ":L`?K?o_Gc@caOkPcNCPbrIWyXCK`K`dOh^",
+    "source": "prime_circulants",
+    "metadata": {
+      "prime": 13,
+      "residue_index": 2,
+      "connection_set": [
+        1,
+        3,
+        4,
+        9,
+        10,
+        12
+      ]
+    }
+  },
+  {
+    "id": "6a8d281aabad2908",
+    "sparse6": ":R__@_@__AC_BC`dFeFGcaIbIJ`BFIK`AFHJcDFGILcEHIJMaDGJKbEGHKP",
+    "source": "prime_circulants",
+    "metadata": {
+      "prime": 19,
+      "residue_index": 3,
+      "connection_set": [
+        1,
+        7,
+        8,
+        11,
+        12,
+        18
+      ]
+    }
+  },
+  {
+    "id": "06efa93edb20e38d",
+    "sparse6": ":^__@_@_@__D_CE_BDF_ACE_ABD`G`FJhIJKeIJLdHKLcGJMaDNbFKNPaEMOPbCOPQR`AEHKLQR`BDGJPQRT`ACFKMRS`BCIJLNSdEFIMNQSVWcFGHKNOPbEFGLMOQTcDEHJNORUWaDGIJKMPVYaBHILOPSYZ",
+    "source": "prime_circulants",
+    "metadata": {
+      "prime": 31,
+      "residue_index": 3,
+      "connection_set": [
+        1,
+        2,
+        4,
+        8,
+        15,
+        16,
+        23,
+        27,
+        29,
+        30
+      ]
+    }
+  }
+]

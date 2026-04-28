@@ -46,7 +46,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
 from graph_db.db import DB
-from search.switch_tabu import (
+from search.stochastic_walk.switch_tabu import (
     SwitchTabuMixedLookaheadSearch,
     _random_nearreg_k4free,
     switch_tabu_chain_mixed,
