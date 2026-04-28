@@ -46,11 +46,7 @@ from ortools.sat.python import cp_model
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from search.base import Search
-
-
-_R4_UB: dict[int, int] = {
-    2: 4, 3: 9, 4: 18, 5: 25, 6: 36, 7: 58, 8: 79, 9: 106, 10: 136,
-}
+from utils.ramsey import R4_UB
 
 
 def _ramsey_prune_no_d(n: int, alpha: int) -> tuple[str, str] | None:
@@ -64,7 +60,7 @@ def _ramsey_prune_no_d(n: int, alpha: int) -> tuple[str, str] | None:
     if alpha == 0:
         return ("alpha_zero", f"α=0 forbids any vertex (n={n})")
     k = alpha + 1
-    ub = _R4_UB.get(k)
+    ub = R4_UB.get(k)
     if ub is not None and n >= ub:
         return ("ramsey_4_k",
                 f"n={n} ≥ R(4,{k}) ≤ {ub} ⇒ K4-free forces α ≥ {k}")

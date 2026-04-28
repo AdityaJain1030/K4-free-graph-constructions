@@ -2,7 +2,7 @@
 
 ## What it does
 
-For each group `Γ` of order `N` produced by `search.groups.families_of_order`,
+For each group `Γ` of order `N` produced by `utils.algebra.families_of_order`,
 tabu-search over the indicator vector of inversion orbits of `Γ \ {e}`.
 Each bit toggles one orbit in/out of the connection set `S`; the state
 vector has length `L = |inversion_orbits(Γ)|`, which is roughly `(N-1)/2`
@@ -38,7 +38,7 @@ are infeasible (see `circulant/CIRCULANTS.md`).
 
 ## Supported group families
 
-From `search/groups.py::families_of_order(N)`:
+From `utils/algebra.py::families_of_order(N)`:
 
 | Family               | When applicable    | Notes                                      |
 |----------------------|--------------------|--------------------------------------------|

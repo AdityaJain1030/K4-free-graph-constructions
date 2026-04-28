@@ -3,16 +3,19 @@
 ## What this screen is
 
 One-shot ingest of McKay's strongly-regular-graph enumeration. For each
-class `srg(v, k, λ, μ)` in `scripts/run_srg_screen.py::SRG_CLASSES`, the
-script reads the `.g6` file under `graphs_src/srg_catalog/`, filters to
-K₄-free members, computes exact α via `alpha_bb_clique_cover_nx`, ranks
-by `c = α·k / (v·ln k)`, and appends survivors to `graphs/srg_catalog.json`
-under `source="srg_catalog"`.
+class `srg(v, k, λ, μ)` in `experiments/srg_catalog/run.py::SRG_CLASSES`,
+the script reads the `.g6` file under `experiments/srg_catalog/g6/`,
+filters to K₄-free members, computes exact α via
+`alpha_bb_clique_cover_nx`, ranks by `c = α·k / (v·ln k)`, and appends
+survivors to `graphs/srg_catalog.json` under `source="srg_catalog"`.
 
-Unlike every other entry in `search/`, this isn't a `Search` subclass and
-doesn't take an `N` parameter. It's a literature-ingest pipeline —
-mirrors the pattern of `run_mattheus_verstraete.py`: import an explicit
-external construction family, screen once, persist.
+Unlike the entries under `search/algebraic_explicit/`, this isn't a
+`Search` subclass — it's a **catalog ingest**, not a construction.
+The McKay enumeration is the only generic source we have for non-Cayley
+SRGs at v ≥ 25; there is no closed-form recipe to substitute for the
+.g6 files. The experiment lives at
+[`experiments/srg_catalog/`](../../experiments/srg_catalog/) — see its
+README for compute / approach / results.
 
 ## Why it exists
 
@@ -84,7 +87,7 @@ cheaper-to-beat candidates in other sources, so v1 omits them.
 
 ## What the screen actually does
 
-`scripts/run_srg_screen.py::main`:
+`experiments/srg_catalog/run.py::main`:
 
 1. Parse `--tier {minimal, exhaustive}` or `--classes <file>*`.
 2. For each class: load `.g6` file; for each graph in file:
@@ -168,11 +171,12 @@ McKay publishes. Re-running produces the same 13 survivors. Use
 `--only-beaters` + a tighter `--c-floor` if you want to re-screen with
 a different target.
 
-### 2. `graphs_src/` is gitignored
+### 2. `g6/` files are not committed
 
-Raw `.g6` files live under `graphs_src/srg_catalog/` and are not
-versioned — they are third-party data and the script re-downloads on
-demand. Only the derived `graphs/srg_catalog.json` is committed.
+Raw `.g6` files live under `experiments/srg_catalog/g6/` and are not
+versioned — they are third-party data (McKay's catalog) and the
+script prints `curl` hints to re-download on demand. Only the derived
+`graphs/srg_catalog.json` is committed.
 
 ### 3. `alpha_bb_clique_cover` scales poorly past v ≈ 50
 

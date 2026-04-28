@@ -1,0 +1,50 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — cluster_sat box scan, find-mode, N=22..40
+#
+# Driver: cluster_sat/sat_exact.py
+# Launcher: cluster_sat/run_cluster_sat.sh
+#
+# Goal: walk the (alpha, d_max) box at every N=22..40, looking for
+# K4-free witnesses that improve the c_log frontier. Optimised for
+# *finding* (FEASIBLE), not certifying (UNSAT) — TIMED_OUT cells are
+# treated as "couldn't find here, try larger d" rather than fatal.
+#
+# Resources
+# ---------
+# 16 CPUs / 200 GB. We aim to use ~150 GB peak resident, leaving 50 GB
+# headroom for the OS / hooks / spikes during CP-SAT presolve. The
+# default split is --workers 4 --cp-workers 4 (4 simultaneous models,
+# each up to 4 CP-SAT internal threads → 16 cores). At N≥35 the heaviest
+# surviving cell after Hajnal + seed-prune can briefly hit ~30-40 GB
+# during presolve; 4 of those in parallel = 120-160 GB peak. Hard
+# alpha-max is intentionally NOT set so the search uses every row that
+# survives the c* prune.
+#
+# Persistence guarantees
+# ----------------------
+# Witnesses are saved into graph_db as soon as each row finishes. A
+# JSONL progress log captures one record per completed row (status,
+# wall time, cells visited, sparse6 if any) with fsync after every
+# append. A SIGKILL between rows loses zero already-completed rows.
+# ----------------------------------------------------------------------
+
+universe = vanilla
+
+executable = cluster_sat/run_cluster_sat.sh
+
+# Edit to match your repo location on the cluster.
+initialdir = /home/adityaj8/k4free
+stream_output = True
+stream_error = True
+
+getenv = True
+
+output = logs/cluster_sat/job_$(Cluster)_$(Process).out
+error  = logs/cluster_sat/job_$(Cluster)_$(Process).err
+log    = logs/cluster_sat/job_$(Cluster)_$(Process).log
+
+request_cpus   = 16
+request_memory = 200GB
+request_disk   = 10GB
+
+queue

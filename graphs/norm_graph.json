@@ -1,0 +1,109 @@
+[
+  {
+    "id": "388893a8eefe0516",
+    "sparse6": ":BcN",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 2,
+      "connection_set": [
+        1,
+        2
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  },
+  {
+    "id": "7645726c718985ba",
+    "sparse6": ":Ga@_QtKVDZ",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 3,
+      "connection_set": [
+        2,
+        4,
+        6
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  },
+  {
+    "id": "1a4d322678b9f081",
+    "sparse6": ":W__@_@A_@AB_@ABCfEeFeFGeFGHeFGHIlKkLkLMkLMNkLMNOrQqRqRSqRSTqRSTU",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 5,
+      "connection_set": [
+        4,
+        8,
+        12,
+        16,
+        20
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  },
+  {
+    "id": "a95610e537086670",
+    "sparse6": ":o_O?K?AA_?OOM?@@?oc?AA@`?k?AA@`?gYQGcAX?cTGCa`[_QIDbH?cSJEBX?cSJEBPtC`OGsAHI_PHCy@CcRISAHGeSIsAHGeSIdjHaoXkERT_qYLuBHgu[kERPkw\\kERPkw\\NWSE@B_OgkADCboGSQLH_OgcYPJ_OgcYPIesiLAfOhTYDIhVgSidYrOhTItavOhTItat\\",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 7,
+      "connection_set": [
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  },
+  {
+    "id": "edb1a2e9017854d7",
+    "sparse6": ":~?@w_G?@_?CA_?CA?w?@?_KC_?CA?oOD_?CA?oOD@g?@?_KC@OWF_?CA?oOD@_[G_?CA?oOD@_[GAW?@?_KC@OWFA?cIbOqKBWoLBgoLB_}KBOwNCGoLB_{OCWoLB_{OCPIKBOwNC@CQCwoLB_{OCPGRDGoLB_{OCPGRD@UKBOwNC@CQCpOTDhcWe@eWEPiWEPgZe@cYEpqWEPgZF@uWEPgZF@s]e@cYEpo\\F`}WEPgZF@s]FqAWEPgZF@s]Fq?`e@cYEpo\\F`{_GQIdHIOdhASehASeHyOdHa[ghASeHq_hhASeHq_hIiOdHa[gIQgjhASeHq_hIakkhASeHq_hIakkJYOdHa[gIQgjJAsmkRAoKZ?pKj?pKbMoKRGrLJ?pKbKsLZ?pKbKsLRYoKRGrLBSuLz?pKbKsLRWvMJ?pKbKsLRWvMBeoKRGrLBSuLr_xMjs{nBu{NRy{NRw~nBs}NsA{NRw~OCE{NRw~OCDAnBs}Ns@@OcM{NRw~OCDAOsQ{NRw~OCDAOsPDnBs}Ns@@OcLCPSZHQK`HqCdIqCdIQ{`HQclKqCdIQspLqCdIQspLRk`HQclKRSxNqCdIQspLRc|OqCdIQspLRc|OS[`HQclKRSxNSDDQtTRST\\PTTlPTTd^STTXVULPTTd\\WU\\PTTd\\WUTjSTTXVUDdYU|PTTd\\WUThZVLPTTd\\WUThZVDvSTTXVUDdYUtp\\VmD_wEF_WUJ_WUHbwEDaWuR_WUHbXEV_WUHbXETewEDaWuPdXe^_WUHbXETeXub_WUHbXETeXu`hwEDaWuPdXe\\gYUjlZMplzEtmzEtmZ}plZe|ozEtmZv@pzEtmZv@p[mplZe|o[VHrzEtmZv@p[fLszEtmZv@p[fLs\\]plZe|o[VHr\\FTu",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 11,
+      "connection_set": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100,
+        110
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  },
+  {
+    "id": "60575cabf04eb916",
+    "sparse6": ":~?Ag_C??K??GA_?@?OB_?@?OB?c??GA?WC?k??GA?WC?gE_?@?OB?_D?oF_?@?OB?_D?oF@C??GA?WC?gE?wG@K??GA?WC?gE?wG@GI_?@?OB?_D?oF@?H@OJ_?@?OB?_D?oF@?H@OJ@cN@sM@{M@wO`oNA?P`oNA?PASM@wOAGQA[M@wOAGQAWS`oNA?PAORA_T`oNA?PAORA_TAsM@wOAGQAWSAgUA{M@wOAGQAWSAgUAwW`oNA?PAORA_TAoVB?X`oNA?PAORA_TAoVB?XBS\\Bc[Bk[Bg]b_\\Bo^b_\\Bo^CC[Bg]Bw_CK[Bg]Bw_CGab_\\Bo^C?`CObb_\\Bo^C?`CObCc[Bg]Bw_CGaCWcCk[Bg]Bw_CGaCWcCgeb_\\Bo^C?`CObC_dCofb_\\Bo^C?`CObC_dCofDCjDSiD[iDWkdOjD_ldOjD_lDsiDWkDgmD{iDWkDgmDwodOjD_lDonE?pdOjD_lDonE?pESiDWkDgmDwoEGqE[iDWkDgmDwoEGqEWsdOjD_lDonE?pEOrE_tdOjD_lDonE?pEOrE_tEsxFCwFKwFGyf?xFOzf?xFOzFcwFGyFW{FkwFGyFW{Fg}f?xFOzF_|Fo~f?xFOzF_|Fo~GCwFGyFW{Fg}Fx?GKwFGyFW{Fg}Fx?GHAf?xFOzF_|Fo~G@@GPBf?xFOzF_|Fo~G@@GPBGdFGtEG|EGxGgpFH@HgpFH@HHTEGxGHHIH\\EGxGHHIHXKgpFH@HHPJH`LgpFH@HHPJH`LHtEGxGHHIHXKHhMH|EGxGHHIHXKHhMHxOgpFH@HHPJH`LHpNI@PgpFH@HHPJH`LHpNI@PITTIdSIlSIhUi`TIpVi`TIpVJDSIhUIxWJLSIhUIxWJHYi`TIpVJ@XJPZi`TIpVJ@XJPZJdSIhUIxWJHYJX[JlSIhUIxWJHYJX[Jh]i`TIpVJ@XJPZJ`\\Jp^i`TIpVJ@XJPZJ`\\Jp^KDbKTaK\\aKXckPbK`dkPbK`dKtaKXcKheK|aKXcKheKxgkPbK`dKpfL@hkPbK`dKpfL@hLTaKXcKheKxgLHiL\\aKXcKheKxgLHiLXkkPbK`dKpfL@hLPjL`lkPbK`dKpfL@hLPjL`lLtpMDoMLoMHqm@pMPrm@pMPrMdoMHqMXsMloMHqMXsMhum@pMPrM`tMpvm@pMPrM`tMpvNDoMHqMXsMhuMxwNLoMHqMXsMhuMxwNHym@pMPrM`tMpvN@xNPzm@pMPrM`tMpvN@xNPzNd~Nt}N|}Ny?np~OA@np~OA@OT}Ny?OIAO\\}Ny?OIAOYCnp~OA@OQBOaDnp~OA@OQBOaDOt}Ny?OIAOYCOiEO|}Ny?OIAOYCOiEOyGnp~OA@OQBOaDOqFPAHnp~OA@OQBOaDOqFPAHPULPeKPmKPiMpaLPqNpaLPqNQEKPiMPyOQMKPiMPyOQIQpaLPqNQAPQQRpaLPqNQAPQQRQeKPiMPyOQIQQYSQmKPiMPyOQIQQYSQiUpaLPqNQAPQQRQaTQqVpaLPqNQAPQQRQaTQqVREZRUYR]YRY[rQZRa\\rQZRa\\RuYRY[Ri]R}YRY[Ri]Ry_rQZRa\\Rq^SA`rQZRa\\Rq^SA`SUYRY[Ri]Ry_SIaS]YRY[Ri]Ry_SIaSYcrQZRa\\Rq^SA`SQbSadrQZRa\\Rq^SA`SQbSadSv",
+    "source": "norm_graph",
+    "metadata": {
+      "q": 13,
+      "connection_set": [
+        12,
+        24,
+        36,
+        48,
+        60,
+        72,
+        84,
+        96,
+        108,
+        120,
+        132,
+        144,
+        156
+      ],
+      "construction": "norm_kernel_cayley"
+    }
+  }
+]

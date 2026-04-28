@@ -43,7 +43,7 @@ from utils.alpha_surrogate import alpha_lb
 
 from ..base import Search
 from .tabu import multi_restart_tabu, TabuResult
-from ..groups import (
+from utils.algebra import (
     GroupSpec,
     families_of_order,
     cayley_adj_from_bitvec,

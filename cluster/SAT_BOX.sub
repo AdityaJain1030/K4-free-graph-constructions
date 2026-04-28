@@ -1,0 +1,33 @@
+# ----------------------------------------------------------------------
+# HTCondor Submit File — cluster_sat box scan, find-mode
+# (Mirror of cluster_sat/CLUSTER_SAT.sub for the cluster/ submission
+# directory. Both files target the same driver — pick whichever path
+# fits your local convention.)
+#
+# Driver: cluster_sat/sat_exact.py via cluster/run_sat_box.sh
+# Goal:   walk (alpha, d_max) cells N=22..40, find K4-free witnesses
+#         that improve the c_log frontier. Find-mode (not UNSAT).
+# ----------------------------------------------------------------------
+
+universe = vanilla
+
+executable = cluster/run_sat_box.sh
+
+# Edit to match your repo location on the cluster.
+initialdir = /home/adityaj8/k4free
+
+getenv = True
+
+output = logs/sat_box/job_$(Cluster)_$(Process).out
+error  = logs/sat_box/job_$(Cluster)_$(Process).err
+log    = logs/sat_box/job_$(Cluster)_$(Process).log
+
+# 16 CPUs / 200 GB. Driver uses --workers 4 --cp-workers 4 = 16 cores
+# total. Targets ~150 GB peak resident; 50 GB buffer for presolve
+# spikes / OS. Witnesses persist per-row to graph_db, so a SIGKILL
+# loses zero already-completed rows.
+request_cpus   = 16
+request_memory = 200GB
+request_disk   = 10GB
+
+queue

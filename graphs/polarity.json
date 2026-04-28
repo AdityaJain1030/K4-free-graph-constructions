@@ -168,5 +168,15 @@
       "lambda_min": -5.303022811812179,
       "lambda_max": 23.958330434378542
     }
+  },
+  {
+    "id": "6f7ea35967a3c809",
+    "sparse6": ":Td?__`DaDGbEGcFGIcDbDKcEHbFHMaEIKaFJL`ELMP`FKNO_@ABC",
+    "source": "polarity",
+    "metadata": {
+      "q": 4,
+      "construction": "erdos_renyi_polarity",
+      "q_is_prime_power": true
+    }
   }
 ]

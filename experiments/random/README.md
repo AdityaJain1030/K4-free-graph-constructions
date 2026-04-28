@@ -91,8 +91,7 @@ Runs all 9 method × N combinations and prints a table. Used to produce RESULTS.
 |---|---|
 | `add_edges.py` | Uniform add-only with `--stop {edges, d_max, alpha}`. |
 | `add_remove_edges.py` | Uniform add+remove with `--stop {edges, d_max, alpha}`. The unscored add+remove baseline. |
-| `bohman_keevash.py` | Uniform add-only, halts at saturation. |
-| `sweep_bohman_keevash.py` | N-sweep driver: persists best-per-N to `graphs/bohman_keevash.json`, writes scaling plots to `docs/images/`. |
+| `bohman_keevash.py` | Uniform add-only, halts at saturation. Single canonical entry point: `--n N` (single-N), `--sweep` (N-range with CSV + plots + best-per-N persistence to `graphs/bohman_keevash.json`), `--sweep --quick` (log-log fit only). |
 | `add_edges_weighted.py` | Softmax add-only with `--weight {d_min, alpha, c_log}` and degree tiebreaker on the α / c_log surrogate scores. |
 | `add_remove_edges_weighted.py` | Softmax add+remove with `--weight {target_regular, alpha, c_log}`. **`target_regular` is the recommended config** (squared distance to $t = n^{2/3}$). |
 | `compare_all.py` | 9-method × 5-N driver used to produce `RESULTS.md`. |

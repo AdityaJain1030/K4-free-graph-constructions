@@ -12,14 +12,12 @@ ER(q) is C₄-free (so also K₄-free), (q+1)-regular on all but the
 q+1 *absolute points* (points with p·p = 0, which would be self-
 loops and get removed — they end up with degree q).
 
-This implementation handles **prime** q only. For q = p^e with
-e > 1 the construction needs GF(q) arithmetic, which would pull in
-`galois` or a polynomial field. Skipped on purpose — the prime q
-slice alone hits n ∈ {7, 13, 31, 57, 133, 183, …} which is already
-plenty of parameter-space coverage.
+Handles every prime power q for which `utils.algebra.field` can build
+F_q. The eligible-N → q solver and the construction itself are field-
+agnostic; field arithmetic flows through the `field(q)` interface.
 
 Call `PolaritySearch(n=N)` with any N; it derives q from N via
-q² + q + 1 = N and skips if N is not of that form with q prime.
+q² + q + 1 = N and skips if N is not of that form with q a prime power.
 """
 
 import os
@@ -31,7 +29,7 @@ import networkx as nx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from utils.graph_props import is_k4_free_nx
-from utils.primes import is_prime as _is_prime
+from utils.algebra import field, prime_power
 
 from ..base import Search
 
@@ -51,38 +49,37 @@ def _q_from_n(n: int) -> int | None:
     return num // 2
 
 
-def _pg2_points(q: int) -> list[tuple[int, int, int]]:
+def _pg2_points(F):
     """Canonical projective-2-plane point reps over F_q (first non-zero coord = 1)."""
-    pts: list[tuple[int, int, int]] = []
-    pts.append((0, 0, 1))
-    for c in range(q):
-        pts.append((0, 1, c))
-    for b in range(q):
-        for c in range(q):
-            pts.append((1, b, c))
+    pts: list[tuple] = [(F.zero, F.zero, F.one)]
+    for c in F.elements:
+        pts.append((F.zero, F.one, c))
+    for b in F.elements:
+        for c in F.elements:
+            pts.append((F.one, b, c))
     return pts
 
 
 def _polarity_graph(q: int) -> nx.Graph:
-    pts = _pg2_points(q)
-    idx = {p: i for i, p in enumerate(pts)}
+    F = field(q)
+    pts = _pg2_points(F)
     G = nx.Graph()
     G.add_nodes_from(range(len(pts)))
-    for i, p in enumerate(pts):
-        for j, pp in enumerate(pts):
-            if j <= i:
-                continue
-            dot = (p[0] * pp[0] + p[1] * pp[1] + p[2] * pp[2]) % q
-            if dot == 0:
+    for i in range(len(pts)):
+        pi = pts[i]
+        for j in range(i + 1, len(pts)):
+            pj = pts[j]
+            dot = F.add(F.add(F.mul(pi[0], pj[0]), F.mul(pi[1], pj[1])), F.mul(pi[2], pj[2]))
+            if dot == F.zero:
                 G.add_edge(i, j)
     return G
 
 
 class PolaritySearch(Search):
     """
-    Build the Erdős–Rényi polarity graph ER(q) for the unique prime q
-    satisfying q² + q + 1 = n. No-op if n is not of that form with q
-    prime.
+    Build the Erdős–Rényi polarity graph ER(q) for the unique prime power q
+    satisfying q² + q + 1 = n. No-op if n is not of that form with q a
+    prime power supported by `utils.algebra.field`.
 
     Constraints
     -----------
@@ -116,17 +113,24 @@ class PolaritySearch(Search):
         if q is None:
             self._log("skip", level=1, reason="n != q^2 + q + 1 for any integer q")
             return []
-        if not _is_prime(q):
-            self._log("skip", level=1, reason=f"q={q} is not prime; GF(q^e) unsupported")
+        pe = prime_power(q)
+        if pe is None:
+            self._log("skip", level=1, reason=f"q={q} is not a prime power")
             return []
 
-        G = _polarity_graph(q)
+        try:
+            G = _polarity_graph(q)
+        except NotImplementedError as e:
+            self._log("skip", level=1, reason=str(e))
+            return []
         # Drop any self-loops (absolute points).
         G.remove_edges_from(nx.selfloop_edges(G))
         self._stamp(G)
+        p, e = pe
         G.graph["metadata"] = {
             "q": int(q),
             "construction": "erdos_renyi_polarity",
+            "q_is_prime_power": e > 1,
         }
         k4_free = is_k4_free_nx(G)
         self._log("built", level=1, q=q, n=G.number_of_nodes(),

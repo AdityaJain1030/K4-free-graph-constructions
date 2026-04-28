@@ -44,6 +44,7 @@ from ortools.sat.python import cp_model
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.graph_props import alpha_cpsat, c_log_value
+from utils.ramsey import R4_UB
 
 from .base import Search
 from .sat_circulant import _k4_gap_clauses, _circulant_graph, _fold
@@ -52,31 +53,13 @@ from .sat_circulant import _k4_gap_clauses, _circulant_graph, _fold
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 
-# Known Ramsey numbers R(4, k). For K4-free graphs on N vertices, we have
-# α ≥ max{k : R(4, k) ≤ N}. Upper bounds used where exact value is open
-# (the LOWER ramsey limit is what matters — we use the *largest known*
-# R(4, k) value that's guaranteed ≤ N, which means we use lower-bound
-# estimates of R(4, k)). Table from Radziszowski's Ramsey survey
-# (electronic journal, revision #16).
-#
-# For open cases (k ≥ 6), we use the best-known LOWER bound on R(4, k).
-# Using the lower bound is safe: if R(4, k) ≥ L and L ≤ N, we can't
-# conclude α ≥ k. We need R(4, k) ≤ N, i.e. use UPPER bound of R(4, k).
-#
-# Wait — correction: we want "R(4, k) ≤ N implies α ≥ k for any K4-free
-# graph on N vertices". So we need a proven UPPER bound on R(4, k).
-# Radziszowski's table gives ranges [lower, upper]; using the upper we
-# get the safest conclusion.
+# Best-known upper bounds on R(4, k). For K4-free graphs on N vertices,
+# n ≥ R(4, k) implies α(G) ≥ k, so a proven *upper* bound on R(4, k)
+# yields a sound α-lower-bound prune. Values for k ≤ 10 come from the
+# canonical R4_UB in utils.ramsey; this dict extends to k ≤ 20 via
+# Radziszowski's "Small Ramsey Numbers" survey upper bounds.
 _RAMSEY_4K_UPPER: dict[int, int] = {
-    2: 4,
-    3: 9,
-    4: 18,
-    5: 25,
-    6: 40,     # true value 36–40
-    7: 61,     # 49–61
-    8: 84,     # 59–84
-    9: 115,    # 73–115
-    10: 149,   # 92–149
+    **R4_UB,
     11: 191,
     12: 238,
     13: 291,

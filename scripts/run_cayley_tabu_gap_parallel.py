@@ -30,7 +30,7 @@ sys.path.insert(0, REPO)
 from graph_db import GraphStore, DEFAULT_GRAPHS, open_db
 from graph_db.encoding import graph_to_sparse6, sparse6_to_nx
 from search import CayleyTabuGapSearch
-from search.groups_gap import families_of_order_gap
+from utils.algebra import families_of_order_gap
 
 
 SOURCE = "cayley_tabu_gap"

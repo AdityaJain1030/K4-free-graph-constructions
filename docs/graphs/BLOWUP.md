@@ -1,70 +1,82 @@
-# `BlowupSearch` — lex / tensor product blow-ups of seed graphs
+# `LexBlowupSearch` / `TensorBlowupSearch` — graph-product blow-ups
 
-## What it does
+## What they do
 
-Probe 4 from the landscape study. Lifts a small K₄-free seed graph
-out of `graph_db` and produces a structured large-N graph via a
-product:
+Lift a small K₄-free seed graph (typically pulled from `graph_db`)
+into a structured large-N graph via a graph product. Two distinct
+classes for two distinct products:
 
-- **Lex blow-up `G[I_k]`.** Each vertex of the seed is replaced by
-  an independent set of size `k`. K₄-free because any K₄ in `G[I_k]`
-  projects to a K₄ in `G`. `N = n_seed · k`; `α(G[I_k]) = k · α(G)`;
-  `d_max = k · d_seed`.
-- **Tensor blow-up `G × H`.** Both factors K₄-free; the product is
-  K₄-free for the same projection argument. Useful for combining two
-  different algebraic seeds.
+- **`LexBlowupSearch`** — `seed[I_k]`. Each seed vertex is replaced by
+  an independent set of size `k`; every seed-edge becomes a complete
+  bipartite `K_{k,k}` between the corresponding blobs. K₄-free
+  preserved (a K₄ in the product needs four distinct blobs ⇒ K₄ in
+  the seed). `N = n_seed · k`, `α = k · α_seed`, `d_max = k · d_seed`.
+- **`TensorBlowupSearch`** — `seed × other` (Kronecker / categorical
+  product). `(u₁, v₁) ~ (u₂, v₂)` iff *both* `u₁ ~_seed u₂` and
+  `v₁ ~_other v₂`. K₄-free preserved if either factor is K₄-free.
+  `N = n_seed · n_other`, `d_max = d_seed · d_other`,
+  `α ≥ max(α_seed · n_other, α_other · n_seed)`.
 
-## Why it exists
+The two classes share `name = "blowup"` so their outputs land in the
+same `graphs/blowup.json` under `source = "blowup"`. The `mode` field
+in the per-graph metadata (`"lex"` vs `"tensor"`) distinguishes them
+at query time.
 
-`c_log` of the lex blow-up is worse than the seed by a factor
+## Why they exist
+
+Lex blow-up's `c_log` strictly grows by a factor of
 `k · ln(d_seed) / ln(k · d_seed)` — for `k = 2, d = 8` that's ≈ 1.50.
-So blow-ups are **not competitive on their own**. The point is to
-produce *structured* starting points at large N for a downstream
-edge-switch polish or SAT warm start. Comparing "blow-up + polish"
-vs "random + polish" (Probe 1) at the same N is one of the cleanest
-signals the landscape study needs.
+Tensor blow-up is similarly bad. Neither is competitive on its own.
+The point is to produce *structured* starting points at large N for a
+downstream edge-switch polish or SAT warm start. Comparing
+"blow-up + polish" vs "random + polish" at the same N is one of the
+cleanest signals the landscape study needs.
 
 ## Kwargs
 
-| kwarg                | hard/soft | meaning                                                 |
-|----------------------|-----------|---------------------------------------------------------|
-| `mode`               | hard      | `"lex"` or `"tensor"`                                   |
-| `k`                  | hard      | Size of the independent set in lex mode                 |
-| `seed_source`        | soft      | Restrict seed search to a graph_db source tag           |
-| `seed_id`            | hard      | Pick a specific seed graph_id (overrides source/n)      |
-| `seed_n`             | soft      | Restrict seed selection to graphs on `seed_n` vertices  |
-| `other_source/id/n`  | —         | Same for the second factor when `mode == "tensor"`      |
+`LexBlowupSearch`:
 
-Seed resolution (in order of priority): `seed_id` → frontier-min
-`c_log` over `(seed_source, seed_n)` → overall frontier for
-`seed_source`.
+| kwarg        | required | meaning                                          |
+|--------------|----------|--------------------------------------------------|
+| `seed`       | yes      | `nx.Graph` factor                                |
+| `k`          | yes      | Independent-set size; must be ≥ 2                |
+| `seed_meta`  | no       | Optional provenance dict (`id`, `source`, …); flows into output metadata under `seed_*` |
 
-## Notes on the constructor `n`
+`TensorBlowupSearch`:
 
-The search is parameterised by `n` for API consistency, but the
-output size is determined entirely by the seed and `k`/`other`.
-After construction `self.n` is reset to the actual product size
-so base-class scoring uses the real N.
+| kwarg        | required | meaning                                          |
+|--------------|----------|--------------------------------------------------|
+| `seed`       | yes      | First `nx.Graph` factor                          |
+| `other`      | yes      | Second `nx.Graph` factor                         |
+| `seed_meta`  | no       | Provenance for `seed`; output prefix `seed_*`    |
+| `other_meta` | no       | Provenance for `other`; output prefix `other_*`  |
 
-## What to expect from it
+Neither class accepts `n`: the output vertex count is fully
+determined by the seeds (and `k` for lex).
 
-- `BlowupSearch(n=0, mode="lex", seed_source="circulant",
-  seed_n=17, k=2)` — P(17) lexed into 34 vertices. Resulting
-  `c_log` ≈ 1.01 (worse than the seed's 0.68), but the graph has
-  the Paley spectral structure preserved.
+Resolving seeds out of `graph_db` is a caller concern — see
+`scripts/run_blowup.py` for the canonical pattern.
+
+## What to expect from them
+
+- `LexBlowupSearch(seed=P(17), k=2)` — Paley P(17) lexed into 34
+  vertices. Resulting `c_log ≈ 1.01` (worse than P(17)'s 0.68), but
+  the graph has the Paley spectral structure preserved.
+- `TensorBlowupSearch(seed=circulant_n13, other=cayley_n7)` — 91-vertex
+  product, `c_log ≈ 2.07`. Useful as a high-N regular structured seed.
 - Chain the output through `RandomRegularSwitchSearch` locally (not
   yet automated — ingest, pick by id, then feed as a seed with
   `num_switches=500`) to measure how much the polish recovers.
 
-## When to reach for it
+## When to reach for them
 
 - Generating large-N structured seeds for downstream polish.
 - Stress-testing the K₄-free scoring pipeline on big graphs
   (products easily push N above 100).
 
-## When **not** to reach for it
+## When **not** to reach for them
 
-- You want competitive `c_log` out of the box. Blow-ups alone
-  don't cross the 0.68 benchmark.
+- You want competitive `c_log` out of the box. Blow-ups alone don't
+  cross the 0.68 benchmark.
 - The seed is regular-graph-specific and the factor you want
   destroys vertex transitivity.

@@ -18,12 +18,13 @@ stays untouched; this path is additive.
 
 **New files:**
 
-- `search/groups_gap.py` — GAP SmallGroups bridge. Shells out to `gap`
+- `utils/algebra.py` (the `families_of_order_gap` / `load_order` /
+  `to_group_spec` block) — GAP SmallGroups bridge. Shells out to `gap`
   with a per-N script that emits `StructureDescription` + full
   multiplication table. Result cached per-N at
   `graphs_src/gap_groups/n_XXXX.json` (gitignored).
   `families_of_order_gap(n)` is a drop-in replacement for
-  `search.groups.families_of_order(n)`, returning every SmallGroup of
+  `utils.algebra.families_of_order(n)`, returning every SmallGroup of
   order n as a `GroupSpec`. Orders with `NumberSmallGroups(n) > 500`
   (cap constant `MAX_GROUPS_PER_N`) return `[]` with a warning; this
   skips N=128 (2328 groups) and all orders above that cap in [1, 2000].
@@ -198,7 +199,7 @@ connection-set density. Pure local-minimum trap in the bitvec space.
 
 ## Files touched
 
-- `search/groups_gap.py` *(new)*
+- `utils/algebra.py` *(GAP bridge merged in; previously `search/groups_gap.py`)*
 - `search/cayley_tabu_gap.py` *(new)*
 - `search/__init__.py` *(added export)*
 - `scripts/run_cayley_tabu_gap.py` *(new)*

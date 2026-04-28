@@ -1,12 +1,18 @@
 from .base import Search, SearchResult
 from .logger import SearchLogger, AggregateLogger
-from .blowup import BlowupSearch
 from .algebraic_explicit import (
+    A5DoubleTranspositionsSearch,
     BrownSearch,
-    PrimeCirculantSearch,
+    FoldedCubeSearch,
+    HammingSearch,
+    LexBlowupSearch,
     MattheusVerstraeteSearch,
     NormGraphSearch,
     PolaritySearch,
+    PrimeCirculantSearch,
+    PSLInvolutionsSearch,
+    ShrikhandeSearch,
+    TensorBlowupSearch,
 )
 from .brute_force import BruteForce
 from .stochastic_walk.cayley_tabu import CayleyTabuSearch
@@ -25,8 +31,14 @@ __all__ = [
     "SearchResult",
     "SearchLogger",
     "AggregateLogger",
-    "BlowupSearch",
+    "A5DoubleTranspositionsSearch",
     "BrownSearch",
+    "FoldedCubeSearch",
+    "HammingSearch",
+    "LexBlowupSearch",
+    "PSLInvolutionsSearch",
+    "ShrikhandeSearch",
+    "TensorBlowupSearch",
     "BruteForce",
     "CayleyResidueSearch",
     "CayleyTabuSearch",

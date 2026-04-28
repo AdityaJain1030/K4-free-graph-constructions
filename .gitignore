@@ -4,6 +4,7 @@ cache.db
 # Raw third-party graph catalogues (e.g. McKay's SRG enumerations).
 # Not ours to version; scripts fetch on demand.
 graphs_src/
+experiments/srg_catalog/g6/*.g6
 
 # Run artifacts. Logs and other ephemeral outputs are regenerated on
 # every invocation — tracking them produces noisy diffs and merge

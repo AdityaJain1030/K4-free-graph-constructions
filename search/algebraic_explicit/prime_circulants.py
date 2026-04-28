@@ -30,9 +30,9 @@ import networkx as nx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from utils.graph_props import is_k4_free_nx
-from utils.primes import is_prime as _is_prime
-from utils.primes import prime_factors as _prime_factors
-from utils.primes import primitive_root as _primitive_root
+from utils.algebra import is_prime as _is_prime
+from utils.algebra import prime_factors as _prime_factors
+from utils.algebra import primitive_root as _primitive_root
 
 from ..base import Search
 

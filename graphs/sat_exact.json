@@ -111,5 +111,49 @@
       "status": "FEASIBLE",
       "solve_s": 16.011
     }
+  },
+  {
+    "id": "c85eb47ebbd5a012",
+    "sparse6": ":XbA`fDe_D_EH_GH_FIJ_DFGK_EFGJLaDFHJ`EGIKbDFHJcEGIKaBFHLP`CGIMQ`ABDNS`ACEORaBCDNQU`BCEOPT",
+    "source": "sat_exact",
+    "metadata": {
+      "alpha_target": 5,
+      "d_max_target": 7,
+      "status": "FEASIBLE",
+      "note": "Local box-scan witness, N=25, --workers 4 --time-limit 120, hajnal+seed; \u03b1=5 d=7"
+    }
+  },
+  {
+    "id": "1a2f80904c127ef2",
+    "sparse6": ":K`?L@rH[tbyRdV",
+    "source": "sat_exact",
+    "metadata": {
+      "n": 12,
+      "alpha_target": 4,
+      "d_max_target": 2,
+      "status": "FEASIBLE"
+    }
+  },
+  {
+    "id": "99047a849fcbf9bc",
+    "sparse6": ":K`KTQVLdEt^",
+    "source": "sat_exact",
+    "metadata": {
+      "n": 12,
+      "alpha_target": 6,
+      "d_max_target": 1,
+      "status": "FEASIBLE"
+    }
+  },
+  {
+    "id": "b56c9d1e7f22414d",
+    "sparse6": ":K`?L@rmYtyggf",
+    "source": "sat_exact",
+    "metadata": {
+      "n": 12,
+      "alpha_target": 5,
+      "d_max_target": 2,
+      "status": "FEASIBLE"
+    }
   }
 ]

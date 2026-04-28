@@ -25,8 +25,11 @@ import networkx as nx
 from utils.graph_props import is_k4_free
 
 from .cayley_tabu import CayleyTabuSearch, _adj_to_nx, _make_cost_fn, _fmt_inf
-from ..groups import cayley_adj_from_bitvec, connection_set_from_bitvec
-from ..groups_gap import families_of_order_gap
+from utils.algebra import (
+    cayley_adj_from_bitvec,
+    connection_set_from_bitvec,
+    families_of_order_gap,
+)
 from .tabu import multi_restart_tabu, TabuResult
 
 

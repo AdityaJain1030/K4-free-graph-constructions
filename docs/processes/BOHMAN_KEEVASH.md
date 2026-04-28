@@ -15,8 +15,10 @@ particular the asymptotically tight bounds are due to Bohman (lower)
 and Wolfovitz (upper). The repository's source-tag `bohman_keevash`
 is shorthand for this family of results.
 
-> Implemented at [`experiments/random/bohman_keevash.py`](../../experiments/random/bohman_keevash.py).
-> Sweep + plots: [`experiments/random/sweep_bohman_keevash.py`](../../experiments/random/sweep_bohman_keevash.py).
+> Implemented at [`experiments/random/bohman_keevash.py`](../../experiments/random/bohman_keevash.py)
+> — single canonical entry point. Modes: `--n N` (single-N print);
+> `--sweep` (N-range sweep, writes CSV + plots, persists best-per-N);
+> `--sweep --quick` (log-log fit only, no artifacts).
 > Best-per-$N$ outputs ($N=10\ldots 100$, step 5) live at
 > [`graphs/bohman_keevash.json`](../../graphs/bohman_keevash.json),
 > per-$N$ statistics at
@@ -239,7 +241,7 @@ concentration bounds:
 
 Sweep: $N \in \{10, 15, \ldots, 100\}$, 10 trials per $N$, seed
 20260427, run by
-[`experiments/random/sweep_bohman_keevash.py`](../../experiments/random/sweep_bohman_keevash.py).
+[`experiments/random/bohman_keevash.py --sweep`](../../experiments/random/bohman_keevash.py).
 
 ```
    N  best_c_log  best_α  best_d  best_m   med_α  med_d  med_m
@@ -366,8 +368,7 @@ do beat the K₄-free process at $N\ge 30$), see
 
 | File | Role |
 |---|---|
-| [`experiments/random/bohman_keevash.py`](../../experiments/random/bohman_keevash.py) | The process (CLI + sweep). |
-| [`experiments/random/sweep_bohman_keevash.py`](../../experiments/random/sweep_bohman_keevash.py) | $N$-sweep driver: persists best-per-$N$ to graph_db, writes CSV + plots. |
+| [`experiments/random/bohman_keevash.py`](../../experiments/random/bohman_keevash.py) | The single canonical entry point. `--n N` for one N; `--sweep` for the artifact-producing N-range run (CSV + scaling plots + best-per-N persistence); `--sweep --quick` for a log-log fit only. |
 | [`graphs/bohman_keevash.json`](../../graphs/bohman_keevash.json) | Best-per-$N$ outputs, $N=10\ldots 100$ step 5 (19 graphs). |
 | [`experiments/random/results/bohman_keevash_sweep.csv`](../../experiments/random/results/bohman_keevash_sweep.csv) | Per-$N$ statistics from the sweep. |
 | [`experiments/random/results/bk_hardcore_exact.csv`](../../experiments/random/results/bk_hardcore_exact.csv) | Rung-2 hard-core tightness on previous-seed outputs ($N \le 24$). |

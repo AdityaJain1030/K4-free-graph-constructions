@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-scripts/run_srg_screen.py
-==========================
+experiments/srg_catalog/run.py
+================================
 Screen McKay's strongly-regular-graph enumeration for K₄-free members,
-rank by c = α·k/(v·ln k), and ingest survivors into graph_db under
-source='srg_catalog'.
+rank by `c = α · k / (v · ln k)`, and ingest survivors into graph_db
+under `source="srg_catalog"`.
 
 The SRG space is interesting because it contains *non-vertex-transitive*
 graphs at orders our Cayley searches (circulant, cayley, cayley_tabu)
-structurally can't reach. BEYOND_CAYLEY.md §3 argues non-VT space is
-where c < 0.6789 can live: Lovász θ(G) = α(G) on every VT graph, so
-VT sits on the θ-surface; non-VT can dip below.
+structurally can't reach. `docs/graphs/BEYOND_CAYLEY.md` §3 argues
+non-VT space is where `c < 0.6789` can live: Lovász θ(G) = α(G) on every
+VT graph, so VT sits *on* the θ-surface; non-VT can dip below.
 
-Input: raw .g6 files under graphs_src/srg_catalog/, downloaded by hand
-from https://users.cecs.anu.edu.au/~bdm/data/. One line per graph,
-graph6-encoded.
+Input: raw .g6 files under `experiments/srg_catalog/g6/`. One line per
+graph, graph6-encoded. Sourced from
+<https://users.cecs.anu.edu.au/~bdm/data/graphs.html>.
 
 Usage::
 
-    python scripts/run_srg_screen.py                    # minimal tier
-    python scripts/run_srg_screen.py --tier exhaustive
-    python scripts/run_srg_screen.py --classes sr401224.g6
-    python scripts/run_srg_screen.py --no-ingest        # report only
+    python experiments/srg_catalog/run.py                       # minimal tier
+    python experiments/srg_catalog/run.py --tier exhaustive
+    python experiments/srg_catalog/run.py --classes sr401224.g6
+    python experiments/srg_catalog/run.py --no-ingest           # report only
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from typing import NamedTuple
 
 import networkx as nx
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
 
 from graph_db import GraphStore, DEFAULT_GRAPHS
@@ -71,9 +71,9 @@ SRG_CLASSES: list[SRGClass] = [
     SRGClass("sr251256.g6", 25, 12, 5, 6, "exhaustive"),
 ]
 
-C_FLOOR = 0.6789   # Paley P(17) benchmark
+C_FLOOR = 0.6789  # Paley P(17) benchmark
 MCKAY_BASE = "https://users.cecs.anu.edu.au/~bdm/data"
-DEFAULT_SRC_DIR = os.path.join(REPO, "graphs_src", "srg_catalog")
+DEFAULT_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "g6")
 
 
 # ── SRG algebra ─────────────────────────────────────────────────────────────
@@ -88,12 +88,12 @@ def srg_eigenvalues(v: int, k: int, lam: int, mu: int) -> tuple[float, float]:
 
 
 def hoffman_alpha_upper(v: int, k: int, s: float) -> float:
-    """α(G) ≤ v·|s|/(k+|s|) for srg."""
+    """α(G) ≤ v·|s|/(k+|s|) for an SRG with smallest eigenvalue s."""
     return v * abs(s) / (k + abs(s))
 
 
 def delsarte_omega_upper(k: int, s: float) -> float:
-    """ω(G) ≤ 1 − k/s for srg with smallest eigenvalue s < 0."""
+    """ω(G) ≤ 1 − k/s for an SRG with smallest eigenvalue s < 0."""
     return 1 - k / s
 
 

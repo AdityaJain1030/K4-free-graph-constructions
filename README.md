@@ -279,17 +279,22 @@ handles per-run logs in `logs/search/`. The framework writes into the
 - `DESIGN.md` — the spec for the `Search` contract.
 - `ADDING_A_SEARCH.md` — playbook / checklist for writing a new search.
 
-Core group machinery used by the Cayley-family searches:
+Core group machinery used by the Cayley-family searches lives in
+`utils/algebra.py`:
 
-- `groups.py` — `GroupSpec`, inversion-orbit partitioning, and the
-  hand-coded families (`Z_n`, `D_n`, `Z_2^k`, `Z_3 × Z_2^k`,
-  `Z_a × Z_b`).
-- `groups_gap.py` — GAP SmallGroups bridge (every group of order ≤ 144
-  with `NumberSmallGroups(n) ≤ 500`).
-- `groups_psl.py` — `PSL(2, q)` for q prime and q ∈ {4, 8, 9, 16} via
-  hand-coded F_q arithmetic (`_fq.py`). Used by `scripts/run_psl_tabu.py`.
-- `tabu.py` — generic bitvec tabu (Parczyk Algorithm 2), used by
-  `cayley_tabu`, `cayley_tabu_gap`, and `run_psl_tabu.py`.
+- `GroupSpec`, inversion-orbit partitioning, and the hand-coded family
+  factories (`Z_n`, `D_n`, `Z_2^k`, `Z_3 × Z_2^k`, `Z_a × Z_b`)
+  via `families_of_order(n)`.
+- GAP SmallGroups bridge (`families_of_order_gap(n)`) — every group of
+  order ≤ 144 with `NumberSmallGroups(n) ≤ 500`.
+- `psl2(q)` — `PSL(2, q)` for q prime and q ∈ {4, 8, 9, 16}. Used by
+  `scripts/run_psl_tabu.py` and `PSLInvolutionsSearch`.
+- `cayley_adj_from_bitvec` / `connection_set_from_bitvec` — turn an
+  inversion-orbit bitvector into a Cayley adjacency matrix.
+
+`tabu.py` (under `search/stochastic_walk/`) is the generic bitvec
+tabu engine (Parczyk Algorithm 2) that consumes a `GroupSpec`. Used
+by `cayley_tabu`, `cayley_tabu_gap`, and `run_psl_tabu.py`.
 
 Algorithm subclasses (per-search notes under `docs/searches/`):
 
@@ -304,7 +309,7 @@ Algorithm subclasses (per-search notes under `docs/searches/`):
 | `regularity.py`          | `docs/searches/regularity/REGULARITY.md`     | Regularity-partition-based construction.                                 |
 | `regularity_alpha.py`    | `docs/searches/regularity/REGULARITY_ALPHA.md` | α-optimised regularity variant.                                        |
 | `mattheus_verstraete.py` | `docs/searches/MATTHEUS_VERSTRAETE.md`       | Explicit R(4,k) lower-bound family from Mattheus–Verstraete 2023.        |
-| `polarity.py`            | `docs/searches/algebraic/POLARITY.md`        | Erdős–Rényi polarity graph ER(q) on PG(2, q). Prime q in-tree; prime powers via `scripts/run_polarity_extended.py`. |
+| `polarity.py`            | `docs/searches/algebraic/POLARITY.md`        | Erdős–Rényi polarity graph ER(q) on PG(2, q). Handles prime and prime-power q via `utils.algebra.field`. |
 | `norm_graph.py`          | `docs/searches/algebraic/NORM_GRAPH.md`      | Norm-graph families related to C₄-free extremal constructions.           |
 | `brown.py`               | `docs/searches/algebraic/BROWN.md`           | Reiman–Brown R(3,k) lower-bound graph (N=125).                           |
 | `blowup.py`              | `docs/searches/BLOWUP.md`                    | Seeded blow-up constructions over a base graph.                          |
@@ -327,8 +332,7 @@ Representative drivers (there are many more — `ls scripts/`):
   `run_regularity_alpha.py`, `run_mattheus_verstraete.py`,
   `run_random_regular_switch.py`, `run_alpha_targeted.py`,
   `run_brown.py`, `run_blowup.py`, `run_norm_graph.py`,
-  `run_polarity.py`, `run_polarity_extended.py` (prime-power q),
-  `run_psl_tabu.py` (PSL(2, q)), `run_circulant_fast.py`.
+  `run_polarity.py`, `run_psl_tabu.py` (PSL(2, q)), `run_circulant_fast.py`.
 - **SAT drivers:** `run_sat_exact.py`, `run_sat_circulant.py`,
   `run_sat_circulant_exact.py`, `run_sat_circulant_optimal.py`,
   `run_proof_pipeline.py`, `prove_box.py`, `verify_optimality.py`,

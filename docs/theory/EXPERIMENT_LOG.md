@@ -273,7 +273,7 @@ to skip because a suboptimal-c witness is easier to find.
 **Question.** Does taking k disjoint copies of a good small-N graph
 preserve c? (It *does*, trivially — but is there any N where the
 blow-up beats the best known at that N?)
-**Approach.** `search/blowup.py`: for every db graph G of order n,
+**Approach.** `search/algebraic_explicit/blowup.py`: for every db graph G of order n,
 write k·G at order kn for k up to some bound; record c (which equals
 c(G) exactly).
 **Result.** Null by design at every N. Present in `graphs/blowup.json`
@@ -410,11 +410,11 @@ new graph).
 **Question.** The SRG catalog is the largest cheaply-enumerable
 non-VT source (most members of srg(40,12,2,4), all Paulus graphs,
 etc.). Does *anything* in it beat c = 0.6789?
-**Approach.** `scripts/run_srg_screen.py`: for each of 10 SRG classes
-(v ≤ 40, minimal then exhaustive tier), parse `.g6`, filter K₄-free
-via bitmask common-neighborhood intersection, α via
+**Approach.** `experiments/srg_catalog/run.py`: for each of 10 SRG
+classes (v ≤ 40, minimal then exhaustive tier), parse `.g6`, filter
+K₄-free via bitmask common-neighborhood intersection, α via
 `alpha_bb_clique_cover_nx`, ingest survivors to
-`graphs/srg_catalog.json`. Raw `.g6` under `graphs_src/srg_catalog/`
+`graphs/srg_catalog.json`. Raw `.g6` under `experiments/srg_catalog/g6/`
 (gitignored).
 **Result.** **4,361 graphs screened, 13 K₄-free survivors, 0 beat
 0.6789.** Best catalog c = 0.9651 (srg(27,10,1,5), Schläfli

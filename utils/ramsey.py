@@ -19,6 +19,20 @@ for (_s, _t), _v in list(KNOWN_RAMSEY.items()):
     KNOWN_RAMSEY[(_t, _s)] = _v
 
 
+# Best-known upper bounds on R(4, k), k >= 2. Exact for k ≤ 5 (mirrors
+# KNOWN_RAMSEY); Radziszowski's "Small Ramsey Numbers" survey upper
+# bounds for k ≥ 6. Used by the K4-free SAT solvers' pre-solve box
+# prune: if n ≥ R4_UB[α+1] then every K4-free graph on n vertices has
+# α(G) ≥ α+1, so the (n, α, ·) box is UNSAT.
+#
+# Soundness requires UPPER bounds: a value v with R(4,k) > v would
+# allow K4-free graphs on n=v vertices with α=k-1, so the prune would
+# wrongly reject feasible boxes.
+R4_UB: dict[int, int] = {
+    2: 4, 3: 9, 4: 18, 5: 25, 6: 41, 7: 61, 8: 84, 9: 115, 10: 149,
+}
+
+
 def degree_bounds(n: int, max_alpha: int) -> tuple[int, int]:
     """
     Ramsey-based vertex-degree bounds for a K4-free graph with α ≤ max_alpha.

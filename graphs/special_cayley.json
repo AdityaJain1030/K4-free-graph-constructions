@@ -59,5 +59,156 @@
       "group": "Z_3^3",
       "connection_set": "{\u00b1e_i}"
     }
+  },
+  {
+    "id": "da5dc5442dc767c5",
+    "sparse6": ":GaGaQLHGscbR",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "FoldedCube",
+      "name": "Folded 4-cube (Z_2^3)",
+      "group": "Z_2^3",
+      "connection_set": "{e_1,...,e_d,(1,...,1)}",
+      "d": 3
+    }
+  },
+  {
+    "id": "6e22ef078de8f934",
+    "sparse6": ":_______p@AFGHIcDFHKNcEFILMdEFGJObCHIJObDGHLMbEGIKN`BFJKLaBFMNOaCGKLOaDIJKMaEHJLN`CGJMN`DILNO`EHKMO",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "FoldedCube",
+      "name": "Folded 6-cube (Z_2^5)",
+      "group": "Z_2^5",
+      "connection_set": "{e_1,...,e_d,(1,...,1)}",
+      "d": 5
+    }
+  },
+  {
+    "id": "fa1702668149f791",
+    "sparse6": ":~?@?_OGCA@?_TPgy]OebxpA[NecIHGjRIDiPOnPIEiPKrPHeH?cYRcA`pQOKGCh?k]PdbAhqQIJExOom_dArP}QKKfhGko\\__`?cSJEOoh?ceSIgWO]PRHtKKMMIHTIiEEEcsi\\PCAdRaDCeb@qplEcQpOx\\?`QIg_[s^OgtKSKXNGcaaGEKFSQLN@@a@gw]O`?p@CcRIO_gocTJeWOOUPIeBSGMIIDaxiCECcqp_r@AbA@o{__`@W{w\\NoOwg[ZNgGGWQLLfRv",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "FoldedCube",
+      "name": "Folded 7-cube (Z_2^6)",
+      "group": "Z_2^6",
+      "connection_set": "{e_1,...,e_d,(1,...,1)}",
+      "d": 6
+    }
+  },
+  {
+    "id": "c277feda28fda9b7",
+    "sparse6": ":~?A?_GA?_GA?_GAkAOgJB?uVE@wfIhWWFqWjdP_\\IAeTEPg_Gx[XEqCdd`c[GaQQF`{_GxO\\FaGccps^GQUQEpogIXKYFA[id@gZHamTD`[WEXGSDpk]c`KUF@}RD@SYFWwWHa[gb`cbHAUNEaKiIxC[HAcic@kdIQmNFQCaIH?]GAGfcP{_GQYOCPS_IW{ODaGjbpCVGQiMBpGbIGwOCqSfb`CSHAYHB_{OCWgMC`KSao{QD`]LCPOTDwoOCpSUaP_\\F`}HEPgZFGgWIQgja`c_GQILFqKdIwo]GqOiapscHQeJEa?eHws[Ga[gb@k`HaaHA_wWEWcJBpg\\aOsPF@}HB@?ZFgoLDQKgaosVHQ]JB@WcHggJCa?ha_sSGamIB@K`IgWFJClKRSxN`__kSTLVUDeFAApOSdPTTgKCJbHIUdpa_oSlKSdYVUMC@Q{oQDhZWWGBKrXDVDt]__OtLs\\ZVD}A@ROwPdl\\WGCAMRs}Vd|__OK{NsH]WeM@@Bh@Ot|`WgCDMs@CWEDb_O[|OcLCQtA@@bw~OCDJSWGGMSTEPtHR_o_{PSdITd]CABhFQChTUWSGMsXGQTPW_O_xMbk{SDEA@bKsLRxKSwGFLb[wNSpQ_o[pKbXARTYC@r?qLsLNTWSFKBCwPCxS_oWlJbK~RT]C@awnLSDNUWSEJQ{sOCxW",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "FoldedCube",
+      "name": "Folded 8-cube (Z_2^7)",
+      "group": "Z_2^7",
+      "connection_set": "{e_1,...,e_d,(1,...,1)}",
+      "d": 7
+    }
+  },
+  {
+    "id": "8091d5c4be3ca7a8",
+    "sparse6": ":Cci",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(2,2) (Z_2^2)",
+      "group": "Z_2^2",
+      "connection_set": "{\u00b1e_i}",
+      "d": 2,
+      "q": 2
+    }
+  },
+  {
+    "id": "16a6fde88402fc06",
+    "sparse6": ":GaGsQQRQbR",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(3,2) (Z_2^3)",
+      "group": "Z_2^3",
+      "connection_set": "{\u00b1e_i}",
+      "d": 3,
+      "q": 2
+    }
+  },
+  {
+    "id": "15adf8196dfb5b55",
+    "sparse6": ":O`ACKdK\\CPDLCXRqGXC`dPC`brG\\F",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(4,2) (Z_2^4)",
+      "group": "Z_2^4",
+      "connection_set": "{\u00b1e_i}",
+      "d": 4,
+      "q": 2
+    }
+  },
+  {
+    "id": "3fbd8d28ea41f721",
+    "sparse6": ":______jEFGHIeFhIgIgHeGfGfIfHeIeHbCKOPbDKRTcDKQSaBNOTaCMOS`BNPR`CMPQaDLST`DLQR`ALMN",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(5,2) (Z_2^5)",
+      "group": "Z_2^5",
+      "connection_set": "{\u00b1e_i}",
+      "d": 5,
+      "q": 2
+    }
+  },
+  {
+    "id": "4f05c4f5b29b8a2c",
+    "sparse6": ":~?@?_OGCA@?e`p?cSJEPpCkXIEQ`[cTHEQP[[RGCq@S_XGDppc[VFDRahY[XLrb@i[VMSahqgTLsqhicUJtApeeUKRr@eaVKsAxa]YLsRXq_YMRq@EaQISAPM]RIO_Y\\OhUoOYhUkUo_aTKfWO_iPKhVo_qPIgVOOaHEiWOOiDEkVoOqDCjVOOQt[nWP?hs}bRP?ps{aQpOpt?`QOo`w}fTOoh|?hUOopx?gT~",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(6,2) (Z_2^6)",
+      "group": "Z_2^6",
+      "connection_set": "{\u00b1e_i}",
+      "d": 6,
+      "q": 2
+    }
+  },
+  {
+    "id": "96f8254b385d670b",
+    "sparse6": ":H`?KGBaMHAqEUPBF",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(2,3) (Z_3^2)",
+      "group": "Z_3^2",
+      "connection_set": "{\u00b1e_i}",
+      "d": 2,
+      "q": 3
+    }
+  },
+  {
+    "id": "d35866b5747dbab2",
+    "sparse6": ":~?@P_G?@_GA?_?M?@G?Da_eKAwmJbGoLao}KBgcLBgcMCWgNCGcLCPUIC@GRa_{QDGcIdPWXd@_Xcp[XbP?YFGwQEpqNCPgZaoyKCaAKBwoOaosbapCaaoo\\F`}LCqAODqCfbPWdc@SaIXGWGg{WGWwSHQmMCqQQDqKmcPWccPO_JG{TGrAHDa[paPKhJWgVIaksa`SgJBMHDAwoa`_nKb]E@pc[LBUFA@cZLraEA@cYKrYB@@{aHQYB@Pw_GQYC@PsbHAY@@Q?cHqy@?q?dJREA?qCaIqp?_OOcHQco__OaGqgqOgGDGQKgJr}D@`o\\Hq_zNWKGEp{kKRk|_o[ZFaklMRqCA@g^KBGyNgSFF@wmJrg}`?WYFQciMRq@@a[hKrP?__WgIbSuOSm@@qsmLB\\A__[jJrSwOsuAAAoqLb`C_O_oKRKvNs~",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "Hamming",
+      "name": "H(4,3) (Z_3^4)",
+      "group": "Z_3^4",
+      "connection_set": "{\u00b1e_i}",
+      "d": 4,
+      "q": 3
+    }
+  },
+  {
+    "id": "211d847a65b94f95",
+    "sparse6": ":EaGcbcb",
+    "source": "special_cayley",
+    "metadata": {
+      "family": "PSL",
+      "name": "Cay(PSL(2,2), involutions)",
+      "group": "PSL(2,2)",
+      "connection_set": "trace0_involutions",
+      "q": 2
+    }
   }
 ]

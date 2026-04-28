@@ -31,8 +31,7 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from utils.graph_props import is_k4_free_nx
-from utils.primes import is_prime as _is_prime
+from utils.algebra import is_prime as _is_prime
 
 from ..base import Search
 
@@ -117,7 +116,5 @@ class NormGraphSearch(Search):
             "connection_set": S,
             "construction": "norm_kernel_cayley",
         }
-        k4_free = is_k4_free_nx(G)
-        self._log("built", level=1, q=q, n=self.n,
-                  m=G.number_of_edges(), is_k4_free=int(k4_free))
+        self._log("built", level=1, q=q, n=self.n, m=G.number_of_edges())
         return [G]

@@ -1,127 +1,173 @@
-# `CayleyResidueSearch` — intuition, caveats, scope
+# Power-residue Cayley `Cay(Z_p, R_k)` (a.k.a. `PrimeCirculantSearch`)
 
-## What this search builds
+For a prime `p` and an integer `k ≥ 2` with `p ≡ 1 (mod 2k)`, the
+`k`-th power residues `R_k = {x^k mod p : x ∈ Z_p^*} ⊂ Z_p^*` form a
+multiplicative subgroup of order `(p − 1)/k`. The Cayley graph
+`Cay(Z_p, R_k)` has vertex set `Z_p` and edges
+`{i, i + s mod p}` for every `s ∈ R_k`.
 
-For a prime `p` and an integer `k ≥ 2` with `p ≡ 1 (mod 2k)`, the `k`-th
-power residues `R_k ⊂ Z_p^*` form a multiplicative subgroup of order
-`(p-1)/k`. The Cayley graph `Cay(Z_p, R_k)` has vertex set `Z_p` and
-edges `{i, i+s mod p}` for every `s ∈ R_k`. It is:
+It is:
 
-- **regular** of degree `(p-1)/k`,
-- **vertex-transitive** (via translation) and **arc-transitive** (via
-  multiplication by any element of `R_k`),
-- circulant — so these graphs overlap with `CirculantSearch`'s output
-  space. The difference is *which* connection sets get built.
+- **regular** of degree `(p − 1)/k`,
+- **vertex-transitive** (translations act) and **arc-transitive**
+  (multiplication by any `r ∈ R_k` permutes both vertices and edges),
+- a **circulant** — so these graphs lie inside the connection-set space
+  enumerated by `CirculantSearch`.
 
-The `p ≡ 1 (mod 2k)` condition ensures `-1 ∈ R_k`, which makes the
-connection set symmetric (`S = -S`), so the Cayley graph is
-undirected. The three small cases:
+The `p ≡ 1 (mod 2k)` condition ensures `−1 ∈ R_k`, so `S = −S` and the
+Cayley graph is undirected. The three small cases:
 
-| `k` | Condition       | What you get                                       |
-|-----|-----------------|----------------------------------------------------|
-| 2   | `p ≡ 1 (mod 4)` | Paley graph `P(p)`                                 |
-| 3   | `p ≡ 1 (mod 6)` | Cubic-residue Cayley graph                         |
-| 6   | `p ≡ 1 (mod 12)`| Sextic-residue Cayley graph                        |
+| `k` | Condition | Name |
+|---|---|---|
+| 2 | `p ≡ 1 (mod 4)` | **Paley graph** `P(p)` |
+| 3 | `p ≡ 1 (mod 6)` | **Cubic-residue Cayley** |
+| 6 | `p ≡ 1 (mod 12)` | **Sextic-residue Cayley** |
 
-## Why this search exists alongside `CirculantSearch`
+> Implemented at
+> [`search/algebraic_explicit/prime_circulants.py`](../../search/algebraic_explicit/prime_circulants.py).
+> Class is `PrimeCirculantSearch` (renamed from `CayleyResidueSearch`).
+> Ingested under `source="cayley"` — shares `graphs/cayley.json` with
+> historical residue-class results.
 
-For `n ≤ 35`, `CirculantSearch` enumerates **every** connection set
-exhaustively, so every residue-Cayley graph on `Z_p` with `p ≤ 35` is
-already hit — this search produces no new graphs, only re-labels
-existing ones with algebraic metadata (`prime`, `residue_index`,
-`connection_set`) useful for the visualizer.
+---
 
-For `n ≥ 40`, exhaustive circulant enumeration is infeasible (see
-`circulant/CIRCULANTS.md` caveat 1 and open question 3). Residue families give
-a principled, O(1)-per-prime way to produce candidates at larger `n`,
-without falling into the random-sampling trap.
+## Why this family contains the c_log frontier
 
-## What the spectrum looks like (and why it's not strongly regular)
+The headline result for the entire repo:
+
+> **The Paley graph `P(17)` (k=2, p=17) achieves c_log = 0.6789, the
+> lowest c_log of any K₄-free graph in the database.**
+
+P(17) sits below every other algebraic construction, every random
+baseline, and every search-derived plateau. Beating it requires a
+construction that is simultaneously:
+
+1. K₄-free (Paley P(17) is the largest Paley graph that *is* K₄-free
+   — Paley P(p) for `p ≥ 29 ≡ 1 (mod 4)` contains K_4).
+2. Hoffman-saturated at α = (p − 1)/(k+1) or close to it.
+3. With low enough `α · d_max / (N · ln d_max)` to clear 0.679.
+
+Only Cayley graphs with carefully chosen non-power-residue connection
+sets have come close (see `CAYLEY_TABU_GAP.md`), and none of them
+beats P(17).
+
+## Spectrum and Hoffman bound
 
 `Cay(Z_p, R_k)` has **exactly `k + 1` distinct eigenvalues**: the
-trivial degree `(p-1)/k`, plus `k` Gauss-period eigenvalues (one per
-coset of `R_k` in `Z_p^*`). So:
+trivial degree `(p − 1)/k`, plus `k` Gauss-period eigenvalues (one per
+coset of `R_k` in `Z_p^*`).
 
 - `k = 2` → 3 eigenvalues → strongly regular graph (Paley).
-- `k = 3` → 4 eigenvalues → **not** srg; it's a 3-class symmetric
-  association scheme. If a downstream tool labels `Cay(Z_{19}, R_3)`
-  as srg, that's wrong — it's one association-scheme class looser.
+  Spectrum `{(p−1)/2, ((-1 + √p)/2)^{((p−1)/2)}, ((-1 − √p)/2)^{((p−1)/2)}}`.
+- `k = 3` → 4 eigenvalues → 3-class symmetric association scheme.
+  Eigenvalues are cubic Gauss periods; not strongly regular.
 - `k = 6` → 7 eigenvalues → 6-class scheme.
 
-This matters for the spectral bounds: Hoffman gives
-`α ≤ N · (-λ_min) / (d - λ_min)`, and for `k = 3` at `p = 19` the
-min eigenvalue is the smallest cubic Gauss period (≈ `-2.28`), which
-yields `α ≤ ~5.2` → actual `α = 4`.
+The Hoffman bound applied to Paley:
+`α(P(p)) ≤ p · |λ_min| / (d − λ_min) = p · ((-1+√p)/2 + 1) / ((p-1)/2 - (-1-√p)/2 + ...) ≈ √p`.
+For p = 17 this gives `α(P(17)) ≤ √17 ≈ 4.12`, but the actual
+α(P(17)) = 3 — Hoffman has slack of ~1, which is the ratio that lets
+P(17) be c_log-optimal.
 
-## What the search does
+For `k = 3, p = 19`: λ_min is the smallest cubic Gauss period
+`(-1 + √(-3·19))/2 ≈ -2.28`. Hoffman gives
+`α ≤ 19 · 2.28 / (6 + 2.28) ≈ 5.23`. Actual α = 4.
 
-`CayleyResidueSearch(n=p, residue_indices=(2, 3, 6))` skips `n` that
-isn't a prime ≥ 5, then for each `k` tries to build `Cay(Z_p, R_k)`
-when `p ≡ 1 (mod 2k)`. K₄-free survivors are returned; the base class
-scores by `c_log` and keeps `top_k`. A typical run across `p ∈
-[5, 200]` produces ~50 graphs in a few seconds (most cost is the α
-computation, not graph construction).
+## When K₄-freeness holds (and when it doesn't)
 
-Metadata attached to each graph: `{"prime": p, "residue_index": k,
-"connection_set": S}`.
+| `k` | `p ≡ 1 (mod 2k)` smallest p | K₄-free? |
+|---|---|---|
+| 2 | 5 | ✓ |
+| 2 | 13 | ✓ |
+| 2 | 17 | **✓ (last K₄-free Paley)** |
+| 2 | 29 | ✗ |
+| 2 | 37 | ✗ |
+| 3 | 7 | ✓ |
+| 3 | 13 | ✓ |
+| 3 | 19 | ✓ |
+| 3 | 31, 37, 43, 61, 67, 79, 127 | ✓ |
+| 6 | 13 | ✓ |
+| 6 | 37 | ✓ |
+| 6 | 61, 73, 97, 109 | ✓ |
 
-## Caveats — read before scaling up
+**Paley graphs become non-K₄-free at p ≥ 29.** This is the structural
+fact that bounds the c_log frontier: P(17) is the largest K₄-free Paley,
+and Paley parameters are uniquely good for low c_log within the family.
 
-### 1. Asymptotic `c` growth is likely
+Higher-k variants (cubic, sextic) stay K₄-free for many more primes,
+but their density (= (p−1)/k) is lower, so α grows faster and c_log
+doesn't reach as low as P(17). The full sweep results live in
+[`experiments/algebraic_explicit/README.md`](../../experiments/algebraic_explicit/README.md).
 
-Hoffman + the fact that non-trivial Gauss periods have magnitude
-`Θ(√p)` predicts `c ≲ √p / ln(p/k)`. Whether `c` actually grows that
-fast depends on how slack the Hoffman bound is for a given `(p, k)` —
-and that's an empirical question for the range the repo cares about
-(`n ≤ ~100`). Don't expect this family to beat `P(17)`; expect it to
-*compete* with `P(17)` and provide structured benchmarks at primes
-where `CirculantSearch` can't run.
+## Empirical c_log table (best per (n, k))
 
-### 2. Overlap with Paley enumeration
+From [`graphs/cayley.json`](../../graphs/cayley.json):
 
-`k = 2` reproduces the Paley-graph family already covered by
-`CirculantSearch` at small primes, just wired up with explicit
-algebraic labelling (`prime`, `residue_index`, `connection_set`)
-instead of raw connection sets. The `graph_db` dedup key is `(graph_id,
-source)`, so the same graph appears under both `source='circulant'` /
-`'cayley'` as expected — not a bug.
+| n | k | name | c_log | α | d_max |
+|---:|---:|---|---:|---:|---:|
+| 17 | 2 | P(17) | **0.6789** | 3 | 8 |
+| 19 | 3 | cubic | 0.7050 | 4 | 6 |
+| 13 | 2 | P(13) | 0.7728 | 3 | 6 |
+| 37 | 6 | sextic | 0.8145 | 9 | 6 |
+| 31 | 3 | cubic | 0.8406 | 6 | 10 |
+| 67 | 3 | cubic | 0.8498 | 8 | 22 |
 
-### 3. Primes only
+Note the **non-monotonicity in k**: at p = 37, k = 6 (sextic) gives
+c_log = 0.815, *better* than k = 3 (cubic) at 0.913. The "smaller k
+is better" intuition is wrong; the k that minimises c_log depends on
+how dense `R_k` is at the specific (p, λ_min) profile.
 
-The `p ≡ 1 (mod 2k)` condition requires `p` prime. For composite `n`
-with a nice ring structure (e.g. `Z_{pq}`, `Z_{p^2}`), the character
-theory gets harder — handle those in a future `MultiplicativeCoverSearch`
-rather than widening this one.
+## Why the search exists alongside `CirculantSearch`
 
-### 4. No voltage covers
+For `n ≤ 35`, `CirculantSearch` enumerates **every** connection set
+exhaustively, so every residue-Cayley graph with `p ≤ 35` is already
+hit — `PrimeCirculantSearch` produces no new graphs there, only
+re-labels existing ones with algebraic metadata (`prime`,
+`residue_index`, `connection_set`) useful for the visualiser.
 
-C(38; {2, 14, 16}) and C(34; {2, 4, 8, 16}) are trivial doubles (disjoint
-copies) of their `Z_{19}` and `Z_{17}` bases — preserving `c` but not
-producing new constructions. **Non-trivial connected covers** are not
-in scope for this search; they need an independent `CoverSearch`
-subclass.
+For `n ≥ 40`, exhaustive circulant enumeration is infeasible (see
+[`CIRCULANTS.md`](CIRCULANTS.md) caveat 1). Power-residue families give
+a principled, O(1)-per-prime way to produce candidates at larger n,
+without the random-sampling tax.
+
+## Open questions
+
+1. **k-sweep is incomplete.** Only `k ∈ {2, 3, 6}` are currently swept.
+   Every divisor of `p − 1` gives an eligible k; e.g. p = 41 admits
+   k ∈ {2, 4, 5, 8, 10, 20, 40}, of which only k = 2 has been tried
+   (and gives a non-K₄-free graph). Extending the sweep to all
+   divisors might find lower-c_log hits at large primes, especially
+   for `k = 4, 5, 8`.
+2. **No voltage covers.** `Cay(Z_2 × Z_p, S)` (a "double cover" of the
+   Z_p Cayley) is an obvious extension to N = 2p; not yet implemented
+   as a `Search` subclass. See [`CAYLEY_TABU.md`](CAYLEY_TABU.md) for
+   the search-based approach to non-prime n.
 
 ## When to reach for it
 
-- You want algebraically-labelled versions of small `p` Cayley graphs
-  in the visualizer.
-- You want to scan `p ∈ [40, 200]` where `CirculantSearch` can't go.
-- You're testing a conjecture about the `c` curve across a residue
+- You want a labelled, algebraic version of a small-p Cayley graph with
+  connection-set metadata in the visualiser.
+- You want to scan `p ∈ [40, 500]` where `CirculantSearch` cannot.
+- You're testing a conjecture about the c_log curve across a residue
   family.
 
 ## When **not** to reach for it
 
-- `n ≤ 35` with no interest in algebraic metadata — `CirculantSearch`
+- `n ≤ 35` with no need for algebraic metadata — `CirculantSearch`
   already covers the same ground.
-- Composite `n` — not supported. See `CAYLEY_TABU.md` for the general
-  Cayley search that covers non-prime `N` and non-cyclic groups.
-- You want irregular / near-regular constructions — the whole family
-  is exactly regular of degree `(p-1)/k`.
+- Composite n — `p ≡ 1 (mod 2k)` requires p prime. See
+  [`CAYLEY_TABU.md`](CAYLEY_TABU.md) for general non-prime n.
+- You want irregular / near-regular constructions — the family is
+  exactly regular of degree `(p − 1)/k`.
 
 ## Related
 
-- `CAYLEY_TABU.md` — the general Cayley search. Tabu over inversion-orbit
-  bitvectors for every supported group of order `N` (cyclic, dihedral,
-  direct products, elementary abelian, `ℤ_3 × ℤ_2^k`). Non-deterministic,
-  no algebraic guarantee, but reaches the parts of the Cayley-graph
-  space that this residue-only construction cannot.
+- [`CIRCULANTS.md`](CIRCULANTS.md) — exhaustive circulant enumeration,
+  the immediate parent class.
+- [`CAYLEY_TABU.md`](CAYLEY_TABU.md) — generic Cayley search; reaches
+  non-prime n and non-cyclic groups.
+- [`BEYOND_CAYLEY.md`](BEYOND_CAYLEY.md) — argues why Paley P(17) is
+  unbeatable from the spectral side, and where to look for non-Cayley
+  structural improvements.
+- [`P17_LIFT_OPTIMALITY.md`](P17_LIFT_OPTIMALITY.md) — why P(17) is
+  also unbeatable on the lift side.

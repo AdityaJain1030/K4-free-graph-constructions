@@ -52,9 +52,9 @@ in this folder has beaten it.
 **Question.** Which classical / algebraic graphs sit on the c_log frontier?
 
 **Owns.**
-- **Erdős–Rényi polarity graphs** ER(q) over PG(2,q) — `run.py`,
-  `run_polarity_extended.py` (prime-power q via hand-coded F_q).
-  Backed by `docs/searches/algebraic/POLARITY.md`.
+- **Erdős–Rényi polarity graphs** ER(q) over PG(2,q) for prime and
+  prime-power q (via `utils.algebra.field`) — `run.py`. Backed by
+  `docs/searches/algebraic/POLARITY.md`.
 - **Brown graph** R(3,k), N=125 — `search/brown.py`, `BROWN.md`.
 - **Norm-graph family** (C₄-free relatives) — `search/norm_graph.py`,
   `NORM_GRAPH.md`.
@@ -64,7 +64,7 @@ in this folder has beaten it.
   `MV_BIPARTIZATION.md`, `logs/mv_bipartization/`.
 - **MV on GQ(2,2)** — `scripts/run_mv_gq22.py`.
 - **SRG catalog screen** (McKay enumeration → sub-Paley filter) —
-  `scripts/run_srg_screen.py`, `SRG_CATALOG.md`. **Verdict: exhausted,
+  `experiments/srg_catalog/run.py`, `SRG_CATALOG.md`. **Verdict: exhausted,
   0 sub-Paley hits below P(17).**
 - **Cyclotomic circulant probe** at p∈{37..89}, orders 4 and 6 —
   `scripts/cyclotomic_circulant_probe.py`. **Verdict: 0 hits below
@@ -293,7 +293,7 @@ inversion-orbit-respecting connection sets → tabu-search → SAT-verify
 - **Polarity-N targeted Cayley** — `scripts/run_cayley_tabu_polarity_ns.py`,
   `logs/cayley_tabu_polarity_ns/`.
 - **PSL(2,q) Cayley** — `scripts/run_psl_tabu.py`,
-  `search/groups_psl.py`, `search/_fq.py`, `logs/psl_tabu/`.
+  `utils/algebra.py` (the `psl2` factory), `logs/psl_tabu/`.
 - **Asymmetric lift tabu** — `scripts/asymmetric_lift_tabu.py`,
   `logs/asymmetric_lift_tabu/`.
 - **Persistence + comparison utilities** —
@@ -313,7 +313,7 @@ floor that every other approach must beat.
 
 **Owns (randomised constructions classified as "random").**
 - **Bohman–Keevash sweep** — `docs/processes/BOHMAN_KEEVASH.md`,
-  `experiments/random/sweep_bohman_keevash.py`,
+  `experiments/random/bohman_keevash.py` (`--sweep`),
   `experiments/random/results/bohman_keevash_sweep.csv`. The canonical pseudorandom
   K₄-free generator.
 

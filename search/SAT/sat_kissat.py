@@ -50,14 +50,7 @@ import networkx as nx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from search.base import Search
-
-
-# Best-known upper bounds on R(4, k), k >= 2. Mirror of sat.py table —
-# kept local to avoid an import that creates a circular dependency
-# during the SATKissat path.
-_R4_UB: dict[int, int] = {
-    2: 4, 3: 9, 4: 18, 5: 25, 6: 36, 7: 58, 8: 79, 9: 106, 10: 136,
-}
+from utils.ramsey import R4_UB
 
 
 def _ramsey_prune(n: int, alpha: int, d_max: int) -> tuple[str, str] | None:
@@ -74,7 +67,7 @@ def _ramsey_prune(n: int, alpha: int, d_max: int) -> tuple[str, str] | None:
         return ("caro_wei",
                 f"α·(d+1) = {alpha}·{d_max+1} = {alpha*(d_max+1)} < n = {n}")
     k = alpha + 1
-    ub = _R4_UB.get(k)
+    ub = R4_UB.get(k)
     if ub is not None and n >= ub:
         return ("ramsey_4_k",
                 f"n={n} ≥ R(4,{k}) ≤ {ub} ⇒ K4-free forces α ≥ {k}")

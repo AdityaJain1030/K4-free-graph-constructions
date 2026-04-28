@@ -32,7 +32,7 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from utils.primes import smallest_qnr as _smallest_qnr
+from utils.algebra import smallest_qnr as _smallest_qnr
 
 from ..base import Search
 

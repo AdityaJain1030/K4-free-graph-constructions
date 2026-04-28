@@ -273,8 +273,7 @@ Beats Bohman–Keevash by ≈ 0.3 in c_log, beats uniform_alpha by
 |---|---|
 | `add_edges.py` | Uniform add-only; `--stop {edges, d_max, alpha}`. |
 | `add_remove_edges.py` | Uniform add+remove; `--stop {edges, d_max, alpha}`. Best in class at small N with α-stop, intractable at N≥40. |
-| `bohman_keevash.py` | Uniform add-only, halts at saturation; `--sweep` fits scaling vs theory. |
-| `sweep_bohman_keevash.py` | N-sweep driver for B–K — persists best-per-N to `graphs/bohman_keevash.json`, writes plots to `docs/images/`. |
+| `bohman_keevash.py` | Uniform add-only, halts at saturation. `--n N` for single-N output; `--sweep` for N-range run that also writes `experiments/random/results/bohman_keevash_sweep.csv`, scaling plots under `docs/images/`, and best-per-N graphs to `graphs/bohman_keevash.json`; `--sweep --quick` for a log-log fit only. |
 | `add_edges_weighted.py` | Softmax add-only with `--weight {d_min, alpha, c_log}`. α/c_log scorers carry a 0.05-scale degree tiebreaker (verified to give 1.5× softmax preference at β=4). |
 | `add_remove_edges_weighted.py` | Softmax add+remove. **Recommended config: `--weight target_regular`** (target-distance regularity, t = n^{2/3}). The α/c_log scorers carry the tiebreaker but are too slow to recommend. |
 | `compare_all.py` | 9-method × 5-N driver used for the table above. |

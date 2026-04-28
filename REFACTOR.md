@@ -35,7 +35,7 @@ What's actually in `search/`:
 | SAT/ILP | `sat_circulant`, `sat_circulant_exact`, `sat_exact`, `sat_exact_v1`, `sat_near_regular_nonreg`, `sat_regular`, `sat_regular_v1` | yes |
 | Algebraic closed-form | `brown`, `cayley` (residue), `mattheus_verstraete`, `norm_graph`, `polarity` | **no** — parameter-driven, no search loop |
 | Structural transformation | `blowup`, `mv_bipartization` | **no** — graph-to-graph operators |
-| Utilities | `groups`, `groups_gap`, `groups_psl` | **no** — should move to `utils/` |
+| Utilities | `groups`, `groups_gap`, `groups_psl` | **done** — merged into `utils/algebra.py` |
 | Base infra | `base`, `logger` | (infrastructure) |
 
 Algebraic constructions are wrapped in the `Search` base purely for the
@@ -221,8 +221,7 @@ These remain because they're a different paradigm:
   exhaustive, not Markov walks
 - **SAT (7)**: all `sat_*` — solver-driven
 - **Transformation (2)**: `blowup`, `mv_bipartization` — graph-to-graph
-- **Utilities (3)**: `groups`, `groups_gap`, `groups_psl` — should move
-  to `utils/`
+- ~~**Utilities (3)**: `groups`, `groups_gap`, `groups_psl`~~ — merged into `utils/algebra.py`
 - **Infrastructure (2)**: `base`, `logger` — must stay
 
 ---

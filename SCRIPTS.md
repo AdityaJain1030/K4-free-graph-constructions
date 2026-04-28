@@ -123,7 +123,6 @@ Three "rungs" of increasingly tight lower/upper bounds on α.
 | `clique_cover_screen.py` | Clique-cover / MV-analog fingerprint on frontier graphs |
 | `check_regularize_nonregular.py` | For each non-regular DB graph: does a regular replacement exist with same (n, α, d_max)? |
 | `check_regularize_c_optimal.py` | Same, restricted to frontier (c_log-optimal) non-regular graphs |
-| `run_srg_screen.py` | Screen McKay's SRG catalog for K₄-free members, ingest into DB |
 | `analyze_c_log_surface.py` | Regression + PCA: does c_log collapse onto a low-dim structural feature surface? |
 | `target_n83_a12.py` | Targeted SAT near-regular search at n=83, α=12, d∈[2..28] |
 | `run_subplan_b.py` | (also screens all DB graphs with hard-core bound) |

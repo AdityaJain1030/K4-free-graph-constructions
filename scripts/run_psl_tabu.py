@@ -5,7 +5,7 @@ scripts/run_psl_tabu.py
 Tabu search on Cayley(PSL(2, q), S) over inversion orbits of S.
 
 Mirrors `search.cayley_tabu` but for a single group (PSL(2, q)) built
-via `search.groups_psl.psl2`. PSL orders are above the GAP
+via `utils.algebra.psl2`. PSL orders are above the GAP
 SmallGroups cap, so the GAP-backed sweep skips them.
 
 Usage:
@@ -27,8 +27,7 @@ import networkx as nx
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
 
-from search.groups_psl import psl2
-from search.groups import cayley_adj_from_bitvec, connection_set_from_bitvec
+from utils.algebra import psl2, cayley_adj_from_bitvec, connection_set_from_bitvec
 from search.stochastic_walk.tabu import multi_restart_tabu, TabuResult
 from utils.graph_props import is_k4_free, alpha_bb_clique_cover, alpha_cpsat
 from utils.alpha_surrogate import alpha_lb

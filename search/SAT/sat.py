@@ -49,6 +49,7 @@ from ortools.sat.python import cp_model
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from search.base import Search
+from utils.ramsey import R4_UB
 
 
 _STATUS_NAME = {
@@ -56,13 +57,6 @@ _STATUS_NAME = {
     cp_model.FEASIBLE:   "SAT",
     cp_model.INFEASIBLE: "UNSAT",
     cp_model.UNKNOWN:    "TIMED_OUT",
-}
-
-
-# Best-known upper bounds on R(4, k), k >= 2. Exact for k ≤ 5;
-# Radziszowski's published upper bounds for k ≥ 6.
-_R4_UB: dict[int, int] = {
-    2: 4, 3: 9, 4: 18, 5: 25, 6: 36, 7: 58, 8: 79, 9: 106, 10: 136,
 }
 
 
@@ -81,7 +75,7 @@ def _ramsey_prune(n: int, alpha: int, d_max: int) -> tuple[str, str] | None:
         return ("caro_wei",
                 f"α·(d+1) = {alpha}·{d_max+1} = {alpha*(d_max+1)} < n = {n}")
     k = alpha + 1
-    ub = _R4_UB.get(k)
+    ub = R4_UB.get(k)
     if ub is not None and n >= ub:
         return ("ramsey_4_k",
                 f"n={n} ≥ R(4,{k}) ≤ {ub} ⇒ K4-free forces α ≥ {k}")
@@ -126,6 +120,8 @@ class SAT(Search):
         time_limit_s: float = 60.0,
         ramsey_prune: bool = True,
         edge_lex: bool = True,
+        cp_workers: int = 1,
+        seed_graph: "nx.Graph | None" = None,
         **kwargs,
     ):
         super().__init__(
@@ -135,6 +131,8 @@ class SAT(Search):
             time_limit_s=time_limit_s,
             ramsey_prune=ramsey_prune,
             edge_lex=edge_lex,
+            cp_workers=cp_workers,
+            seed_graph=seed_graph,
             **kwargs,
         )
 
@@ -191,8 +189,22 @@ class SAT(Search):
             for j in range(1, n - 1):
                 model.Add(x[(0, j)] >= x[(0, j + 1)])
 
+        # Solution hint: bias CP-SAT toward the seed graph's edge set.
+        # Pure search bias — no soundness impact. The hint may be
+        # infeasible under (alpha, d_max, K4) constraints; CP-SAT will
+        # repair from there. Empirically helps when the seed is
+        # structurally close to a feasible witness.
+        if self.seed_graph is not None and self.seed_graph.number_of_nodes() == n:
+            seed_edges = {
+                (min(u, v), max(u, v)) for u, v in self.seed_graph.edges()
+            }
+            for (i, j), var in x.items():
+                model.AddHint(var, 1 if (i, j) in seed_edges else 0)
+
         solver = cp_model.CpSolver()
         solver.parameters.max_time_in_seconds = float(self.time_limit_s)
+        if int(self.cp_workers) > 1:
+            solver.parameters.num_search_workers = int(self.cp_workers)
 
         status = solver.Solve(model)
         status_name = _STATUS_NAME.get(status, str(status))
