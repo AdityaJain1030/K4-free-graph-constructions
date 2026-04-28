@@ -34,8 +34,15 @@ executable = cluster_sat/run_cluster_sat.sh
 
 # Edit to match your repo location on the cluster.
 initialdir = /home/adityaj8/k4free
-stream_output = True
-stream_error = True
+
+# NOTE: stream_output / stream_error intentionally OFF. Streaming was
+# the cause of "unable to establish standard output stream" failures
+# on vision-c15 (Condor couldn't open the live channel from the
+# execute node back to the submit node). For incremental visibility
+# while a job is running, watch the driver's own logs:
+#   tail -f logs/cluster_sat/progress_*.jsonl
+#   tail -f logs/cluster_sat/cluster_sat_*.out
+# (the launcher tee's stdout into the second file).
 
 getenv = True
 
