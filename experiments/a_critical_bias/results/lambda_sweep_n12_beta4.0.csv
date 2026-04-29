@@ -1,0 +1,5 @@
+n,lam,beta,stop,target,seed,seed_graph,trial,c_log,alpha,d_max,edges,added,removed,n_min_deg,n_twin,n_hajnal,is_a_critical,n_non_critical_v
+12,0.0,4.0,none,0,0,empty,0,1.1990961321960851,4,7,34,117,83,0,0,6,,
+12,0.0,4.0,none,0,1,empty,1,1.4988701652451064,5,7,26,113,87,1,0,8,,
+12,1.0,4.0,none,0,0,empty,0,0.8993220991470637,3,7,34,117,83,0,0,0,,
+12,1.0,4.0,none,0,1,empty,1,1.0355582242660197,4,5,24,112,88,0,0,0,,

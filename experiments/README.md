@@ -42,7 +42,7 @@ in this folder has beaten it.
 | [`SAT/`](SAT/) | Certified-optimal CP-SAT pipeline + benchmarks | active |
 | [`switch/`](switch/) | Move-set comparison (transitional — will be absorbed) | transitional |
 | [`tabusearch/`](tabusearch/) | Generic (non-Cayley) tabu | active |
-| [`upper_bound_tightness/`](upper_bound_tightness/) | How tight are α ≤ θ ≤ H ≤ … on extremal candidates? | active |
+| [`bound_tightness/`](bound_tightness/) | How tight are α ≤ θ ≤ H ≤ … on extremal candidates? | active |
 | [`vertex_by_vertex/`](vertex_by_vertex/) | Vertex-priority construction (negative result) | closed |
 
 ---
@@ -169,7 +169,6 @@ matters in practice; non-abelian Cayley work has migrated to
   `logs/bicayley_z17*.log`.
 - **Hand-curated special Cayley** — `scripts/build_special_cayley.py`,
   `special_cayley.json`.
-- **Cayley vs non-Cayley comparison plot** — `scripts/plot_cayley_vs_noncayley.py`.
 
 ## `decomposition/` — composing small blocks
 
@@ -389,34 +388,44 @@ tabu?
 - (Shares `search/tabu.py` — generic bitvec tabu — with
   `parczyk_pipeline/`.)
 
-## `upper_bound_tightness/` — how tight are the known bounds?
+## `bound_tightness/` — how tight are the known bounds?
 
-**Question.** Given the chain α ≤ θ ≤ Hoffman ≤ …, how close to equality
-do extremal candidates sit, and where is the slack?
+**Question.** Given the chain α ≤ θ' ≤ θ ≤ χ_f(Ḡ), and α ≤ H for regular
+graphs, how close to equality do extremal candidates sit, and where is
+the slack? Also includes the hard-core *lower* bound E_max as the
+counterpart for benchmarking.
 
 **Owns.**
-- **Hardcore method tightness (rung 2)** —
-  `scripts/run_rung2_exact_hardcore.py`, `plot_rung2.py`,
-  `results/hardcore_tightness.csv`, `experiments/random/results/bk_hardcore_exact.csv`,
-  `docs/theory/HARDCORE_TIGHTNESS.md`.
-- **Lovász θ exhaustive on small K₄-free** —
-  `scripts/all_k4free_theta.py`, `all_k4free_theta_analyze.py`,
-  `results/all_k4free_theta.csv`.
-- **θ on the cached frontier** — `scripts/frontier_theta.py`. Memory
-  2026-04-23: `lovasz_theta` column added to graph_db; 18/100
-  frontier graphs spectrum-saturated; only the P(17) chain sits
-  below the plateau.
-- **θ across the GAP-Cayley sweep (rung 3)** —
-  `scripts/cayley_gap_theta.py`, `cayley_gap_theta_analyze.py`,
-  `run_rung3_lovasz_theta.py`, `plot_rung3.py`,
-  `results/cayley_gap_theta.csv`. Memory 2026-04-23: 87.7% have θ < H.
-- **Subplan B** — `scripts/run_subplan_b.py`, `plot_subplan_b.py`,
-  `docs/theory/SUBPLAN_B.md`.
+- **Per-graph driver** — `bound_tightness/run_tightness.py` runs every
+  bound (Hoffman, Lovász θ, Schrijver θ', χ_f(Ḡ), greedy clique cover,
+  hard-core E_max) against the canonical implementations in
+  `utils/alpha_bounds.py`. CLI flags `--c-max`, `--n-max`,
+  `--per-n-best`, `--hardcore-n-max`.
+- **Per-graph CSV** — `bound_tightness/results.csv` (frontier scan
+  c_log ≤ 0.74) and `bound_tightness/results_per_n.csv` (top-1 per N
+  up to N=100). Columns: graph_id, source, n, d_max, α, c_log, every
+  bound value, every bound's wall time, every tightness ratio.
+- **Plots** — `bound_tightness/plot_tightness.py` produces
+  `tightness_by_n.png` and `tightness_by_clog.png`, scatter plus
+  per-family median trend coloured by graph family (Cayley plateau,
+  SAT-certified, circulant, disjoint lift, brute force).
+- **Digest** — `bound_tightness/results.md`.
+
+**Related (kept distinct from per-graph bounds).**
+- **Subplan B local hard-core + universal-d enumeration** —
+  `scripts/run_subplan_b.py`, `docs/theory/SUBPLAN_B.md`. The local
+  hard-core is strictly weaker than the per-graph E_max but generalises
+  via geng-enumerated triangle-free neighbourhoods to a universal
+  per-d bound — distinct from what bound_tightness produces.
+- **Tensor-product Hoffman screen** — `scripts/spectrum_balance_screen.py`.
+  Predicts Hoffman of G₁ ⊗ G₂ from factor spectra; constructive screen
+  for compositions, not a per-graph bound.
+- **Clique-cover fingerprint** — `scripts/clique_cover_screen.py`.
+  Max-clique pair-intersection histogram and "spread" flag — structural
+  fingerprint, not an α bound.
+- **c_log surface analysis** — `scripts/analyze_c_log_surface.py`.
+  Regression / PCA over the Hoffman column.
 - **Hoffman comparison** — `docs/hoffman_comparison.md`.
-- **Structural screens** (filter graphs whose bounds *could* be tight):
-  - `scripts/clique_cover_screen.py`
-  - `scripts/spectrum_balance_screen.py`
-  - `scripts/analyze_c_log_surface.py`
 
 ## `vertex_by_vertex/` — vertex-priority construction (closed)
 
@@ -448,8 +457,7 @@ owned by it:
   `run_*.sh`) **stay in `cluster/`** by topic decision. Each
   experiment README links to the cluster file it depends on.
 - Infrastructure that is *not* an experiment stays in `scripts/` /
-  `highlights/` / `graph_db/`: `build_highlights.py`,
-  `repair_graph_store_n65.py`, `regen_cache_with_theta.py`,
+  `highlights/` / `graph_db/`: `repair_graph_store_n65.py`,
   `db_cli.py`, `open_visualizer.py`.
 - Theory write-ups in `docs/theory/` (`BEYOND_CAYLEY.md`,
   `EMPIRICAL_REGULARITY.md`, `EXPERIMENT_LOG.md`,

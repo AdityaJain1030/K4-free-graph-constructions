@@ -96,20 +96,15 @@ A focused sub-campaign diagnosing why tabu search plateaus at α=7 instead of re
 
 ---
 
-## Lovász θ / Spectral / Hard-Core Bounds (Sub-plan B)
+## α Bounds (consolidated under `experiments/bound_tightness/`)
 
-Three "rungs" of increasingly tight lower/upper bounds on α.
+The per-graph computation of every α bound (Hoffman, Lovász θ, Schrijver θ', χ_f(Ḡ), greedy clique cover, hard-core $E_{\max}$) is now done by `experiments/bound_tightness/run_tightness.py` against the canonical implementations in `utils/alpha_bounds.py`. See `experiments/bound_tightness/README.md`.
+
+The standalone scripts that previously computed individual bounds (`run_rung2_exact_hardcore.py`, `run_rung3_lovasz_theta.py`, `all_k4free_theta*.py`, `cayley_gap_theta*.py`, `frontier_theta.py`, `hardcore_server_sat_exact.py`) have been removed; their per-graph CSVs are subsumed by `experiments/bound_tightness/results_per_n.csv`.
 
 | Script | What it does |
 |--------|-------------|
-| `run_subplan_b.py` | Rung 0: hard-core occupancy lower bound on α/N via local partition inequality |
-| `run_rung2_exact_hardcore.py` | Rung 2: exact hard-core bound via full partition function (tightest possible) |
-| `run_rung3_lovasz_theta.py` | Rung 3: Lovász θ SDP as upper bound on α per graph |
-| `all_k4free_theta.py` | Compute θ for every graph in DB with known α |
-| `all_k4free_theta_analyze.py` | Summarize θ tightness (SDP slack vs actual α) across all sources |
-| `cayley_gap_theta.py` | Compute θ for all cayley_tabu_gap records and compare to Hoffman |
-| `cayley_gap_theta_analyze.py` | Analyze the Cayley-GAP θ vs Hoffman CSV |
-| `frontier_theta.py` | Show α / θ / Hoffman together for the frontier graph at each N |
+| `run_subplan_b.py` | Local hard-core lower bound + universal per-d enumeration via geng (distinct from per-graph $E_{\max}$ — keeps the d-regular tree reference and neighbourhood-type aggregation) |
 | `run_alpha_targeted.py` | Targeted α computation on specific graphs |
 | `run_fragility.py` | Perturbation fragility: random walk from best graph at each N, measure α stability |
 
@@ -133,12 +128,9 @@ Three "rungs" of increasingly tight lower/upper bounds on α.
 
 | Script | What it does |
 |--------|-------------|
-| `plot_cayley_vs_noncayley.py` | c_log vs N: Cayley frontier vs non-Cayley frontier |
-| `plot_subplan_b.py` | Hard-core bound tightness scatter, c_log vs N/d, asymptotic extrapolation |
-| `plot_rung2.py` | Exact hard-core bound vs actual α and Rung-0 bound |
-| `plot_rung3.py` | Lovász θ SDP results |
 | `open_visualizer.py` | Launch interactive graph explorer |
-| `build_highlights.py` | Emit curated `highlights/` subset of DB for human review |
+
+Bound-related plots live next to the experiment that owns them — see `experiments/bound_tightness/plot_tightness.py`.
 
 ---
 
@@ -149,7 +141,6 @@ Three "rungs" of increasingly tight lower/upper bounds on α.
 | `ingest_deepmind_ramsey.py` | Ingest DeepMind Ramsey R(4,s) K₄-free constructions into DB |
 | `ingest_disjoint_lifts.py` | Ingest trivial k-copy disjoint-union lifts for suboptimal N values |
 | `recover_sat_regular_graphs.py` | Recover SAT-regular graphs from logs into DB |
-| `regen_cache_with_theta.py` | Regenerate DB property cache with θ column |
 | `repair_graph_store_n65.py` | One-off repair of the graph store at N=65 |
 | `db_cli.py` | Command-line interface: sync, clean, add, query, rm, stats |
 | `test_search.py` | Smoke test: brute force n=4..9 + circulant n=8..30, verify DB round-trip |

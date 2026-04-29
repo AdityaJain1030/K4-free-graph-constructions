@@ -116,7 +116,8 @@ the full DB dump. Structure:
   `networkx.from_sparse6_bytes` / `labelg` / `dreadnaut`.
 - `index.json` — machine-readable manifest consumed by the visualizer.
 
-Tiers (regenerate via `python scripts/build_highlights.py`):
+Tiers (the regeneration script was retired; the existing slice is kept
+as a static commit):
 
 1. Paley(17), CR(19), and N=22 plateau chains (13 graphs, lift-invariant)
 2. SAT-certified optima N=10..20 (11 graphs, proven extremal)
@@ -337,11 +338,13 @@ Representative drivers (there are many more — `ls scripts/`):
   `run_sat_circulant_exact.py`, `run_sat_circulant_optimal.py`,
   `run_proof_pipeline.py`, `prove_box.py`, `verify_optimality.py`,
   `proof_report.py`, `verify_sat_circulant_optimal.py`.
-- **Analysis / hand-curation:** `build_highlights.py` (regenerate
-  `highlights/`), `build_special_cayley.py` (classical SRG-Cayley
-  ingest), `paley_randomized_blowup.py` (the k=2 random blow-up
-  experiment), `frontier_theta.py` (Lovász θ over the frontier),
-  `compare_cayley_tabu.py`, `persist_cayley_tabu.py`, `run_sweep_10_40.py`.
+- **Analysis / hand-curation:** `build_special_cayley.py` (classical
+  SRG-Cayley ingest), `paley_randomized_blowup.py` (the k=2 random
+  blow-up experiment), `compare_cayley_tabu.py`, `persist_cayley_tabu.py`,
+  `run_sweep_10_40.py`. Per-graph α bounds (Hoffman, Lovász θ, Schrijver
+  θ', χ_f(Ḡ), greedy clique cover, hard-core E_max) are computed by
+  `experiments/bound_tightness/run_tightness.py` against
+  `utils/alpha_bounds.py`.
 
 ## `utils/` — Shared primitives
 

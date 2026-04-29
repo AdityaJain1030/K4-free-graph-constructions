@@ -738,4 +738,4 @@ def lovasz_theta(adj: np.ndarray, solver: str = "SCS") -> float | None:
     prob = cp.Problem(cp.Maximize(cp.sum(X)), cons)
     prob.solve(solver=solver, verbose=False)
     val = prob.value
-    return round(float(val), 6) if val is not None else None
+    return float(val) if val is not None else None
