@@ -35,6 +35,7 @@ dependencies:
   - psutil
   - tqdm
   - numba        # JIT-compiled bitmask B&B in utils/graph_props.alpha_bb_numba
+  - scikit-learn # PCA / t-SNE / MDS for experiments/graph_space_visualization
 
   # ── GAP (SmallGroups library) — backs search/groups_gap.py ────────────────
   - gap-defaults
@@ -67,6 +68,9 @@ dependencies:
 
     # Anthropic API
     - anthropic
+
+    # UMAP (precomputed-metric mode) for experiments/graph_space_visualization
+    - umap-learn
 
     # HTTP / async support
     - grpcio==1.80.0

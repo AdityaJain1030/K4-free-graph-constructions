@@ -1,0 +1,48 @@
+{
+  "method": "umap",
+  "metric": "hamming-canonical",
+  "n": 80,
+  "k": 17,
+  "seed": 0,
+  "info": {
+    "n_neighbors": 5
+  },
+  "graph_ids": [
+    "7406201b217463d6",
+    "4ae596c6e5e729ec",
+    "52b02e8667751e67",
+    "152dbad535994609",
+    "da8cc0ede5f6cb7d",
+    "f03565426d51efba",
+    "27528bc75f5f7ecf",
+    "eb1a71cdff400d6a",
+    "689f0916eb313e56",
+    "503127db1ccfdf8b",
+    "c8b0612b56c9900d",
+    "fcead7888fe892a3",
+    "26b8340523158989",
+    "3f78990be99ba7aa",
+    "26258d063f815ef7",
+    "486f553b18c96d81",
+    "a0b13c05cebf4a96"
+  ],
+  "sources": [
+    "alpha_targeted",
+    "alpha_targeted",
+    "alpha_targeted",
+    "bohman_keevash",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "random_regular_switch",
+    "random_regular_switch",
+    "random_regular_switch",
+    "sat_circulant"
+  ]
+}

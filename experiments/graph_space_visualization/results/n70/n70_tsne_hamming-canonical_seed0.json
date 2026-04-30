@@ -1,0 +1,49 @@
+{
+  "method": "tsne",
+  "metric": "hamming-canonical",
+  "n": 70,
+  "k": 17,
+  "seed": 0,
+  "info": {
+    "perplexity": 5.0,
+    "kl_divergence": 0.5083392262458801
+  },
+  "graph_ids": [
+    "7de3a7a568b085dd",
+    "f785985b109a48cc",
+    "8131dd24a64e8e74",
+    "931f3ed004bf0cb6",
+    "a28906d0414b2ac4",
+    "fea06412077acb6c",
+    "d5b2d5254737ed16",
+    "5e7891a832ed3f06",
+    "28774d4027b1e86d",
+    "c4fa90007cfce7a3",
+    "58615ca1a25f3ed5",
+    "9cd0e021a7e136b8",
+    "228ec1f9b7f46181",
+    "7754aad0ab36b12f",
+    "dfb36c36f6d76c44",
+    "497679a2ad9b352e",
+    "3b3833e4b93b0123"
+  ],
+  "sources": [
+    "alpha_targeted",
+    "alpha_targeted",
+    "alpha_targeted",
+    "bohman_keevash",
+    "cayley_tabu",
+    "cayley_tabu",
+    "cayley_tabu",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "circulant_fast",
+    "circulant_fast",
+    "circulant_fast",
+    "disjoint_lift",
+    "random_regular_switch",
+    "random_regular_switch",
+    "random_regular_switch"
+  ]
+}

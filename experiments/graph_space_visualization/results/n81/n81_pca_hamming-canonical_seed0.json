@@ -1,0 +1,58 @@
+{
+  "method": "pca",
+  "metric": "hamming-canonical",
+  "n": 81,
+  "k": 20,
+  "seed": 0,
+  "info": {
+    "explained_variance_ratio": [
+      0.08381456881761551,
+      0.0744042620062828
+    ],
+    "cumulative_explained": 0.15821883082389832
+  },
+  "graph_ids": [
+    "fb7e3b7f260795ad",
+    "f4271b5d89e42f61",
+    "bbe2208c493362b2",
+    "f710bf945d07a7bd",
+    "842a2627f374659b",
+    "25d271de550bfddd",
+    "61a898161b86dff6",
+    "c178b379937f768d",
+    "81d5544fc08e99cb",
+    "f94b76d1b0dfe18a",
+    "df876120895d3166",
+    "2d7d60e0f99e842c",
+    "69695aa2fdf70037",
+    "b11aee04ed26986b",
+    "97b57fa38455da01",
+    "712cbdcdea1d21e6",
+    "0a812989ce3d4dbc",
+    "93e3c758227a62b6",
+    "40cb8afc1d6131af",
+    "d35866b5747dbab2"
+  ],
+  "sources": [
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "cayley_tabu_gap",
+    "circulant_fast",
+    "circulant_fast",
+    "circulant_fast",
+    "sat_circulant",
+    "sat_circulant_optimal",
+    "special_cayley"
+  ]
+}

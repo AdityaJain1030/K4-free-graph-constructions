@@ -1,0 +1,40 @@
+{
+  "method": "pca",
+  "metric": "hamming-canonical",
+  "n": 17,
+  "k": 11,
+  "seed": 0,
+  "info": {
+    "explained_variance_ratio": [
+      0.17588211596012115,
+      0.13798119127750397
+    ],
+    "cumulative_explained": 0.3138633072376251
+  },
+  "graph_ids": [
+    "616eac31100bc37e",
+    "f0c7b112cfd9a3da",
+    "229c10240d283ac8",
+    "796379d4d9040d1b",
+    "45ade354252a541a",
+    "ae8aeee616d790a7",
+    "321bca915ace7ca9",
+    "d642c18ef97915b2",
+    "0b78eaa1c9359e1e",
+    "b810481972a8df8c",
+    "3a29026d3bc0b61e"
+  ],
+  "sources": [
+    "cayley",
+    "circulant",
+    "circulant_fast",
+    "random",
+    "regularity",
+    "sat_regular",
+    "sat_regular",
+    "sat_regular",
+    "sat_regular",
+    "sat_regular",
+    "special_cayley"
+  ]
+}
