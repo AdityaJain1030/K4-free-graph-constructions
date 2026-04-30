@@ -97,13 +97,13 @@ For $d_{\max} = 8$ (the entire Paley plateau), $2^{d_{\max}} = 256$ — tiny, re
 - A purely local hard-core argument (no information flow beyond a single vertex's neighbourhood) cannot reach $\alpha$ on this class — the slack is structural.
 
 **Does not say:**
-- Whether a *less local* method that mixes neighbourhoods (correlation decay, BP fixed-point with multi-step messages) closes the gap. Subplan B's $L_{HC}$ is the cheapest possible locality; better local methods exist.
-- Whether the universal-per-$d$ extension (`scripts/run_subplan_b.py --d-enum-max …`) closes the gap by taking the worst-case neighbourhood type rather than the actual one. That's a different question and is the right place to look for a Davies–Jenssen-style $K_4$-free analogue.
+- Whether a *less local* method that mixes neighbourhoods (correlation decay, BP fixed-point with multi-step messages) closes the gap. $L_{HC}$ is the cheapest possible locality; better local methods exist.
+- Whether a universal-per-$d$ extension that takes the worst-case neighbourhood type (rather than the actual one) closes the gap. An earlier prototype landed below Shearer at $d \le 8$, suggesting this is a closed direction unless paired with a stronger partition inequality.
 
 ---
 
 ## What's next
 
-- Port the geng triangle-free enumeration from `run_subplan_b.py` so we can also report the universal $\rho_{\min}(d)$ alongside the per-graph $L_{HC}/\alpha$ — that closes the loop with the universal direction.
+- A universal-per-$d$ enumeration via geng triangle-free types would let us also report $\rho_{\min}(d)$ alongside the per-graph $L_{HC}/\alpha$. The earlier prototype showed this lands below Shearer at $d \le 8$, so it is a closed direction without a tighter partition inequality.
 - Compare $L_{HC}/\alpha$ versus a tighter local bound (e.g. tree recursion using $T_v$ depth-2 neighbourhoods) and quantify how much locality you have to give up to recover $E_{\max}$.
 - Plot $L_{HC}/\alpha$ vs $N$ alongside `tightness_by_n.png`, coloured by family — should show the constant-along-chain signature visually.

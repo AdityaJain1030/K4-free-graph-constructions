@@ -31,7 +31,7 @@ $$
 \alpha(G) \;\ge\; L_{HC}(G) \;=\; \max_{\lambda > 0}\; \sum_{v \in V}\, \frac{\lambda}{\lambda + Z(T_v,\lambda)}.
 $$
 
-This is **strictly local**: $\rho_v$ in the bound depends only on the iso class of $T_v$, not on $G$ as a whole. For $K_4$-free $G$ the templates $T_v$ are triangle-free graphs on $d_v$ vertices, of which there are finitely many — Subplan B exploits this for a universal-per-degree bound (`scripts/run_subplan_b.py`).
+This is **strictly local**: $\rho_v$ in the bound depends only on the iso class of $T_v$, not on $G$ as a whole. For $K_4$-free $G$ the templates $T_v$ are triangle-free graphs on $d_v$ vertices, of which there are finitely many. In principle one could enumerate every triangle-free type and take the worst-case $\lambda$ to get a *universal* per-degree bound; we tried that direction once (now removed — see "What this experiment doesn't yet answer") and found it cannot beat Shearer.
 
 The bound chain:
 
@@ -87,7 +87,7 @@ See `results.md` for the digest. Headline: the local hard-core bound recovers a 
 - [ ] Is the gap $L_{HC} / E_{\max}$ correlated with any structural feature of $G$? (Degree variance, regularity, $T_v$ template diversity?)
 - [ ] Does a per-edge (rather than per-vertex) partition inequality, e.g. $Z(G) \le Z(G[A]) Z(G[B])$ with $A, B$ a balanced cut, give a tighter local bound?
 - [ ] What does $L_{HC}$ look like on the explicit Paley(17) chain (the c_log plateau)? Same constant fraction of $\alpha$ at every $N$, or a chain-specific signature?
-- [ ] Universal-per-$d$ extension via geng triangle-free enumeration is in `scripts/run_subplan_b.py` — worth porting that loop into this experiment so the per-$d$ floor sits next to the per-graph numbers.
+- [ ] A universal-per-$d$ extension via geng-enumerated triangle-free neighbourhood types could be added here; an earlier prototype (`scripts/run_subplan_b.py`, removed) showed it lands below Shearer at $d \le 8$, so this is a closed direction unless paired with a stronger partition inequality.
 
 ---
 

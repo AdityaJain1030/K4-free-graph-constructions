@@ -412,11 +412,10 @@ counterpart for benchmarking.
 - **Digest** — `bound_tightness/results.md`.
 
 **Related (kept distinct from per-graph bounds).**
-- **Subplan B local hard-core + universal-d enumeration** —
-  `scripts/run_subplan_b.py`, `docs/theory/SUBPLAN_B.md`. The local
-  hard-core is strictly weaker than the per-graph E_max but generalises
-  via geng-enumerated triangle-free neighbourhoods to a universal
-  per-d bound — distinct from what bound_tightness produces.
+- **Local-hard-core calibration** — `experiments/hardcore_local/`.
+  Establishes that the local lower bound $L_{HC}$ recovers only ~34% of
+  α on the K₄-free frontier, ruling out neighbourhood-only hard-core
+  arguments as a path to the plateau.
 - **Tensor-product Hoffman screen** — `scripts/spectrum_balance_screen.py`.
   Predicts Hoffman of G₁ ⊗ G₂ from factor spectra; constructive screen
   for compositions, not a per-graph bound.

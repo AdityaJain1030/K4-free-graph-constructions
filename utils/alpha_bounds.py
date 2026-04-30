@@ -13,7 +13,7 @@ Upper bounds (α ≤ B) implemented here:
 
 Lower bound (α ≥ B), included for tightness benchmarking only:
 
-    hardcore_alpha(G)             — exact rung-2 hard-core occupancy
+    hardcore_alpha(G)             — exact global hard-core occupancy
 
 Provenance of inequalities (any graph G, n = |V|):
 
@@ -315,7 +315,7 @@ def hardcore_local(
     lam_steps: int = 400,
 ) -> Optional[HardcoreResult]:
     """
-    Local hard-core lower bound on α — the bound at the heart of "subplan B".
+    Local hard-core lower bound on α.
 
     Replaces the *global* marginal ρ_v(G,λ) = λ Z(G−N[v],λ) / Z(G,λ) with
     a *local* lower bound that depends only on the open-neighbourhood
@@ -363,7 +363,7 @@ def hardcore_alpha(
     lam_steps: int = 400,
 ) -> Optional[HardcoreResult]:
     """
-    Exact rung-2 hard-core occupancy lower bound on α.
+    Exact global hard-core occupancy lower bound on α.
 
     For each vertex v, the marginal of the hard-core measure at fugacity
     λ is  ρ_v(λ) = λ · Z(G − N[v], λ) / Z(G, λ).  Since the expected

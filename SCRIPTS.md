@@ -100,11 +100,10 @@ A focused sub-campaign diagnosing why tabu search plateaus at α=7 instead of re
 
 The per-graph computation of every α bound (Hoffman, Lovász θ, Schrijver θ', χ_f(Ḡ), greedy clique cover, hard-core $E_{\max}$) is now done by `experiments/bound_tightness/run_tightness.py` against the canonical implementations in `utils/alpha_bounds.py`. See `experiments/bound_tightness/README.md`.
 
-The standalone scripts that previously computed individual bounds (`run_rung2_exact_hardcore.py`, `run_rung3_lovasz_theta.py`, `all_k4free_theta*.py`, `cayley_gap_theta*.py`, `frontier_theta.py`, `hardcore_server_sat_exact.py`) have been removed; their per-graph CSVs are subsumed by `experiments/bound_tightness/results_per_n.csv`.
+The standalone scripts that previously computed individual bounds (`run_rung2_exact_hardcore.py`, `run_rung3_lovasz_theta.py`, `all_k4free_theta*.py`, `cayley_gap_theta*.py`, `frontier_theta.py`, `hardcore_server_sat_exact.py`, `run_subplan_b.py`) have all been removed. The per-graph local hard-core $L_{HC}$ lives in `utils.alpha_bounds.hardcore_local` and is calibrated by `experiments/hardcore_local/`. An earlier universal-per-$d$ analysis (via geng triangle-free neighbourhood enumeration) was a closed direction — it cannot beat Shearer for K₄-free — and has been removed.
 
 | Script | What it does |
 |--------|-------------|
-| `run_subplan_b.py` | Local hard-core lower bound + universal per-d enumeration via geng (distinct from per-graph $E_{\max}$ — keeps the d-regular tree reference and neighbourhood-type aggregation) |
 | `run_alpha_targeted.py` | Targeted α computation on specific graphs |
 | `run_fragility.py` | Perturbation fragility: random walk from best graph at each N, measure α stability |
 
@@ -120,7 +119,6 @@ The standalone scripts that previously computed individual bounds (`run_rung2_ex
 | `check_regularize_c_optimal.py` | Same, restricted to frontier (c_log-optimal) non-regular graphs |
 | `analyze_c_log_surface.py` | Regression + PCA: does c_log collapse onto a low-dim structural feature surface? |
 | `target_n83_a12.py` | Targeted SAT near-regular search at n=83, α=12, d∈[2..28] |
-| `run_subplan_b.py` | (also screens all DB graphs with hard-core bound) |
 
 ---
 

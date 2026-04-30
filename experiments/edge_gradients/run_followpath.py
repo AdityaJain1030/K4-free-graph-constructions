@@ -162,6 +162,11 @@ def main():
     ap.add_argument("--steps", type=int, default=20)
     ap.add_argument("--density", type=float, default=0.30)
     ap.add_argument("--rng-seed", type=int, default=42)
+    ap.add_argument("--methods", default=None,
+                    help="Comma-separated method subset; default = all. "
+                         "drop_e_max and drop_l_hc are O(|E|·2^N) per step "
+                         "and become impractical past N≈22 — use this flag "
+                         "to skip them.")
     ap.add_argument("--out", default=os.path.join(HERE, "followpath_results.csv"))
     ap.add_argument("--summary", default=os.path.join(HERE, "followpath_summary.csv"))
     args = ap.parse_args()
@@ -173,7 +178,15 @@ def main():
 
     rows = []
     summary = []
-    method_names = list(METHODS.keys())
+    if args.methods:
+        method_names = [m.strip() for m in args.methods.split(",")]
+        unknown = [m for m in method_names if m not in METHODS]
+        if unknown:
+            raise SystemExit(f"unknown methods: {unknown}; "
+                             f"available: {list(METHODS)}")
+    else:
+        method_names = list(METHODS.keys())
+    print(f"[followpath] methods = {method_names}", flush=True)
 
     for sidx, (G0, a0, m_target, n_attempts) in enumerate(saddles):
         for method in method_names:

@@ -303,9 +303,9 @@ asymptotic-tight constants.
 
 ---
 
-## Hard-core (rung-2) tightness on K₄-free-process outputs
+## Hard-core (global hard-core) tightness on K₄-free-process outputs
 
-The headline question for the locality programme: does the rung-2
+The headline question for the locality programme: does the global hard-core
 hard-core occupancy ceiling
 $E_{\max}(G) = \max_\lambda \sum_v \lambda\,Z(G - N[v], \lambda) / Z(G, \lambda)$
 match $\alpha(G)$ on K₄-free-process outputs as well as it does on the
@@ -324,16 +324,16 @@ statistically indistinguishable. The least-tight process graph
 (N=23, α=6) sits at 0.989, worse than typical DB graphs but still
 "tight" by any standard.
 
-This is the cleanest evidence we have that the rung-2 ceiling
+This is the cleanest evidence we have that the global hard-core ceiling
 ($E_{\max} \approx \alpha$ on every K₄-free graph) is **not** an
 artifact of selecting vertex-transitive / Cayley constructions in the
 DB — it holds on non-VT, non-Cayley, pseudorandom outputs too. The
 hard-core method's ~99% locality appears to be a structural property
 of the K₄-free graph class itself.
 
-The local rung-0 bound (only $T_v = G[N(v)]$) decays as the K₄-free
+The local hard-core bound $L_{HC}$ (only $T_v = G[N(v)]$) decays as the K₄-free
 process density grows (mean 0.27 at $N=10$ → 0.09 at $N=100$). That's
-a known rung-0 weakness on dense graphs, not a property of the process
+a known $L_{HC}$ weakness on dense graphs, not a property of the process
 outputs.
 
 > **Caveat.** The tightness numbers above are from the previous seed's

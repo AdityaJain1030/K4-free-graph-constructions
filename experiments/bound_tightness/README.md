@@ -41,7 +41,7 @@ and additionally $\alpha(G) \le H(G)$ when $G$ is regular. There is no general i
 
 The frontier of $K_4$-free graphs in `graph_db` is small enough to score every method against the exact $\alpha$ (computed via CP-SAT and cached) and report tightness ratios. **The point of this benchmark:** for any method that proves a lower bound on $c_{\log}$ universally, the proof on a *specific* graph $G$ cannot do better than $B(G)\,\Delta(G)/(N\ln\Delta(G))$, so if every $B/\alpha$ on the frontier is bounded below by some $\rho > 1$, no proof in that family can beat $\rho \cdot c_{\log}(G^*)$ on the leader $G^* =$ Paley(17).
 
-The bound chain and individual proofs are derived in `docs/theory/SUBPLAN_B.md` (rungs 0–3) and `docs/theory/HARDCORE_TIGHTNESS.md`.
+The bound chain and individual proofs are summarised in `docs/theory/HARDCORE_TIGHTNESS.md`; the per-graph local-vs-global hard-core calibration lives in `experiments/hardcore_local/`.
 
 ---
 

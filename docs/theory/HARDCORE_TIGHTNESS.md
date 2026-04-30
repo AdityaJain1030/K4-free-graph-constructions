@@ -48,10 +48,10 @@ the numerical ceiling.
 
 ## Interpretation
 
-The explored subset has **very local α across the board**. This matches
-the theoretical claim in `docs/theory/SUBPLAN_B.md` §11: hard-core
+The explored subset has **very local α across the board**: hard-core
 already captures α(G) to ~99% on every K4-free graph we've built, and
-P(17) saturates the hard-core method almost exactly.
+P(17) saturates the hard-core method almost exactly. The local-vs-
+global gap is calibrated in `experiments/hardcore_local/`.
 
 **Consequence for bounds:**
 - Any single-fugacity occupancy-method argument can recover α to within
