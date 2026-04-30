@@ -33,7 +33,7 @@ in this folder has beaten it.
 | [`cayley/`](cayley/) | Best Cayley / circulant connection sets per N (likely renames to `circulants/`) | active |
 | [`decomposition/`](decomposition/) | Can composing small blocks reach SAT-optimal c? | mostly negative |
 | [`DQN/`](DQN/) | Deep Q-learning policy for K₄-free edge construction | planned |
-| [`fragility/`](fragility/) | Paley(17) and its perturbations / lifts / blow-ups, run on every useful N | active |
+| [`fragility/`](fragility/) | Landscape stability of K₄-free graphs: local Δc_log per move, basin volume, barrier-tree topology | tests A/D/E done |
 | [`greedy/`](greedy/) | What does a one-step-ahead greedy reach? | active |
 | [`local_search/`](local_search/) | Deterministic local descent — no tabu, no randomness | active |
 | [`mcmc/`](mcmc/) | Mixed Markov chains over K₄-free graphs | active |
@@ -200,31 +200,79 @@ action = edge to add/flip) outperform tabu search on c_log?
 **Empty placeholder.** Framing in `docs/RL.md` and the four
 GFlowNet / AlphaZero papers in `docs/papers/`.
 
-## `fragility/` — Paley(17) and its neighborhood
+## `fragility/` — landscape stability of K₄-free graphs
 
-**Question.** P(17) with c ≈ 0.679 is the champion. What happens to c
-when we perturb / lift / blow it up, and does this generalise to
-every "useful" N?
+**Scope.** Originally narrowly scoped to "P(17) and its perturbations
+/ lifts / blow-ups". Broadened on 2026-04-29 to *landscape-stability
+analysis*: how does c_log respond to local moves, where does descent
+terminate, and what is the barrier-tree topology of the K₄-free graph
+space? See `experiments/fragility/README.md` for the four-object
+framework (local Δ-distribution, basin volume, barrier tree, Markov
+spectral gap) and `experiments/fragility/results.md` for the
+consolidated results.
 
 **Owns.**
-- **Paley perturbation collapse** — `scripts/run_fragility.py`,
-  `FRAGILITY.md`. Small edge perturbations catastrophically increase α.
-- **Paley randomised k=2 blow-up** — `scripts/paley_randomized_blowup.py`,
-  `paley_randomized_blowup.json`, `logs/paley_blowup.log`.
-- **General blow-up** — `scripts/run_blowup.py`, `BLOWUP.md`.
-- **P(17) lift verification** — `scripts/verify_p17_lift.py`,
-  `P17_LIFT_OPTIMALITY.md`, `logs/verify_p17_lift/`.
-- **Dihedral lift verification** — `scripts/verify_dihedral.py`,
-  `logs/verify_dihedral_p17_*.log`.
-- **Disjoint-lift ingestion** — `scripts/ingest_disjoint_lifts.py`.
-- **Lift structure write-up** — `LIFT_STRUCTURE.md`.
 
-**Planned expansion.** Run the full perturbation / lift / blow-up
-analysis at every N where Paley(17) is structurally relevant
-(chain N ∈ {17..22}, Cayley lifts at higher orders, dihedral /
-bicirculant lifts). Some per-N analysis may live in `local_search/`
-instead — the split is by mechanism (algebraic lift vs local
-perturbation).
+- **Test A — local Δc_log distribution.** `run_delta_distribution.py`,
+  `summarise_delta.py`, `plot_delta_distribution.py`,
+  `plot_fragility_vs_n.py`. For each (frontier seed, move family, N)
+  enumerate / sample legal moves and report the Δc_log distribution.
+  Done for cayley/circulant/SAT/random across N=10..39.
+- **Test E — basin volume from random init.** `run_basin_volume.py`,
+  `plot_basin_volume.py`. Random K₄-free seed at matched density,
+  greedy descent under add+delete, count target hits. **0/200 hits
+  at every N=10..22.**
+- **Test E variant — basin radius under switch.**
+  `run_basin_radius.py`, `plot_basin_radius.py`. Perturb the target
+  by K random switches, descend back. Negative under sampled
+  best-improving descent at N=30 (0/20 across K).
+- **Test D — barrier tree / disconnectivity graph.**
+  `run_barrier_tree.py`, `plot_barrier_tree.py`,
+  `plot_landscape_scatter.py`. Stream `geng -k`, build move-adjacency
+  over a c_log slice, run Kruskal-on-energy. Counts both connected
+  components and combinatorial local minima (where best-improving
+  descent terminates). Done at N=7..11; N=10/11 with tight thresholds
+  isolating the SAT-optimum's c_log shelf.
+- **Shared infra.** `move_taxonomy.py` (add/del/flip/slide/switch
+  primitives + `sample_n_proposals` for descent), `indicators.py`
+  (per-seed structural metrics: edge sensitivities, ρ_c, Hoffman
+  saturation, θ slack, K₄-margin).
+- **Inherited paley/lift sub-experiments** (still here, but lower
+  priority): `scripts/run_fragility.py` (v0 trajectory study,
+  superseded by Test A), `scripts/paley_randomized_blowup.py`,
+  `scripts/run_blowup.py` + `BLOWUP.md`, `scripts/verify_p17_lift.py`
+  + `P17_LIFT_OPTIMALITY.md`, `scripts/verify_dihedral.py`,
+  `scripts/ingest_disjoint_lifts.py`, `LIFT_STRUCTURE.md`.
+
+**Headline findings (see `experiments/fragility/results.md` for full
+detail and tables).**
+
+1. *Frontier graphs are 4–10× more fragile per move than random*
+   K₄-free graphs at the same N (in relative Δc_log / c_log units).
+   The order-of-magnitude separation persists at every N tested,
+   except the N=35 Cay(Z₅×Z₇) plateau where mean Δ collapses to 0.
+2. *Random K₄-free seeds never reach SAT/Cayley/brute_force optima*
+   under add+delete descent (0/200 at N=10..22).
+3. *The K₄-free move-graph is connected at loose thresholds, but
+   has many combinatorial local minima* — 1 → 694 → 5476 at
+   N=7 → 8 → 9, ~8× per N step. Test E's failure is the direct
+   shadow of this trap count.
+4. *SAT failure mode (the punchline)*: at tight thresholds isolating
+   the SAT-optimum's c_log shelf, the **shelf itself fragments**.
+   At N=10 the (3,4) shelf has 12 disconnected components and the
+   SAT optimum sits in the **second-largest** island. **At N=11 the
+   SAT optimum is an isolated singleton on its shelf** — no add or
+   delete move from it stays on the shelf. Local search using
+   K₄-preserving moves has no shelf-internal path to the SAT optimum
+   at N ≥ 11. This is the precise structural reason SAT is necessary
+   and heuristic search cannot replace it.
+
+**Status.** Tests A and D closed; Test E has a definitive 0/200
+result; basin-radius killed under sampling ambiguity. Test C is a
+synthesis of A's per-move data, no new sweep planned. Open
+follow-ups: extend D to N=12+ with batched-enumerator amortisation,
+extend A to polarity / Brown / MV families, the SDP-biased sampler
+for basin-radius.
 
 ## `greedy/` — degree-aware greedy baselines
 
